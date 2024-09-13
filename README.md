@@ -1,6 +1,6 @@
 # Team 102-4
 
-[Team Contract](https://git.uwaterloo.ca/mw2auyeu/team102/-/wikis/Team-Contract)
+[Team Contract](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Team-Contract)
 
 ## Team Members
 
