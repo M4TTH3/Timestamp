@@ -2,6 +2,8 @@
 
 [Team Contract](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Team-Contract)
 
+[Project Proposal](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Project-Proposal)
+
 ## Team Members
 
     Matthew Au-Yeung - mw2auyeu@uwaterloo.ca
