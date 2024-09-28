@@ -4,6 +4,8 @@
 
 [Project Proposal](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Project-Proposal)
 
+[Design Proposal](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/design-proposal)
+
 ## Team Members
 
     Matthew Au-Yeung - mw2auyeu@uwaterloo.ca
