@@ -43,9 +43,5 @@ dependencyResolutionManagement {
 
 rootProject.name = 'team102-4'
 
-include 'shared'
-include 'backend'
-include 'mobile'
-include 'android'
-include 'backend'
+include("shared", "backend", "android")
 
