@@ -15,7 +15,9 @@ java {
 }
 
 dependencies {
-    implementation(libs.spring.boot.starter)
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.jpa)
+    implementation(libs.spring.boot.starter.data.jdbc)
     implementation(libs.kotlin.reflect)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit5)
@@ -26,8 +28,4 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }
