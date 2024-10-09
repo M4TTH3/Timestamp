@@ -6,6 +6,8 @@ build/
 
 ### Some random thing ###
 kls_database.db
+*.hprof
+google-services.json
 
 ### IntelliJ IDEA ###
 .idea
