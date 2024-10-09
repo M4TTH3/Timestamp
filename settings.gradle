@@ -45,3 +45,4 @@ rootProject.name = 'team102-4'
 
 include("backend", "android")
 
+include ':mobile'

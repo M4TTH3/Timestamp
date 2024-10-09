@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "536982464003",
+    "project_id": "cs346-timestamp",
+    "storage_bucket": "cs346-timestamp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:536982464003:android:09d5a32bb9a124f0895036",
+        "android_client_info": {
+          "package_name": "net.codebot.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-QcQSyKybinwtpuBG9-fRT71oU_vMoyc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
