@@ -8,6 +8,7 @@ build/
 kls_database.db
 *.hprof
 google-services.json
+application.properties
 
 ### IntelliJ IDEA ###
 .idea
