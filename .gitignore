@@ -42,6 +42,8 @@ bin/
 /nbdist/
 /.nb-gradle/
 
+.kotlin
+
 ### VS Code ###
 .vscode/
 
