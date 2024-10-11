@@ -1,15 +1,24 @@
 package org.timestamp.mobile
 
+/**
+ * https://stackoverflow.com/questions/72563673/google-authentication-with-firebase-and-jetpack-compose
+ */
+
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,7 +30,9 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.Firebase
@@ -30,29 +41,37 @@ import kotlinx.coroutines.launch
 import androidx.credentials.CredentialManager as CredentialManager
 import org.timestamp.mobile.ui.theme.TimestampTheme
 
-const val WEB_CLIENT_ID = "536982464003-t8sflk6gatc53sfh131q1t1mp7fjhjsk.apps.googleusercontent.com"
-
 enum class Screen {
     Login,
     Home
 }
 
+
 class MainActivity : ComponentActivity() {
 
-    private lateinit var auth: FirebaseAuth
+    private var auth: FirebaseAuth = Firebase.auth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        auth = Firebase.auth
+
+        val activityContext = this as Context
+        val credentialManager = CredentialManager.create(this)
+
+        // Creating a google sign in request
+        val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption
+            .Builder(getString(R.string.default_web_client_id))
+            .build()
+
+        // Create a request to get credentials
+        val request: GetCredentialRequest = GetCredentialRequest.Builder()
+            .addCredentialOption(signInWithGoogleOption)
+            .build()
+
         setContent {
             TimestampTheme {
                 val navController = rememberNavController()
-
-                val context = LocalContext.current
                 val scope = rememberCoroutineScope()
-                val credentialManager = CredentialManager.create(context)
-
                 val startDestination = if (auth.currentUser == null) Screen.Login.name else Screen.Home.name
 
                 NavHost(
@@ -62,41 +81,15 @@ class MainActivity : ComponentActivity() {
                     composable(Screen.Login.name) {
                         LoginScreen(
                             onSignInClick = {
-                            val googleIdOption = GetGoogleIdOption.Builder()
-                                .setFilterByAuthorizedAccounts(false)
-                                .setServerClientId(WEB_CLIENT_ID)
-                                .build()
-
-                                val request = GetCredentialRequest.Builder()
-                                    .addCredentialOption(googleIdOption)
-                                    .build()
-
                                 scope.launch {
                                     try {
                                         val result = credentialManager.getCredential(
-                                            context = context,
-                                            request = request
+                                            request = request,
+                                            context = activityContext
                                         )
-                                        val credential = result.credential
-                                        val googleIdTokenCredential = GoogleIdTokenCredential
-                                            .createFrom(credential.data)
-                                        val googleIdToken = googleIdTokenCredential.idToken
-
-                                        val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
-                                        auth.signInWithCredential(firebaseCredential)
-                                            .addOnCompleteListener { task ->
-                                                if (task.isSuccessful) {
-                                                    navController.popBackStack()
-                                                    navController.navigate(Screen.Home.name)
-                                                }
-                                            }
-                                    } catch (e: Exception) {
-                                        Toast.makeText(
-                                            context,
-                                            "Error: ${e.message}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        e.printStackTrace()
+                                        handleSignIn(result)
+                                    } catch (e: GetCredentialException) {
+                                        Log.e("Sign In", e.toString())
                                     }
                                 }
                             }
@@ -119,6 +112,32 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun handleSignIn(result: GetCredentialResponse) {
+        val credential = result.credential
+
+        if (credential !is CustomCredential ||
+            credential.type !== GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+            Log.e("Sign In", "Wrong token type!")
+            return
+        }
+        try {
+            auth = Firebase.auth
+            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+            val firebaseCredential = GoogleAuthProvider
+                .getCredential(googleIdTokenCredential.idToken, null)
+
+            auth.signInWithCredential(firebaseCredential).addOnCompleteListener(
+                { task ->
+                    if (task.isSuccessful) {
+                        Log.i("Sign In", "Successfully logged in")
+                    }
+                }
+            )
+        } catch (e: GoogleIdTokenParsingException) {
+            Log.e("Sign In", "Received an invalid google id token response", e)
         }
     }
 }
