@@ -17,8 +17,8 @@ java {
 dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.jpa)
-    implementation(libs.spring.boot.starter.data.jdbc)
     implementation(libs.kotlin.reflect)
+    implementation(libs.postgresql)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit5)
     testRuntimeOnly(libs.junit5.platform.launch)
