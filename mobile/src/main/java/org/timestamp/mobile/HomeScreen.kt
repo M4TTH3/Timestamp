@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +41,7 @@ fun HomeScreen(
     )
 
     Surface(
+        color = Color(0xFFE5E6EA),
         modifier = modifier
             .fillMaxSize()
     ) {
@@ -66,34 +69,25 @@ fun HomeScreen(
                 }
                 user.displayName?.let { name ->
                     Text(
-                        text = name,
+                        text = "Welcome, $name",
                         style = textStyle,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.size(16.dp))
                 }
-                user.email?.let { mailId ->
-                    Text(
-                        text = "Mail ID: $mailId",
-                        style = textStyle,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
-                }
-                Text(text = "UID: ${user.uid}",
-                    style = textStyle,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
                 Spacer(modifier = Modifier.size(16.dp))
-                Button(onClick = { onSignOutClick() }) {
+                Button(
+                    onClick = { onSignOutClick() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2A2B2E)
+                    )) {
                     Text(
                         text = "Sign Out",
                         style = textStyle.copy(
                             fontWeight = FontWeight.SemiBold
-                        )
+                        ),
+                        color = Color(0xFFFFFFFF)
                     )
                 }
             }
