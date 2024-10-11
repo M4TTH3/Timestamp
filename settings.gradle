@@ -41,6 +41,6 @@ dependencyResolutionManagement {
 }
 
 
-rootProject.name = 'team102-4'
+rootProject.name = 'timestamp'
 
 include("backend", "mobile")

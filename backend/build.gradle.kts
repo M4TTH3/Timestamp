@@ -5,14 +5,14 @@ plugins {
     alias(libs.plugins.spring.dependency.management)
 }
 
-group = "org.timestamp"
-version = "0.0.1-SNAPSHOT"
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
+
+group = "org.timestamp"
+version = "0.0.1-SNAPSHOT"
 
 dependencies {
     implementation(libs.spring.boot.starter.web)
@@ -22,6 +22,10 @@ dependencies {
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit5)
     testRuntimeOnly(libs.junit5.platform.launch)
+}
+
+springBoot {
+    mainClass.set("org.timestamp.backend.BackendApplicationKt")
 }
 
 kotlin {
