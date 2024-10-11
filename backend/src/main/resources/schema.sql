@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Table for events
 CREATE TABLE IF NOT EXISTS events (
     id SERIAL PRIMARY KEY,  -- Auto-incremented ID for the event
+    creator VARCHAR(255) NOT NULL,  -- FK to users table
     name VARCHAR(255) NOT NULL,
     description TEXT,  -- Description of the event
     latitude DOUBLE PRECISION NOT NULL,  -- Event location latitude
