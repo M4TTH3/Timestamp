@@ -19,6 +19,7 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -87,7 +88,7 @@ class MainActivity : ComponentActivity() {
                                             request = request,
                                             context = activityContext
                                         )
-                                        handleSignIn(result)
+                                        handleSignIn(result, navController)
                                     } catch (e: GetCredentialException) {
                                         Log.e("Sign In", e.toString())
                                     }
@@ -115,11 +116,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun handleSignIn(result: GetCredentialResponse) {
+    private fun handleSignIn(result: GetCredentialResponse, navController : NavController) {
         val credential = result.credential
 
         if (credential !is CustomCredential ||
-            credential.type !== GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+            credential.type != GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
             Log.e("Sign In", "Wrong token type!")
             return
         }
@@ -133,6 +134,7 @@ class MainActivity : ComponentActivity() {
                 { task ->
                     if (task.isSuccessful) {
                         Log.i("Sign In", "Successfully logged in")
+                        navController.navigate(Screen.Home.name)
                     }
                 }
             )
