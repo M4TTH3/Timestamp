@@ -5,7 +5,7 @@
   </a>
 
 <h3 align="center">Timestamp</h3>
-<p align="center">Team 102-4<br /><br />
+<p align="center">On time in no time.<br /><br />
 </p>
 
 [Team Contract](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Team-Contract)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -14,7 +14,7 @@
 </div>
 
 
-## Team Members
+## Team 102-4
 
     Matthew Au-Yeung - mw2auyeu@uwaterloo.ca
 
