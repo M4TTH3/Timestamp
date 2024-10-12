@@ -133,6 +133,9 @@ class MainActivity : ComponentActivity() {
                                 }
                                 navController.popBackStack()
                                 navController.navigate(Screen.Login.name)
+                            },
+                            onContinueClick = {
+                                navController.navigate(Screen.Events.name)
                             }
                         )
                     }
