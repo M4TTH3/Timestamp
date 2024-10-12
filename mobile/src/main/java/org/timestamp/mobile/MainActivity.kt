@@ -42,15 +42,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -73,7 +67,7 @@ enum class Screen {
 
 class MainActivity : ComponentActivity() {
 
-    private var auth: FirebaseAuth = Firebase.auth
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,6 +75,13 @@ class MainActivity : ComponentActivity() {
 
         val activityContext = this as Context
         val credentialManager = CredentialManager.create(this)
+        auth = Firebase.auth
+
+        val apiAvailability = GoogleApiAvailability.getInstance()
+        val resultCode = apiAvailability.isGooglePlayServicesAvailable(activityContext)
+        if (resultCode != ConnectionResult.SUCCESS) {
+            Log.e("Sign In", "Google Play Services is not available")
+        }
 
         // Creating a google sign in request
         val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption
@@ -132,6 +133,9 @@ class MainActivity : ComponentActivity() {
                                 }
                                 navController.popBackStack()
                                 navController.navigate(Screen.Login.name)
+                            },
+                            onContinueClick = {
+                                navController.navigate(Screen.Events.name)
                             }
                         )
                     }
@@ -214,7 +218,6 @@ class MainActivity : ComponentActivity() {
             return
         }
         try {
-            auth = Firebase.auth
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
             val firebaseCredential = GoogleAuthProvider
                 .getCredential(googleIdTokenCredential.idToken, null)

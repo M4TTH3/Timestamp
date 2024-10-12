@@ -1,5 +1,5 @@
 group = "org.timestamp"
-version = "unspecified"
+version = "1.1.0"
 
 plugins {
     alias(libs.plugins.android.application)

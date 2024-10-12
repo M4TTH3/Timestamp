@@ -32,7 +32,8 @@ import coil.request.ImageRequest
 fun HomeScreen(
     modifier: Modifier = Modifier,
     currentUser: FirebaseUser?,
-    onSignOutClick: () -> Unit
+    onSignOutClick: () -> Unit,
+    onContinueClick: () -> Unit
 ) {
     val textStyle = TextStyle(
         fontFamily = FontFamily.Monospace,
@@ -84,6 +85,20 @@ fun HomeScreen(
                     )) {
                     Text(
                         text = "Sign Out",
+                        style = textStyle.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = Color(0xFFFFFFFF)
+                    )
+                }
+                Spacer(modifier = Modifier.size(16.dp))
+                Button(
+                    onClick = { onContinueClick() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2A2B2E)
+                    )) {
+                    Text(
+                        text = "Continue",
                         style = textStyle.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
