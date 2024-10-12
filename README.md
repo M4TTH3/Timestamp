@@ -26,6 +26,19 @@
 
 
 <h2>Releases</h2>
+<strong>⚠️ Before you run:</br></strong>
+<ul>
+  <li><strong>Make sure your emulator supports Google Play!</strong></li>
+  <li>Let us know your SHA-1 to give you access to our Firebase backend: </br><code>./gradlew mobile:signingReport</code></li>
+  <li>We will then update google-services.json:
+  <code>> mobile > google-services.json</code></li>
+  <li>To build the backend, ask for the following file:
+  <code>> backend > src > main > resources > application.properties</code>
+</li>
+</ul>
+
+
+<p></br></p>
 [Release 1.1.0 - 10/11/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1-0-0-Release)
 
 ## Description
