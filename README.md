@@ -1,8 +1,6 @@
 <div align="center" id="readme-top">
-  <a href="https://github.com/bkctrl/uwmun">
     <br /><br />
     <img src="https://bkctrl.s3.ca-central-1.amazonaws.com/applogo.png" alt="Logo" width="110" height="110">
-  </a>
 
 <h3 align="center">Timestamp</h3>
 <p align="center">On time in no time.<br /><br />
