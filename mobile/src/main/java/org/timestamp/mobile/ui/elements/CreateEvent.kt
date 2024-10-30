@@ -76,10 +76,17 @@ fun CreateEvent(
     var eventName by remember { mutableStateOf("My Event") }
     var eventDate by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
-    val selectedDate = datePickerState.selectedDateMillis?.let {
-        val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-        formatter.format(Date(it))
-    } ?: ""
+    var selectedDate by remember { mutableStateOf("") }
+    val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+
+    if (eventDate) {
+        DatePickerDialog(
+            onDateSelected = { dateMillis ->
+                selectedDate = dateMillis?.let { dateFormatter.format(Date(it)) } ?: ""
+            },
+            onDismiss = { eventDate = false }
+        )
+    }
 
    Dialog(
        onDismissRequest = { onDismissRequest() },
