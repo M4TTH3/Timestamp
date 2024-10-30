@@ -3,6 +3,7 @@ package org.timestamp.mobile.ui.elements
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -55,6 +56,7 @@ import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import coil.request.ImageResult
 import coil.size.Scale
+import kotlinx.coroutines.selects.select
 import org.timestamp.mobile.R
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -73,18 +75,29 @@ fun CreateEvent(
         Font(R.font.ubuntu_regular),  // Regular
         Font(R.font.ubuntu_bold, FontWeight.Bold)  // Bold
     )
-    var eventName by remember { mutableStateOf("My Event") }
+    var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(false) }
+    var eventTime by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     var selectedDate by remember { mutableStateOf("") }
+    var selectedTime by remember { mutableStateOf("") }
     val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-
     if (eventDate) {
         DatePickerDialog(
             onDateSelected = { dateMillis ->
                 selectedDate = dateMillis?.let { dateFormatter.format(Date(it)) } ?: ""
             },
             onDismiss = { eventDate = false }
+        )
+    }
+    if (eventTime) {
+        val isToday = selectedDate == dateFormatter.format(Date())
+        TimePickerDialog(
+            onConfirm = { hour, minute ->
+                selectedTime = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+            },
+            onDismiss = { eventTime = false },
+            isToday = isToday
         )
     }
 
@@ -132,7 +145,7 @@ fun CreateEvent(
                        .shadow(4.dp, shape = RoundedCornerShape(16.dp), ambientColor = Color(0x33000000))
                        .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
                        .background(Color.White, shape = RoundedCornerShape(16.dp)),
-                   value = "",
+                   value = eventName,
                    onValueChange = {eventName = it},
                    placeholder = { Text(
                        text = "Event Name",
@@ -183,14 +196,17 @@ fun CreateEvent(
                            .fillMaxWidth(0.8f)
                            .shadow(4.dp, shape = RoundedCornerShape(16.dp), ambientColor = Color(0x33000000))
                            .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
-                           .background(Color.White, shape = RoundedCornerShape(16.dp)),
-                       value = "",
-                       onValueChange = {eventName = it},
+                           .background(Color.White, shape = RoundedCornerShape(16.dp))
+                           .clickable { eventTime = !eventTime },
+                       enabled = false,
+                       value = selectedTime,
+                       onValueChange = {selectedTime = it},
                        placeholder = { Text(
                            text = "Event Time",
                            fontFamily = ubuntuFontFamily,
                            fontWeight = FontWeight.Bold) },
                        singleLine = true,
+                       readOnly = true,
                        colors = TextFieldDefaults.textFieldColors(
                            backgroundColor = Color.Transparent,
                        )
