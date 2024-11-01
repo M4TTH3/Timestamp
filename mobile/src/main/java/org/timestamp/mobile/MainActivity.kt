@@ -141,15 +141,27 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Screen.Events.name) {
                         EventsScreen(false)
-                        NavBar(navController = navController)
+                        NavBar(navController = navController, currentScreen = "Events")
                     }
                     composable(Screen.Calendar.name) {
                         CalendarScreen()
-                        NavBar(navController = navController)
+                        NavBar(navController = navController, currentScreen = "Calendar")
                     }
                     composable(Screen.Settings.name) {
-                        SettingsScreen()
-                        NavBar(navController = navController)
+                        SettingsScreen(
+                            currentUser = auth.currentUser,
+                            onSignOutClick = {
+                                auth.signOut()
+                                scope.launch {
+                                    credentialManager.clearCredentialState(
+                                        ClearCredentialStateRequest()
+                                    )
+                                }
+                                navController.popBackStack()
+                                navController.navigate(Screen.Login.name)
+                            }
+                        )
+                        NavBar(navController = navController, currentScreen = "Settings")
                     }
                 }
             }
@@ -157,7 +169,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun NavBar(navController: NavController) {
+    fun NavBar(navController: NavController, currentScreen : String) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -181,7 +193,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Icon(painter = painterResource(id = R.drawable.home), contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = Color.Unspecified)
+                            tint = if (currentScreen == "Events" ) Color.Black else Color.Unspecified)
                     }
                     IconButton(onClick = {
                         navController.navigate(Screen.Calendar.name)
@@ -191,7 +203,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Icon(painter = painterResource(id = R.drawable.calendar), contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = Color.Unspecified)
+                            tint = if (currentScreen == "Calendar" ) Color.Black else Color.Unspecified)
                     }
                     IconButton(onClick = {
                         navController.navigate(Screen.Settings.name)
@@ -201,7 +213,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Icon(painter = painterResource(id = R.drawable.settings), contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = Color.Unspecified)
+                            tint = if (currentScreen == "Settings" ) Color.Black else Color.Unspecified)
                     }
                 }
             }
