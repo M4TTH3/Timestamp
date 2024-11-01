@@ -4,11 +4,14 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+# backend/src/main/resources/application.properties reference env variables
+# place .env file in backend directory
+.env
+
 ### Some random thing ###
 kls_database.db
 *.hprof
 google-services.json
-application.properties
 
 ### IntelliJ IDEA ###
 .idea
