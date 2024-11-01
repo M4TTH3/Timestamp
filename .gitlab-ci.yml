@@ -15,8 +15,6 @@ build_backend_docker_image:
   script:
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
-  only:
-    - main
   # Only run this job when changes are made to the backend directory
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
