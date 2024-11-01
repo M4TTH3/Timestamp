@@ -1,0 +1,27 @@
+stages:
+  - build
+
+variables:
+  IMAGE_NAME: git.uwaterloo.ca:5050/mw2auyeu/team102-4/backend
+  IMAGE_TAG: $IMAGE_NAME:latest
+
+build_backend_docker_image:
+  stage: build
+  image: docker:cli
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+  only:
+    - main
+  # Only run this job when changes are made to the backend directory
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      exists:
+        - Dockerfile
+        - .dockerignore
+      changes:
+        - backend/**/*
