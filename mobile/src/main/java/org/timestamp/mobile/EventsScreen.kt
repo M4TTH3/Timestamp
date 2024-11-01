@@ -19,6 +19,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material3.NavigationBar
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -28,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import org.timestamp.mobile.ui.elements.CreateEvent
 
 @Composable
 fun EventsScreen(
@@ -37,6 +40,14 @@ fun EventsScreen(
         Font(R.font.ubuntu_regular),  // Regular
         Font(R.font.ubuntu_bold, FontWeight.Bold)  // Bold
     )
+
+    val createEvents = remember { mutableStateOf(false) }
+    if (createEvents.value) {
+        CreateEvent(
+            onDismissRequest = { createEvents.value = false },
+            onConfirmation = { createEvents.value = false }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -81,7 +92,7 @@ fun EventsScreen(
             }
         }
         IconButton(onClick = {
-            //todo
+            createEvents.value = true
         },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
