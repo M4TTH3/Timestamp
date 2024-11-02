@@ -79,12 +79,12 @@ fun HomeScreen(
                 }
                 Spacer(modifier = Modifier.size(16.dp))
                 Button(
-                    onClick = { onSignOutClick() },
+                    onClick = { onContinueClick() },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF2A2B2E)
                     )) {
                     Text(
-                        text = "Sign Out",
+                        text = "Continue",
                         style = textStyle.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
@@ -93,12 +93,12 @@ fun HomeScreen(
                 }
                 Spacer(modifier = Modifier.size(16.dp))
                 Button(
-                    onClick = { onContinueClick() },
+                    onClick = { onSignOutClick() },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF2A2B2E)
                     )) {
                     Text(
-                        text = "Continue",
+                        text = "Sign Out",
                         style = textStyle.copy(
                             fontWeight = FontWeight.SemiBold
                         ),

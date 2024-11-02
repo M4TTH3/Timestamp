@@ -14,7 +14,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import org.timestamp.mobile.ui.theme.bittersweet
+import org.timestamp.mobile.ui.theme.Colors
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,8 +41,8 @@ fun DatePickerDialog(
             },
                 colors = ButtonColors(
                     containerColor = Color.Transparent,
-                    contentColor = bittersweet,
-                    disabledContentColor = bittersweet,
+                    contentColor = Colors.Bittersweet,
+                    disabledContentColor = Colors.Bittersweet,
                     disabledContainerColor = Color.Transparent
                 )
             ) {
@@ -54,8 +54,8 @@ fun DatePickerDialog(
                 onClick = onDismiss,
                 colors = ButtonColors(
                     containerColor = Color.Transparent,
-                    contentColor = bittersweet,
-                    disabledContentColor = bittersweet,
+                    contentColor = Colors.Bittersweet,
+                    disabledContentColor = Colors.Bittersweet,
                     disabledContainerColor = Color.Transparent
                 )
             ) {
