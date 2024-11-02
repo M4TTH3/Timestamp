@@ -12,7 +12,7 @@ java {
 }
 
 group = "org.timestamp"
-version = "1.1.0"
+version = "1.2.0"
 
 dependencies {
     implementation(libs.spring.boot.starter.web)
