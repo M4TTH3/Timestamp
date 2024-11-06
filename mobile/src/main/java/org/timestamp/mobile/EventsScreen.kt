@@ -62,7 +62,8 @@ fun EventsScreen(
                 .offset(y=24.dp)
                 .size(48.dp)
             ) {
-            Icon(painter = painterResource(id = R.drawable.notification_bell), contentDescription = null,
+            Icon(painter = painterResource(id = R.drawable.notification_bell),
+                contentDescription = "Notification Bell",
                 modifier = Modifier.size(32.dp),
                 tint = Color.Unspecified)
         }
@@ -100,7 +101,8 @@ fun EventsScreen(
                 .offset(y=(-50).dp)
                 .size(54.dp)
         ) {
-            Icon(painter = painterResource(id = R.drawable.plus_button), contentDescription = null,
+            Icon(painter = painterResource(id = R.drawable.plus_button),
+                contentDescription = "Add Event Button",
                 modifier = Modifier.size(54.dp),
                 tint = Color.Unspecified)
         }

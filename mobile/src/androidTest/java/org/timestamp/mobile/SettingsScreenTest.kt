@@ -1,6 +1,8 @@
 package org.timestamp.mobile
 
+import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -12,14 +14,14 @@ import org.junit.runner.RunWith
 // Unit tests for the Settings screen
 @RunWith(AndroidJUnit4::class)
 class SettingsScreenTest {
-    @get:Rule
-    val composeTestRule = createComposeRule()
+    @JvmField @Rule
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     private lateinit var mockFirebaseUser: FirebaseUser
 
     @Test
     fun testSettingsScreenRenders() {
-        composeTestRule.setContent {
+        composeTestRule.activity.setContent {
             SettingsScreen(currentUser = null, onSignOutClick = {})
         }
 
