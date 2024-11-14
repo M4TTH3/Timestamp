@@ -31,7 +31,6 @@ import java.util.Calendar
 fun TimePickerDialog(
     onConfirm: (hour: Int, minute: Int) -> Unit,
     onDismiss: () -> Unit,
-    isToday: Boolean
 ) {
     val currentTime = Calendar.getInstance()
 
@@ -70,23 +69,8 @@ fun TimePickerDialog(
                     }
                     Spacer(modifier = Modifier.width(24.dp))
                     Button(onClick = {
-                        if (isToday) {
-                            val selectedHour = timePickerState.hour
-                            val selectedMinute = timePickerState.minute
-
-                            if (selectedHour < currentTime.get(Calendar.HOUR_OF_DAY) ||
-                                    (selectedHour == currentTime.get(Calendar.HOUR_OF_DAY) && selectedMinute < currentTime.get(Calendar.MINUTE)))
-                            {
-                                // maybe show error idk
-                                onDismiss()
-                            } else {
-                                onConfirm(timePickerState.hour, timePickerState.minute)
-                                onDismiss()
-                            }
-                        } else {
-                            onConfirm(timePickerState.hour, timePickerState.minute)
-                            onDismiss()
-                        }
+                        onConfirm(timePickerState.hour, timePickerState.minute)
+                        onDismiss()
                     }) {
                         Text(
                             text = "OK",

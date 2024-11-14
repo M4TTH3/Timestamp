@@ -66,12 +66,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.timestamp.mobile.ui.elements.EventData
 import androidx.credentials.CredentialManager as CredentialManager
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import java.io.IOException
 
 import java.net.HttpURLConnection
 import java.net.URL
+import java.time.LocalDateTime
 
 enum class Screen {
     Login,
@@ -91,6 +93,43 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Example events for reference, remove later
+        eventList.add(
+            EventData(
+                name = "Meeting with Chengnian",
+                date = LocalDateTime.of(2024, 10, 5, 14, 30),
+                latitude = 38.8951,
+                longitude = -77.0364,
+                location = "Davis Centre",
+                address = "200 University Ave. W",
+                distance = 8.0,
+                estTravel = 20)
+        )
+        eventList.add(
+            EventData(
+                name = "CS346 Class",
+                date = LocalDateTime.of(2024, 10, 5, 17, 30),
+                latitude = 38.8951,
+                longitude = -77.0364,
+                location = "Mathematics and Computer Building",
+                address = "200 University Ave",
+                distance = 2.0,
+                estTravel = 20
+            )
+        )
+        eventList.add(
+            EventData(
+                name = "Volleyball Comp w/ Matt",
+                date = LocalDateTime.of(2025, 12, 5, 8, 30),
+                latitude = 38.8951,
+                longitude = -77.0364,
+                location = "Columbia Icefield Centre",
+                address = "200 Columbia St W",
+                distance = 3.0,
+                estTravel = 25
+            )
+        )
 
         val activityContext = this as Context
         val credentialManager = CredentialManager.create(this)

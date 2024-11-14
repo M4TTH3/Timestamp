@@ -27,6 +27,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material3.NavigationBar
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.input.pointer.motionEventSpy
@@ -42,22 +43,22 @@ import androidx.navigation.NavHostController
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.Event
 import org.timestamp.mobile.ui.elements.EventData
+import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.LocalDateTime
+
+val eventList: MutableList<EventData> = mutableStateListOf()
 
 @Composable
 fun EventsScreen(
     hasEvents: Boolean
 ) {
-    val ubuntuFontFamily = FontFamily(
-        Font(R.font.ubuntu_regular),  // Regular
-        Font(R.font.ubuntu_bold, FontWeight.Bold)  // Bold
-    )
-
     val createEvents = remember { mutableStateOf(false) }
     if (createEvents.value) {
         CreateEvent(
             onDismissRequest = { createEvents.value = false },
-            onConfirmation = { createEvents.value = false }
+            onConfirmation = {
+                createEvents.value = false
+            }
         )
     }
 
@@ -118,41 +119,11 @@ fun EventsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    item {
-                        Event(EventData(
-                            name = "Meeting with Chengnian",
-                            date = LocalDateTime.of(2024, 10, 5, 14, 30),
-                            latitude = 38.8951,
-                            longitude = -77.0364,
-                            location = "Davis Centre",
-                            address = "200 University Ave. W",
-                            distance = 8,
-                            estTravel = 20
-                        ))
-                    }
-                    item {
-                        Event(EventData(
-                            name = "CS346 Class",
-                            date = LocalDateTime.of(2024, 10, 5, 14, 30),
-                            latitude = 38.8951,
-                            longitude = -77.0364,
-                            location = "Mathematics and Computer Building",
-                            address = "200 University Ave",
-                            distance = 8,
-                            estTravel = 20
-                        ))
-                    }
-                    item {
-                        Event(EventData(
-                            name = "Volleyball Competitive",
-                            date = LocalDateTime.of(2024, 10, 5, 14, 30),
-                            latitude = 38.8951,
-                            longitude = -77.0364,
-                            location = "Columbia Icefield Centre",
-                            address = "200 Columbia St W",
-                            distance = 3,
-                            estTravel = 25
-                        ))
+                    eventList.sortBy { it.date }
+                    for (event in eventList) {
+                        item {
+                            Event(event)
+                        }
                     }
                     item {
                         Spacer(modifier = Modifier.height(120.dp))

@@ -50,7 +50,7 @@ data class EventData(
     var longitude: Double,
     var location: String,
     var address: String,
-    var distance: Int,
+    var distance: Double,
     var estTravel: Int
 )
 
@@ -140,7 +140,7 @@ fun Event(data: EventData) {
                 fontSize = 14.sp
             )
             Spacer(modifier = Modifier.weight(1f))
-            val formatter = DateTimeFormatter.ofPattern("H:mm")
+            val formatter = DateTimeFormatter.ofPattern("H:mm a")
             val formattedTime: String = data.date.format(formatter)
             Text(
                 text = formattedTime,
