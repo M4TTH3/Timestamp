@@ -12,6 +12,9 @@ build_backend_docker_image:
     - docker:dind
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+    # Create the firebase admin key file
+    - echo "$FIREBASE_ADMIN_KEY_BASE64" | base64 -d > backend/src/main/resources/firebase-admin-key.json
   script:
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG

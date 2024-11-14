@@ -19,7 +19,7 @@ class EventService(private val db: TimestampEventRepository, private val userDb:
     fun getEventById(firebaseUser: FirebaseUser, id: Long): Event? {
         val user = userDb.findById(firebaseUser.uid).orElseThrow()
         val event = db.findByIdOrNull(id)
-        return if (user.id in (event?.users?.map { it.id } ?: emptyList())) event else null
+        return if (event?.users?.map { it.id }?.contains(user.id) == true) event else null
     }
 
     fun getEventById(id: Long): Event? = db.findByIdOrNull(id)

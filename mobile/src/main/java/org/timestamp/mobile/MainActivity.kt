@@ -52,11 +52,22 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.client.request.post
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import org.timestamp.mobile.ui.elements.EventData
 import androidx.credentials.CredentialManager as CredentialManager
 import org.timestamp.mobile.ui.theme.TimestampTheme
@@ -73,6 +84,16 @@ enum class Screen {
     Events,
     Calendar,
     Settings
+}
+
+val ktorClient = HttpClient(CIO) {
+    install(ContentNegotiation) {
+        json(Json {
+            prettyPrint = true
+            isLenient = true
+            ignoreUnknownKeys = true
+        })
+    }
 }
 
 class MainActivity : ComponentActivity() {
@@ -392,14 +413,37 @@ class MainActivity : ComponentActivity() {
             auth.signInWithCredential(firebaseCredential).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.i("Sign In", "Successfully logged in")
-                    auth.currentUser?.getIdToken(false)?.addOnSuccessListener {
-                        result -> Log.i("ID Token", "Firebase ID Token: ${result.token}")
-                    }
+                    pingBackend()
                     navController.navigate(Screen.Home.name)
                 }
             }
         } catch (e: GoogleIdTokenParsingException) {
             Log.e("Sign In", "Received an invalid google id token response", e)
+        }
+    }
+
+    /**
+     * This will ping a request to the backend to verify the token.
+     * It will also create the user if required.
+     */
+    private fun pingBackend() {
+        auth.currentUser?.getIdToken(false)?.addOnSuccessListener { result ->
+            Log.i("ID TOKEN", "ID TOKEN: ${result.token}")
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val endpoint = "${getString(R.string.backend_url)}/users/me"
+                    Log.d("Verifying ID", endpoint)
+                    val res = ktorClient.post(endpoint) {
+                        headers {
+                            append("Authorization", "Bearer ${result.token}")
+                        }
+                    }
+                    if (res.status == HttpStatusCode.OK) Log.i("Verifying ID", res.bodyAsText())
+                    else Log.e("Verifying ID", res.bodyAsText())
+                } catch(e: Exception) {
+                    Log.e("Ping Backend Error", e.toString())
+                }
+            }
         }
     }
 }

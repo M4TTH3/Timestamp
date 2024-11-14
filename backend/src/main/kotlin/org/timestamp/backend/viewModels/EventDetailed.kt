@@ -48,15 +48,16 @@ data class EventDetailed(
             val webClient = WebClient.builder().baseUrl("https://maps.mattheway.com").build()
             val users = mutableListOf<EventDetailedUser>()
             for (user in event.users) {
-                val travelData = webClient.get()
-                    .uri("/route?point=${event.latitude},${event.longitude}&point=${user.latitude},${user.longitude}&profile=$profile")
-                    .retrieve()
-                    .bodyToMono(String::class.java)
-                    .awaitSingle()
-
+                val endpoint = "/route?point=${event.latitude},${event.longitude}&point=${user.latitude},${user.longitude}&profile=$profile"
                 var timeEst = 0L
                 try {
-                    val routeResponse = Json.decodeFromString<RouteResponse>(travelData)
+                    val travelData = webClient.get()
+                        .uri(endpoint)
+                        .retrieve()
+                        .bodyToMono(String::class.java)
+                        .awaitSingle()
+                    val json = Json { ignoreUnknownKeys = true }
+                    val routeResponse = json.decodeFromString<RouteResponse>(travelData)
                     timeEst = routeResponse.paths[0].time
                 } catch (e: Exception) {
                     println("Error: $e")
