@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,7 +32,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -41,9 +39,23 @@ import coil.request.ImageRequest
 import coil.size.Scale
 import org.timestamp.mobile.R
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+
+data class EventData(
+    var name: String,
+    var date: LocalDateTime,
+    var latitude: Double,
+    var longitude: Double,
+    var location: String,
+    var address: String,
+    var distance: Int,
+    var estTravel: Int
+)
 
 @Composable
-fun Event() {
+fun Event(data: EventData) {
     var isExpanded by remember { mutableStateOf(false) }
 
     // Define the box content
@@ -65,7 +77,7 @@ fun Event() {
                 .fillMaxWidth()
         ) {
             Text(
-                text = "My Event",
+                text = data.name,
                 fontSize = 24.sp,
                 fontFamily = ubuntuFontFamily,
                 fontWeight = FontWeight.Bold,
@@ -82,7 +94,7 @@ fun Event() {
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "My Location",
+            text = data.location,
             fontSize = 16.sp,
             fontFamily = ubuntuFontFamily,
             style = TextStyle(lineHeight = 14.sp),
@@ -90,7 +102,7 @@ fun Event() {
                 .fillMaxWidth()
         )
         Text(
-            text = "123 Address Rd, City, PV",
+            text = data.address,
             fontSize = 12.sp,
             fontFamily = ubuntuFontFamily,
             color = Color.LightGray,
@@ -110,7 +122,7 @@ fun Event() {
                     .size(18.dp))
             Spacer(modifier = Modifier.width(2.dp))
             Text(
-                text = "nkm",
+                text = data.distance.toString() + "km",
                 fontFamily = ubuntuFontFamily,
                 fontSize = 14.sp
             )
@@ -123,13 +135,15 @@ fun Event() {
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "xmin",
+                text = data.estTravel.toString() + "min",
                 fontFamily = ubuntuFontFamily,
                 fontSize = 14.sp
             )
             Spacer(modifier = Modifier.weight(1f))
+            val formatter = DateTimeFormatter.ofPattern("H:mm")
+            val formattedTime: String = data.date.format(formatter)
             Text(
-                text = "0:00 AM",
+                text = formattedTime,
                 fontFamily = ubuntuFontFamily,
                 fontSize = 14.sp,
                 modifier = Modifier
@@ -169,7 +183,8 @@ fun Event() {
         Icon(
             painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
             contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier
+                .size(24.dp)
                 .align(Alignment.CenterHorizontally)
         )
     }

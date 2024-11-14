@@ -41,6 +41,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.Event
+import org.timestamp.mobile.ui.elements.EventData
+import java.time.LocalDateTime
 
 @Composable
 fun EventsScreen(
@@ -117,16 +119,40 @@ fun EventsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
-                        Event()
+                        Event(EventData(
+                            name = "Meeting with Chengnian",
+                            date = LocalDateTime.of(2024, 10, 5, 14, 30),
+                            latitude = 38.8951,
+                            longitude = -77.0364,
+                            location = "Davis Centre",
+                            address = "200 University Ave. W",
+                            distance = 8,
+                            estTravel = 20
+                        ))
                     }
                     item {
-                        Event()
+                        Event(EventData(
+                            name = "CS346 Class",
+                            date = LocalDateTime.of(2024, 10, 5, 14, 30),
+                            latitude = 38.8951,
+                            longitude = -77.0364,
+                            location = "Mathematics and Computer Building",
+                            address = "200 University Ave",
+                            distance = 8,
+                            estTravel = 20
+                        ))
                     }
                     item {
-                        Event()
-                    }
-                    item {
-                        Event()
+                        Event(EventData(
+                            name = "Volleyball Competitive",
+                            date = LocalDateTime.of(2024, 10, 5, 14, 30),
+                            latitude = 38.8951,
+                            longitude = -77.0364,
+                            location = "Columbia Icefield Centre",
+                            address = "200 Columbia St W",
+                            distance = 3,
+                            estTravel = 25
+                        ))
                     }
                     item {
                         Spacer(modifier = Modifier.height(120.dp))
