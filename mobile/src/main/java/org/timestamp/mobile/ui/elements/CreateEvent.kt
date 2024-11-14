@@ -55,7 +55,10 @@ import coil.request.ImageResult
 import coil.size.Scale
 import kotlinx.coroutines.selects.select
 import org.timestamp.mobile.R
+import org.timestamp.mobile.eventList
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.sin
@@ -79,6 +82,7 @@ fun CreateEvent(
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
     val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+    val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
     if (eventDate) {
         DatePickerDialog(
             onDateSelected = { dateMillis ->
@@ -94,7 +98,6 @@ fun CreateEvent(
                 selectedTime = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
             },
             onDismiss = { eventTime = false },
-            isToday = isToday
         )
     }
 
@@ -206,6 +209,7 @@ fun CreateEvent(
                        readOnly = true,
                        colors = TextFieldDefaults.textFieldColors(
                            backgroundColor = Color.Transparent,
+                           textColor = Color.Black,
                        )
                    )
                }
@@ -228,7 +232,7 @@ fun CreateEvent(
                    horizontalArrangement = Arrangement.Center,
                ) {
                    Button(
-                       onClick = { onConfirmation() },
+                       onClick = { onDismissRequest() },
                        colors = ButtonColors(
                            containerColor = Color(0xFF2A2B2E),
                            contentColor = Color(0xFFFFFFFF),
@@ -251,7 +255,41 @@ fun CreateEvent(
                    }
                    Spacer(modifier = Modifier.width(32.dp))
                    Button(
-                       onClick = { onConfirmation() },
+                       onClick = {
+                           if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
+                               val date = dateFormatter.parse(selectedDate)
+                               val parsedTime = timeFormatter.parse(selectedTime)
+
+                               if (date != null && parsedTime != null) {
+                                   val calendar = Calendar.getInstance().apply {
+                                       time = date
+                                   }
+                                   val timeCalendar = Calendar.getInstance().apply {
+                                       time = parsedTime
+                                   }
+
+                                   val selectedDateTime = LocalDateTime.of(
+                                       calendar.get(Calendar.YEAR),
+                                       calendar.get(Calendar.MONTH) + 1, // Months are zero-based
+                                       calendar.get(Calendar.DAY_OF_MONTH),
+                                       timeCalendar.get(Calendar.HOUR_OF_DAY),
+                                       timeCalendar.get(Calendar.MINUTE)
+                                   )
+
+                                   eventList.add(EventData(
+                                       name = eventName,
+                                       date = selectedDateTime,
+                                       latitude = 0.0,
+                                       longitude = 0.0,
+                                       location = "Dummy Location",
+                                       address = "Dummy Address",
+                                       distance = 2.0,
+                                       estTravel = 2
+                                   ))
+                               }
+                           }
+                           onConfirmation()
+                       },
                        colors = ButtonColors(
                            containerColor = Color(0xFFFF6F61),
                            contentColor = Color(0xFFFFFFFF),
