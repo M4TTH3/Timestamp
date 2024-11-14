@@ -14,6 +14,7 @@ data class Event(
     var creator: String = "",
     var name: String,
     var description: String,
+    var address: String = "",
 
     // The location of the event
     var latitude: Double,
@@ -54,6 +55,7 @@ data class Event(
         if (latitude != other.latitude) return false
         if (longitude != other.longitude) return false
         if (arrival != other.arrival) return false
+        if (address != other.address) return false
 
         return true
     }
@@ -66,6 +68,7 @@ data class Event(
         result = 31 * result + latitude.hashCode()
         result = 31 * result + longitude.hashCode()
         result = 31 * result + arrival.hashCode()
+        result = 31 * result + address.hashCode()
         return result
     }
 }

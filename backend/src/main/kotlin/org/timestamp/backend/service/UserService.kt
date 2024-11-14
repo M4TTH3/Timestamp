@@ -2,6 +2,7 @@ package org.timestamp.backend.service
 
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.User
 import org.timestamp.backend.repository.TimestampUserRepository
 
@@ -9,13 +10,26 @@ import org.timestamp.backend.repository.TimestampUserRepository
 class UserService(private val db: TimestampUserRepository) {
     fun getUserById(id: String): User? = db.findByIdOrNull(id)
 
+    suspend fun getDetailedUser(firebaseUser: FirebaseUser) {
+
+    }
+
+    /**
+     * Create a user from a FirebaseUser object if it does not exist, otherwise return
+     * the existing user.
+     */
+    fun createUser(principal: FirebaseUser): User {
+        val user = User(principal)
+        return createUser(user)
+    }
+
     fun createUser(user: User): User {
         val existingUser: User? = db.findByIdOrNull(user.id)
         return existingUser ?: db.save(user)
     }
 
-    fun updateLocation(id: String, latitude: Double, longitude: Double): User {
-        val user: User = db.findByIdOrNull(id) ?: throw IllegalArgumentException("User not found")
+    fun updateLocation(firebaseUser: FirebaseUser, latitude: Double, longitude: Double): User {
+        val user: User = db.findById(firebaseUser.uid).orElseThrow()
         user.latitude = latitude
         user.longitude = longitude
         return db.save(user)
