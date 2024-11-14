@@ -12,6 +12,7 @@ build/
 kls_database.db
 *.hprof
 google-services.json
+firebase-admin-key.json
 
 ### IntelliJ IDEA ###
 .idea

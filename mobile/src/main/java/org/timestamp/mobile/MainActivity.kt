@@ -4,24 +4,23 @@ package org.timestamp.mobile
  * https://stackoverflow.com/questions/72563673/google-authentication-with-firebase-and-jetpack-compose
  */
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.content.IntentSender
 import androidx.activity.compose.setContent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Space
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
@@ -31,7 +30,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.credentials.ClearCredentialStateRequest
@@ -43,18 +41,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.google.android.gms.auth.GoogleAuthException
-import com.google.android.gms.auth.GoogleAuthUtil
-import com.google.android.gms.auth.UserRecoverableAuthException
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.Scopes
-import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.auth.api.identity.AuthorizationRequest
+import com.google.android.gms.auth.api.identity.AuthorizationResult
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.common.api.Scope
-import com.google.android.gms.tasks.Task
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -62,18 +52,20 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import org.timestamp.mobile.ui.elements.EventData
 import androidx.credentials.CredentialManager as CredentialManager
 import org.timestamp.mobile.ui.theme.TimestampTheme
-import java.io.IOException
-
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDateTime
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 enum class Screen {
     Login,
@@ -83,12 +75,37 @@ enum class Screen {
     Settings
 }
 
-private const val RC_SIGN_IN = 9001
-private const val RC_AUTHORIZATION = 9002
-
 class MainActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
+
+    // Scopes we want access to (Google API endpoints we want permission for)
+    private val googleScopes: List<Scope> = listOf(
+        Scope("https://www.googleapis.com/auth/calendar")
+    )
+
+    // Used to pause state of google API authorization if we rely on user input
+    private var googleContinuation: (Continuation<AuthorizationResult>)? = null
+
+    // Acquire a new access token, and run any function necessary after
+    private val reqAuthIntentLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        Log.i("GoogleAPI Authorization", "Result Launcher")
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data: Intent? = result.data
+            val authorizationResult = Identity
+                .getAuthorizationClient(this)
+                .getAuthorizationResultFromIntent(data)
+
+            Log.i("GoogleAPI Authorization", authorizationResult.accessToken!!)
+            googleContinuation?.resume(authorizationResult)
+        } else {
+            googleContinuation?.resumeWithException(Exception("Authorization canceled"))
+        }
+
+        googleContinuation = null // Safety precaution
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -135,60 +152,15 @@ class MainActivity : ComponentActivity() {
         val credentialManager = CredentialManager.create(this)
         auth = Firebase.auth
 
-        val apiAvailability = GoogleApiAvailability.getInstance()
-        val resultCode = apiAvailability.isGooglePlayServicesAvailable(activityContext)
-        if (resultCode != ConnectionResult.SUCCESS) {
-            Log.e("Sign In", "Google Play Services is not available")
-        }
-
         // Creating a google sign in request
         val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption
             .Builder(getString(R.string.web_client_id))
             .build()
 
-        // Google sign-in options
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .requestIdToken(getString(R.string.web_client_id))
-            .requestScopes(
-                Scope(Scopes.PROFILE),
-                Scope("https://www.googleapis.com/auth/calendar")
-                // add more as needed
-            )
-            .build()
-
-        val googleSignInClient = GoogleSignIn.getClient(this, gso)
-
         // Create a request to get credentials
         val request: GetCredentialRequest = GetCredentialRequest.Builder()
             .addCredentialOption(signInWithGoogleOption)
             .build()
-
-        // check if user is already signed in and retrieve access token
-        if (auth.currentUser != null) {
-            val googleSignInClient = GoogleSignIn.getClient(this, gso)
-            googleSignInClient.silentSignIn().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val account = task.result
-                    CoroutineScope(Dispatchers.Main).launch {
-                        val accessToken = getAccessToken(account)
-                        if (accessToken != null) {
-                            Log.d("AccessToken", "Access Token (Already logged-in): $accessToken")
-                            val calendarData = fetchCalendarEvents(accessToken)
-                            if (calendarData != null) {
-                                Log.d("CalendarData", "Fetched events: $calendarData")
-                            } else {
-                                Log.e("CalendarData", "Failed to fetch calendar events")
-                            }
-                        } else {
-                            Log.e("AccessToken", "Failed to retrieve access token on start")
-                        }
-                    }
-                } else {
-                    Log.e("SilentSignIn", "Silent sign-in failed", task.exception)
-                }
-            }
-        }
 
         setContent {
             TimestampTheme {
@@ -199,13 +171,10 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     navController = navController,
                     startDestination = startDestination
-                    //startDestination = Screen.Events.name
                 ) {
                     composable(Screen.Login.name) {
                         LoginScreen(
                             onSignInClick = {
-                                val signInIntent = googleSignInClient.signInIntent
-                                startActivityForResult(signInIntent, RC_SIGN_IN)
                                 scope.launch {
                                     try {
                                         val result = credentialManager.getCredential(
@@ -320,66 +289,67 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithIDToken(account.idToken!!, account)
-            } catch (e: ApiException) {
-                Log.w("SignIn", "Sign-in failed: " + e.statusCode)
-            }
-        }
-    }
-
-    private fun firebaseAuthWithIDToken(idToken: String, account: GoogleSignInAccount) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    // fetch access token
-                    CoroutineScope(Dispatchers.Main).launch {
-                        val accessToken = getAccessToken(account)
-                        if (accessToken != null) {
-                            Log.d("AccessToken", "Access Token: $accessToken")
-
-                            val calendarData = fetchCalendarEvents(accessToken)
-                            if (calendarData != null) {
-                                Log.d("CalendarData", "Fetched events: $calendarData")
-                            } else {
-                                Log.e("CalendarData", "Failed to fetch calendar events")
-                            }
-
-                        } else {
-                            Log.e("AccessToken", "Failed to get access token")
-                        }
-                    }
-                } else {
-                    Log.w("SignIn", "signInWithCredential:failure", task.exception)
-                }
-            }
-    }
-
-    suspend fun getAccessToken(account: GoogleSignInAccount): String? = withContext(Dispatchers.IO) {
+    /**
+     * Return an AuthorizationResult after waiting for the reqAuthIntentLauncher to finish.
+     * That is, the user flow to admit permissions.
+     */
+    private suspend fun waitForAuthIntent(
+        intentSenderRequest: IntentSenderRequest
+    ): AuthorizationResult = suspendCancellableCoroutine { continuation ->
+        // Wait for the user flow to complete and then exec
+        googleContinuation = continuation
         try {
-            val scope = "oauth2:https://www.googleapis.com/auth/calendar"
-            val token = GoogleAuthUtil.getToken(applicationContext, account.account!!, scope)
-            token
-        } catch (e: UserRecoverableAuthException) {
-            e.intent?.let { startActivityForResult(it, RC_AUTHORIZATION) }
-            null
-        } catch (e: GoogleAuthException) {
-            Log.e("AccessToken", "GoogleAuthException: ${e.message}")
-            null
-        } catch (e: IOException) {
-            Log.e("AccessToken", "IOException: ${e.message}")
-            null
+            reqAuthIntentLauncher.launch(intentSenderRequest) // pause here
+        } catch (e: Exception) {
+            continuation.resumeWithException(e)
+        }
+
+        // Cleanup in case
+        continuation.invokeOnCancellation {
+            googleContinuation = null
         }
     }
 
-    suspend fun fetchCalendarEvents(accessToken: String): String? = withContext(Dispatchers.IO) {
+    /**
+     * Authorize Google API scopes, and sets up a user-flow for permissions if required.
+     * Returns an AuthorizationResult which contains the access token.
+     */
+    private suspend fun authorizeGoogleAPI(
+        scopes: List<Scope>
+    ): AuthorizationResult? {
+        try {
+            // Attempt to obtain authorization
+            val authorizationReq = AuthorizationRequest.Builder().setRequestedScopes(scopes).build()
+            var result = Identity.getAuthorizationClient(this).authorize(authorizationReq).await()
+            val pendingIntent = result.pendingIntent // Verify intent
+
+            if (result.hasResolution() && pendingIntent != null) { // Need user-flow permission
+                try {
+                    val intent = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+                    result = waitForAuthIntent(intent)
+                } catch (e: IntentSender.SendIntentException) {
+                    Log.e("GoogleAPI Authorization",
+                        "Couldn't start Authorization UI: ${e.localizedMessage}"
+                    )
+                }
+            } else {
+                Log.i("GoogleAPI Authorization", "Already Granted")
+            }
+
+            return result
+        } catch (e: Exception) {
+            Log.e("GoogleAPI Authorization", "Failed", e)
+        }
+
+        return null
+    }
+
+    /**
+     * Function to get the access token from google for google calendar etc.
+     */
+    suspend fun getGoogleAccessToken() = authorizeGoogleAPI(googleScopes)
+
+    private suspend fun fetchCalendarEvents(accessToken: String): String? = withContext(Dispatchers.IO) {
         try {
             val url = URL("https://www.googleapis.com/calendar/v3/calendars/primary/events")
             val connection = url.openConnection() as HttpURLConnection
@@ -387,7 +357,11 @@ class MainActivity : ComponentActivity() {
             connection.setRequestProperty("Authorization", "Bearer $accessToken")
             val responseCode = connection.responseCode
             return@withContext if (responseCode == HttpURLConnection.HTTP_OK) {
-                connection.inputStream.bufferedReader().use { it.readText() }
+                connection.inputStream.bufferedReader().use { block ->
+                    val text = block.readText()
+                    Log.i("Calendar Text", text)
+                    text
+                }
             } else {
                 Log.e("GoogleCalendar", "Error fetching events: $responseCode")
                 null
@@ -398,6 +372,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Initial user sign in flow. Will also allow for
+     */
     private fun handleSignIn(result: GetCredentialResponse, navController : NavController) {
         val credential = result.credential
 
@@ -406,20 +383,21 @@ class MainActivity : ComponentActivity() {
             Log.e("Sign In", "Wrong token type!")
             return
         }
+
         try {
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
             val firebaseCredential = GoogleAuthProvider
                 .getCredential(googleIdTokenCredential.idToken, null)
 
-            auth.signInWithCredential(firebaseCredential).addOnCompleteListener(
-                { task ->
-                    if (task.isSuccessful) {
-                        Log.i("Sign In", "Successfully logged in")
-                        Log.i("ID Token", "ID Token: " + googleIdTokenCredential.idToken)
-                        navController.navigate(Screen.Home.name)
+            auth.signInWithCredential(firebaseCredential).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.i("Sign In", "Successfully logged in")
+                    auth.currentUser?.getIdToken(false)?.addOnSuccessListener {
+                        result -> Log.i("ID Token", "Firebase ID Token: ${result.token}")
                     }
+                    navController.navigate(Screen.Home.name)
                 }
-            )
+            }
         } catch (e: GoogleIdTokenParsingException) {
             Log.e("Sign In", "Received an invalid google id token response", e)
         }

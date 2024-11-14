@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.ManyToMany
 import jakarta.persistence.Table
+import org.timestamp.backend.config.FirebaseUser
 
 @Entity
 @Table(name = "users", schema = "public")
@@ -13,6 +14,7 @@ data class User(
     val id: String,
     var name: String,
     var email: String,
+    var pfp: String,
 
     // Current location of the user
     var latitude: Double,
@@ -27,6 +29,16 @@ data class User(
         id = "",
         name = "",
         email = "",
+        pfp = "",
+        latitude = 0.0,
+        longitude = 0.0,
+    )
+
+    constructor(firebaseUser: FirebaseUser): this(
+        id = firebaseUser.uid,
+        name = firebaseUser.name,
+        email = firebaseUser.email,
+        pfp = firebaseUser.picture,
         latitude = 0.0,
         longitude = 0.0,
     )
@@ -40,6 +52,7 @@ data class User(
         if (id != other.id) return false
         if (name != other.name) return false
         if (email != other.email) return false
+        if (pfp != other.pfp) return false
         if (latitude != other.latitude) return false
         if (longitude != other.longitude) return false
 
@@ -52,6 +65,7 @@ data class User(
         result = 31 * result + email.hashCode()
         result = 31 * result + latitude.hashCode()
         result = 31 * result + longitude.hashCode()
+        result = 31 * result + pfp.hashCode()
         return result
     }
 

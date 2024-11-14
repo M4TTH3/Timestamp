@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
+    pfp VARCHAR(255) NOT NULL,
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -15,6 +16,7 @@ CREATE TABLE IF NOT EXISTS events (
     creator VARCHAR(255) NOT NULL,  -- FK to users table
     name VARCHAR(255) NOT NULL,
     description TEXT,  -- Description of the event
+    address VARCHAR(255) NOT NULL,  -- Event location address
     latitude DOUBLE PRECISION NOT NULL,  -- Event location latitude
     longitude DOUBLE PRECISION NOT NULL, -- Event location longitude
     arrival TIMESTAMP NOT NULL,  -- Time when the event starts

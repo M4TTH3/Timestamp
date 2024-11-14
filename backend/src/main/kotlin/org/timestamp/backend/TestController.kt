@@ -1,12 +1,16 @@
 package org.timestamp.backend
 
+import com.google.firebase.auth.FirebaseAuth
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
 import org.timestamp.backend.service.EventService
@@ -43,7 +47,7 @@ class TestController(
         return ResponseEntity.ok(u.events.toList())
     }
 
-    @PostMapping("events")
+    @PostMapping("/events")
     fun createEvent(@RequestBody event: Event): ResponseEntity<Event> {
         val e = eventService.createEvent(event.creator, event)
         return ResponseEntity.created(URI("/test/events/${e.id}")).body(e)
@@ -60,5 +64,10 @@ class TestController(
     fun getEvents(): ResponseEntity<List<Event>> {
         val events = eventService.getAllEvents()
         return ResponseEntity.ok(events)
+    }
+
+    @GetMapping("/token")
+    fun verifyToken(@AuthenticationPrincipal principal: FirebaseUser): ResponseEntity<String> {
+        return ResponseEntity.ok("Token is valid: ${principal.uid}, ${principal.email}")
     }
 }
