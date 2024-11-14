@@ -1,7 +1,10 @@
 package org.timestamp.mobile
 
 import android.widget.ImageButton
+import androidx.annotation.FloatRange
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,16 +14,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -31,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import org.timestamp.mobile.ui.elements.CreateEvent
+import org.timestamp.mobile.ui.elements.Event
 
 @Composable
 fun EventsScreen(
@@ -67,29 +77,61 @@ fun EventsScreen(
                 modifier = Modifier.size(32.dp),
                 tint = Color.Unspecified)
         }
-        Text(text = "Upcoming Events...",
-            color = Color(0xFF000000),
-            fontFamily = ubuntuFontFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 28.sp,
-            modifier = Modifier
-                .offset(x = 20.dp, y = 70.dp)
-        )
         Column(
             modifier = Modifier
                 .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
+            Text(
+                text = "Upcoming Events...",
+                color = Color(0xFF000000),
+                fontFamily = ubuntuFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 28.sp,
+                modifier = Modifier
+                    .offset(x = 20.dp, y = 70.dp)
+            )
             if (!hasEvents) {
-                Text(text = "Add an\nEvent!",
-                    color = Color(0xFFE5E6EA),
-                    fontFamily = ubuntuFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 80.sp,
-                    textAlign = TextAlign.Start,
-                    lineHeight = 80.sp
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Add an\nEvent!",
+                        color = Color(0xFFE5E6EA),
+                        fontFamily = ubuntuFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 80.sp,
+                        textAlign = TextAlign.Start,
+                        lineHeight = 80.sp
+                    )
+                }
+            } else {
+                Spacer(modifier = Modifier.height(92.dp))
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .animateContentSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        Event()
+                    }
+                    item {
+                        Event()
+                    }
+                    item {
+                        Event()
+                    }
+                    item {
+                        Event()
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(120.dp))
+                    }
+                }
             }
         }
         IconButton(onClick = {
@@ -108,5 +150,3 @@ fun EventsScreen(
         }
     }
 }
-
-

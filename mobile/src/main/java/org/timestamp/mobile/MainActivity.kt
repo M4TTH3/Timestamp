@@ -200,7 +200,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(Screen.Events.name) {
-                        EventsScreen(false)
+                        EventsScreen(true)
                         NavBar(navController = navController, currentScreen = "Events")
                     }
                     composable(Screen.Calendar.name) {
