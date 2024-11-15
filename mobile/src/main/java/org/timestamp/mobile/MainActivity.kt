@@ -56,10 +56,14 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,8 +71,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
-import org.timestamp.mobile.ui.elements.EventData
+import org.timestamp.backend.model.Event
+import org.timestamp.backend.model.EventDTO
+import org.timestamp.backend.model.toDTO
+import org.timestamp.backend.viewModels.EventDetailed
 import androidx.credentials.CredentialManager as CredentialManager
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import java.net.HttpURLConnection
@@ -132,43 +140,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Example events for reference, remove later
-        eventList.add(
-            EventData(
-                name = "Meeting with Chengnian",
-                date = LocalDateTime.of(2024, 10, 5, 14, 30),
-                latitude = 38.8951,
-                longitude = -77.0364,
-                location = "Davis Centre",
-                address = "200 University Ave. W",
-                distance = 8.0,
-                estTravel = 20)
-        )
-        eventList.add(
-            EventData(
-                name = "CS346 Class",
-                date = LocalDateTime.of(2024, 10, 5, 17, 30),
-                latitude = 38.8951,
-                longitude = -77.0364,
-                location = "Mathematics and Computer Building",
-                address = "200 University Ave",
-                distance = 2.0,
-                estTravel = 20
-            )
-        )
-        eventList.add(
-            EventData(
-                name = "Volleyball Comp w/ Matt",
-                date = LocalDateTime.of(2025, 12, 5, 8, 30),
-                latitude = 38.8951,
-                longitude = -77.0364,
-                location = "Columbia Icefield Centre",
-                address = "200 Columbia St W",
-                distance = 3.0,
-                estTravel = 25
-            )
-        )
-
         val activityContext = this as Context
         val credentialManager = CredentialManager.create(this)
         auth = Firebase.auth
@@ -229,7 +200,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(Screen.Events.name) {
-                        EventsScreen(true)
+                        EventsScreen(auth)
                         NavBar(navController = navController, currentScreen = "Events")
                     }
                     composable(Screen.Calendar.name) {
@@ -414,6 +385,7 @@ class MainActivity : ComponentActivity() {
                 if (task.isSuccessful) {
                     Log.i("Sign In", "Successfully logged in")
                     pingBackend()
+                    pullBackendEvents()
                     navController.navigate(Screen.Home.name)
                 }
             }
@@ -446,4 +418,37 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    // Assuming that pingBackend was a success and the user has successfully logged in
+    private fun pullBackendEvents() {
+        try {
+            CoroutineScope(Dispatchers.IO).launch {
+                val token = auth.currentUser?.getIdToken(false)?.await()?.token
+                val endpoint = "${getString(R.string.backend_url)}/events"
+                val res = ktorClient.get(endpoint) {
+                    headers {
+                        append("Authorization", "Bearer $token")
+                    }
+                }
+
+                if (res.status == HttpStatusCode.OK) {
+                    val eventsJson = res.bodyAsText()
+                    val events = Json.decodeFromString<List<EventDetailed>>(eventsJson)
+
+                    withContext(Dispatchers.Main) {
+                        eventList.clear()
+                        for (event in events) {
+                            eventList.add(event)
+                        }
+                        eventList.sortBy { it.arrival }
+                    }
+                } else {
+                    Log.println(Log.ERROR, "Backend Pull Error", res.status.toString())
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Backend Pull Error", e.toString())
+        }
+    }
+
 }

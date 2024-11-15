@@ -14,10 +14,14 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,31 +36,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Scale
+import com.google.firebase.auth.FirebaseAuth
+import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
+import org.timestamp.mobile.eventList
+import org.timestamp.mobile.pushBackendEvents
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-
-data class EventData(
-    var name: String,
-    var date: LocalDateTime,
-    var latitude: Double,
-    var longitude: Double,
-    var location: String,
-    var address: String,
-    var distance: Double,
-    var estTravel: Int
-)
-
 @Composable
-fun Event(data: EventData) {
+fun EventBox(data: EventDetailed, auth: FirebaseAuth) {
     var isExpanded by remember { mutableStateOf(false) }
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Define the box content
     Column(
@@ -83,6 +81,7 @@ fun Event(data: EventData) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(vertical = 12.dp)
+                    .widthIn(max = 285.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(painter = painterResource(id = R.drawable.user_icon),
@@ -91,10 +90,26 @@ fun Event(data: EventData) {
                 modifier = Modifier
                     .size(24.dp)
                     .offset(y = 8.dp))
+            IconButton(
+                onClick = {
+                    isDropdownExpanded = !isDropdownExpanded
+                },
+                modifier = Modifier
+                    .size(24.dp)
+                    .offset(y = 8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.dots_icon),
+                    contentDescription = "dots icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(24.dp)
+                )
+            }
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = data.location,
+            text = data.description,
             fontSize = 16.sp,
             fontFamily = ubuntuFontFamily,
             style = TextStyle(lineHeight = 14.sp),
@@ -122,7 +137,7 @@ fun Event(data: EventData) {
                     .size(18.dp))
             Spacer(modifier = Modifier.width(2.dp))
             Text(
-                text = data.distance.toString() + "km",
+                text = "temp" + "km",
                 fontFamily = ubuntuFontFamily,
                 fontSize = 14.sp
             )
@@ -135,13 +150,13 @@ fun Event(data: EventData) {
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = data.estTravel.toString() + "min",
+                text = "temp" + "min",
                 fontFamily = ubuntuFontFamily,
                 fontSize = 14.sp
             )
             Spacer(modifier = Modifier.weight(1f))
-            val formatter = DateTimeFormatter.ofPattern("H:mm a")
-            val formattedTime: String = data.date.format(formatter)
+            val formatter = DateTimeFormatter.ofPattern("h:mm a")
+            val formattedTime: String = data.arrival.format(formatter)
             Text(
                 text = formattedTime,
                 fontFamily = ubuntuFontFamily,
@@ -154,6 +169,45 @@ fun Event(data: EventData) {
                 tint = Color.Unspecified,
                 modifier = Modifier
                     .size(18.dp))
+        }
+
+        DropdownMenu(
+            expanded = isDropdownExpanded,
+            onDismissRequest = {
+                isDropdownExpanded = false
+            },
+            modifier = Modifier
+                .align(Alignment.End),
+            offset = DpOffset(x = 220.dp, y = (-130).dp)
+        ) {
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Edit",
+                        fontFamily = ubuntuFontFamily,
+                        fontSize = 16.sp
+                    )
+                },
+                onClick = {
+                    /*TODO*/
+                    isDropdownExpanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Remove",
+                        fontFamily = ubuntuFontFamily,
+                        fontSize = 16.sp,
+                        color = Color.Red,
+                    )
+                },
+                onClick = {
+                    eventList.removeIf { it.arrival == data.arrival && it.name == data.name }
+                    pushBackendEvents(context, auth)
+                    isDropdownExpanded = false
+                }
+            )
         }
 
         // Conditionally show extra content when expanded
@@ -180,6 +234,7 @@ fun Event(data: EventData) {
                 .fillMaxWidth()
                 .padding(top = 2.dp)
         )
+
         Icon(
             painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
             contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",

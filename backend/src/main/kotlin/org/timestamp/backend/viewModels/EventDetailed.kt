@@ -1,14 +1,13 @@
 package org.timestamp.backend.viewModels
 
 import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 import org.springframework.web.reactive.function.client.WebClient
 import org.timestamp.backend.model.Event
 import java.time.LocalDateTime
 
+@Serializable
 data class EventDetailedUser(
     val name: String,
     val email: String,
@@ -31,17 +30,18 @@ data class Path(
  * Includes:
  *  - Time est. for each user to an event
  */
+@Serializable
 data class EventDetailed(
-    val id: Long,
-    val creator: String,
-    val name: String,
-    val description: String,
-    val address: String,
-    val latitude: Double,
-    val longitude: Double,
-    val arrival: LocalDateTime,
-
-    val users: List<EventDetailedUser>,
+    val id: Long? = null,
+    val creator: String = "",
+    val name: String = "",
+    val description: String = "",
+    val address: String = "",
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    @Serializable(with = LocalDateTimeSerializer::class)
+    val arrival: LocalDateTime = LocalDateTime.now(),
+    val users: List<EventDetailedUser> = emptyList(),
 ) {
     companion object {
         suspend fun fromEvent(event: Event, profile: String = "car"): EventDetailed {

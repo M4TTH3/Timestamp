@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.Packaging
+
 group = "org.timestamp"
 version = "1.2.0"
 
@@ -41,11 +43,18 @@ android {
     kotlinOptions {
         jvmTarget = "21"
     }
+    packaging {
+        resources{
+            excludes.add("/META-INF/*")
+            excludes.add("notice.txt")
+            excludes.add("license.txt")
+            excludes.add("META-INF/spring/*")
+        }
+    }
     buildFeatures {
         viewBinding = true
         compose = true
     }
-
 }
 
 dependencies {
@@ -72,8 +81,15 @@ dependencies {
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.json)
+    implementation(project(":backend")) {
+        exclude(group = "com.google.firebase", module = "firebase-admin")
+    }
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.ui.test.junit4.android)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+configurations.all {
+    exclude(group = "commons-logging", module = "commons-logging")
 }
