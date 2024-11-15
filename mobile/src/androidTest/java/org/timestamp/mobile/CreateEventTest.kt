@@ -1,6 +1,8 @@
 package org.timestamp.mobile
 
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -9,6 +11,7 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.maps.model.LatLng
 import org.junit.Rule
 import org.junit.Test
 import org.timestamp.mobile.ui.elements.CreateEvent
@@ -20,8 +23,11 @@ class CreateEventTest {
     @Test
     fun elementsAreDisplayed() {
         composeTestRule.activity.setContent {
-            CreateEvent(onDismissRequest = {},
-                onConfirmation = {})
+            CreateEvent(
+                onDismissRequest = {},
+                onConfirmation = {},
+                isMock = true
+            )
         }
         composeTestRule.onNodeWithText("Add Event").assertIsDisplayed()
         composeTestRule.onNodeWithText("Cancel").assertIsDisplayed()
@@ -33,33 +39,41 @@ class CreateEventTest {
 
     @Test
     fun addButtonWorks() {
-        var confirmed = false
+        var confirmed = mutableStateOf(false)
         composeTestRule.activity.setContent {
-            CreateEvent(onDismissRequest = {},
-                onConfirmation = {confirmed = true})
+            CreateEvent(
+                onDismissRequest = {},
+                onConfirmation = { confirmed.value = true },
+                isMock = true
+            )
         }
-
         composeTestRule.onNodeWithText("Add").performClick()
-        assert(confirmed)
+        assert(confirmed.value)
     }
 
     @Test
     fun dismissButtonWorks() {
-        var dismissed = false
+        val dismissed = mutableStateOf(false)
         composeTestRule.activity.setContent {
-            CreateEvent(onDismissRequest = {dismissed = true},
-                onConfirmation = {})
+            CreateEvent(
+                onDismissRequest = { dismissed.value = true },
+                onConfirmation = {},
+                isMock = true
+            )
         }
 
         composeTestRule.onNodeWithText("Cancel").performClick()
-        assert(dismissed)
+        assert(dismissed.value)
     }
 
     @Test
     fun datePickerTest() {
         composeTestRule.activity.setContent {
-            CreateEvent(onDismissRequest = {},
-                onConfirmation = {})
+            CreateEvent(
+                onDismissRequest = {},
+                onConfirmation = {},
+                isMock = true
+            )
         }
         composeTestRule.onNodeWithContentDescription("select date").performClick()
         composeTestRule.onNodeWithText("OK").assertIsDisplayed()
@@ -68,8 +82,11 @@ class CreateEventTest {
     @Test
     fun timePickerTest() {
         composeTestRule.activity.setContent {
-            CreateEvent(onDismissRequest = {},
-                onConfirmation = {})
+            CreateEvent(
+                onDismissRequest = {},
+                onConfirmation = {},
+                isMock = true
+            )
         }
         composeTestRule.onNodeWithText("Event Time").performClick()
         composeTestRule.onNodeWithText("OK").assertIsDisplayed()

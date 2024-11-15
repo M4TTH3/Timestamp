@@ -135,6 +135,7 @@ fun FetchLocationWrapper(
 fun CreateEvent(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
+    isMock: Boolean,
     properties: DialogProperties = DialogProperties(),
 ) {
     var eventName by remember { mutableStateOf("") }
@@ -148,9 +149,17 @@ fun CreateEvent(
         position = CameraPosition.fromLatLngZoom(LatLng(37.7749, -122.4194), 10f)
     }
     val context = LocalContext.current
-    FetchLocationWrapper(context) { location ->
-        selectedLocation = location
-        cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
+    val defaultMockLocation = LatLng(37.7749, -122.4194)
+    if (isMock) {
+        // Use mock location
+        selectedLocation = defaultMockLocation
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(defaultMockLocation, 15f)
+    } else {
+        // Real location fetching logic
+        FetchLocationWrapper(context) { location ->
+            selectedLocation = location
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
+        }
     }
 
     val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())

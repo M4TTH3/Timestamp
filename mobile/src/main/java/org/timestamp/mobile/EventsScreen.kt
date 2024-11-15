@@ -50,7 +50,7 @@ import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 val eventList: MutableList<EventDetailed> = mutableStateListOf()
 
 @Composable
-fun EventsScreen(auth: FirebaseAuth) {
+fun EventsScreen(auth: FirebaseAuth, isMock: Boolean = false) {
     val context = LocalContext.current
     val createEvents = remember { mutableStateOf(false) }
     val hasEvents = remember { mutableStateOf(false) }
@@ -60,7 +60,8 @@ fun EventsScreen(auth: FirebaseAuth) {
             onConfirmation = {
                 pushBackendEvents(context, auth)
                 createEvents.value = false
-            }
+            },
+            isMock = isMock
         )
     }
     if (eventList.isNotEmpty()) {
