@@ -2,6 +2,7 @@ package org.timestamp.mobile
 
 // Imports...
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,6 +64,7 @@ fun SettingsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Colors.White)
     ) {
         Column(
             modifier = Modifier
@@ -85,7 +87,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.size(30.dp))
             // Account Information Section
             Text(text = "Account Information",
-                color = Colors.Jet,
+                color = Colors.Black,
                 fontFamily = ubuntuFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
@@ -99,7 +101,7 @@ fun SettingsScreen(
             Row() {
                 Column() {
                     Text(text = "Name",
-                        color = Colors.Jet,
+                        color = Colors.Black,
                         fontFamily = ubuntuFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
@@ -109,6 +111,7 @@ fun SettingsScreen(
                         user.displayName?.let { name ->
                             Text(
                                 text = name,
+                                color = Colors.Black,
                                 fontFamily = ubuntuFontFamily,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -122,14 +125,14 @@ fun SettingsScreen(
                             Log.d("SettingsScreen","signed out")
                             onSignOutClick() },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Colors.Jet
+                            containerColor = Colors.Black
                         )) {
                         androidx.compose.material3.Text(
                             text = "Sign Out",
                             style = textStyle.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
-                            color = Color(0xFFFFFFFF)
+                            color = Colors.White
                         )
                     }
                     Spacer(modifier = Modifier.height(50.dp))
@@ -161,7 +164,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.size(20.dp))
             // Account Preferences section
             Text(text = "Account Preferences",
-                color = Colors.Jet,
+                color = Colors.Black,
                 fontFamily = ubuntuFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
@@ -174,7 +177,7 @@ fun SettingsScreen(
             // NOT YET IMPLEMENTED: Switch between dark and light mode
             Row() {
                 Text(text = if (darkModeOn) "Dark Mode" else "Light Mode",
-                    color = Colors.Jet,
+                    color = Colors.Black,
                     fontFamily = ubuntuFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
@@ -183,10 +186,12 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.width(150.dp))
                 Switch(
                     checked = darkModeOn,
-                    onCheckedChange = { darkModeOn = it},
+                    onCheckedChange = {
+                        darkModeOn = it
+                        Colors.setThemeColors(darkModeOn) },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Colors.Jet,
-                        uncheckedThumbColor = Colors.Platinum
+                        checkedThumbColor = Colors.Black,
+                        uncheckedThumbColor = Colors.White
                     ),
                     modifier = Modifier.scale(1.3f)
                 )

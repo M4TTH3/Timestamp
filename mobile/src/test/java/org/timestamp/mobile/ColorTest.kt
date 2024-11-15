@@ -9,12 +9,9 @@ class ColorTest {
     @Test
     fun colorsAreCorrect() {
         assertEquals(Colors.Bittersweet, Color(0xFFFF6F61))
-        assertEquals(Colors.Jet, Color(0xFF2A2B2E))
         assertEquals(Colors.TeaRose, Color(0xFFF7CAC9))
         assertEquals(Colors.Platinum, Color(0xFFE5E6EA))
         assertEquals(Colors.PowderBlue, Color(0xFF9CC5E1))
         assertEquals(Colors.BittersweetDark, Color(0xFFCC1A09))
-        assertEquals(Colors.Black, Color(0xFF000000))
-        assertEquals(Colors.White, Color(0xFFFFFFFF))
     }
 }

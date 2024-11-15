@@ -1,6 +1,7 @@
 [versions]
 activityComposeVersion = "1.6.1"
 coilCompose = "2.2.2"
+composecalendar = "1.3.0"
 kotlin-version = "2.0.20"
 kotlin-coroutine = "1.7.2"
 ktor = "2.0.0"
@@ -43,6 +44,7 @@ androidx-material-icons-extended = { module = "androidx.compose.material:materia
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt-version" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+composecalendar = { module = "io.github.boguszpawlowski.composecalendar:composecalendar", version.ref = "composecalendar" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 junit5 = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5", version.ref = "kotlin-version" }
 junit5-platform-launch = { group = "org.junit.platform", name = "junit-platform-launcher" }
@@ -58,6 +60,7 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+kotlinx-datetime = { module = "io.github.boguszpawlowski.composecalendar:kotlinx-datetime", version.ref = "composecalendar" }
 spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-boot-starter-web", version.ref = "spring-boot" }
 spring-boot-starter-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa", version.ref = "spring-boot" }
 spring-boot-starter-security = { group = "org.springframework.boot", name = "spring-boot-starter-security", version.ref = "spring-boot" }
