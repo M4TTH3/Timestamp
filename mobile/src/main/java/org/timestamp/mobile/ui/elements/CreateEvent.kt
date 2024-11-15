@@ -54,8 +54,10 @@ import coil.request.ImageRequest
 import coil.request.ImageResult
 import coil.size.Scale
 import kotlinx.coroutines.selects.select
+import org.timestamp.backend.model.EventDTO
 import org.timestamp.mobile.R
 import org.timestamp.mobile.eventList
+import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.util.Calendar
@@ -70,11 +72,6 @@ fun CreateEvent(
     onConfirmation: () -> Unit,
     properties: DialogProperties = DialogProperties(),
 ) {
-
-    val ubuntuFontFamily = FontFamily(
-        Font(R.font.ubuntu_regular),  // Regular
-        Font(R.font.ubuntu_bold, FontWeight.Bold)  // Bold
-    )
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(false) }
     var eventTime by remember { mutableStateOf(false) }
@@ -87,6 +84,7 @@ fun CreateEvent(
         DatePickerDialog(
             onDateSelected = { dateMillis ->
                 selectedDate = dateMillis?.let { dateFormatter.format(Date(it)) } ?: ""
+                eventDate = false
             },
             onDismiss = { eventDate = false }
         )
@@ -276,15 +274,13 @@ fun CreateEvent(
                                        timeCalendar.get(Calendar.MINUTE)
                                    )
 
-                                   eventList.add(EventData(
+                                   eventList.add(EventDTO(
                                        name = eventName,
-                                       date = selectedDateTime,
+                                       arrival = selectedDateTime,
                                        latitude = 0.0,
                                        longitude = 0.0,
-                                       location = "Dummy Location",
+                                       description = "Dummy Location",
                                        address = "Dummy Address",
-                                       distance = 2.0,
-                                       estTravel = 2
                                    ))
                                }
                            }

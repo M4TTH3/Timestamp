@@ -1,7 +1,7 @@
 package org.timestamp.mobile
 
-import android.widget.ImageButton
-import androidx.annotation.FloatRange
+import android.content.Context
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,8 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -31,6 +29,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -38,28 +37,44 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
+import org.timestamp.backend.model.EventDTO
+import org.timestamp.backend.model.toEvent
 import org.timestamp.mobile.ui.elements.CreateEvent
-import org.timestamp.mobile.ui.elements.Event
-import org.timestamp.mobile.ui.elements.EventData
+import org.timestamp.mobile.ui.elements.EventBox
+import org.timestamp.mobile.ui.elements.EventBox
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.LocalDateTime
 
-val eventList: MutableList<EventData> = mutableStateListOf()
+val eventList: MutableList<EventDTO> = mutableStateListOf()
 
 @Composable
-fun EventsScreen(
-    hasEvents: Boolean
-) {
+fun EventsScreen() {
+    val context = LocalContext.current
     val createEvents = remember { mutableStateOf(false) }
+    var hasEvents = remember { mutableStateOf(false) }
     if (createEvents.value) {
         CreateEvent(
             onDismissRequest = { createEvents.value = false },
             onConfirmation = {
+                pushBackendEvents(context)
                 createEvents.value = false
             }
         )
+    }
+    if (eventList.isNotEmpty()) {
+        hasEvents.value = true
     }
 
     Box(
@@ -93,7 +108,7 @@ fun EventsScreen(
                 modifier = Modifier
                     .offset(x = 20.dp, y = 70.dp)
             )
-            if (!hasEvents) {
+            if (!hasEvents.value) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -119,10 +134,10 @@ fun EventsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    eventList.sortBy { it.date }
+                    eventList.sortBy { it.arrival }
                     for (event in eventList) {
                         item {
-                            Event(event)
+                            EventBox(event)
                         }
                     }
                     item {
@@ -144,6 +159,30 @@ fun EventsScreen(
                 contentDescription = "Add Event Button",
                 modifier = Modifier.size(54.dp),
                 tint = Color.Unspecified)
+        }
+    }
+}
+
+fun pushBackendEvents(context: Context) {
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val endpoint = "${context.getString(R.string.backend_url)}events [POST]"
+            val events = eventList.map { it }
+            val eventsJson = Json.encodeToString(ListSerializer(EventDTO.serializer()), events)
+
+            val res = ktorClient.post(endpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(eventsJson)
+            }
+
+            // Check response
+            withContext(Dispatchers.Main) {
+                if (res.status == HttpStatusCode.OK) {
+                    Log.d("Events successfully pushed to backend", res.bodyAsText())
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Backend Events Push Error", e.toString())
         }
     }
 }
