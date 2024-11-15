@@ -74,7 +74,7 @@ fun EventsScreen(
                 .padding(8.dp)
                 .offset(y=24.dp)
                 .size(48.dp)
-            ) {
+        ) {
             Icon(painter = painterResource(id = R.drawable.notification_bell),
                 contentDescription = "Notification Bell",
                 modifier = Modifier.size(32.dp),

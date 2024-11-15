@@ -137,8 +137,8 @@ class MainActivity : ComponentActivity() {
             EventData(
                 name = "Meeting with Chengnian",
                 date = LocalDateTime.of(2024, 10, 5, 14, 30),
-                latitude = 38.8951,
-                longitude = -77.0364,
+                latitude = 43.473059631458035,
+                longitude = -80.54171472363717,
                 location = "Davis Centre",
                 address = "200 University Ave. W",
                 distance = 8.0,
@@ -148,8 +148,8 @@ class MainActivity : ComponentActivity() {
             EventData(
                 name = "CS346 Class",
                 date = LocalDateTime.of(2024, 10, 5, 17, 30),
-                latitude = 38.8951,
-                longitude = -77.0364,
+                latitude = 43.47247868269697,
+                longitude = -80.54397471755668,
                 location = "Mathematics and Computer Building",
                 address = "200 University Ave",
                 distance = 2.0,
@@ -160,8 +160,8 @@ class MainActivity : ComponentActivity() {
             EventData(
                 name = "Volleyball Comp w/ Matt",
                 date = LocalDateTime.of(2025, 12, 5, 8, 30),
-                latitude = 38.8951,
-                longitude = -77.0364,
+                latitude = 43.475479396594565,
+                longitude = -80.5476847561787,
                 location = "Columbia Icefield Centre",
                 address = "200 Columbia St W",
                 distance = 3.0,
