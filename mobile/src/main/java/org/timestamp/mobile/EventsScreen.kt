@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -36,8 +37,6 @@ import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
-
-//val eventList: MutableList<EventDetailed> = mutableStateListOf()
 
 @Composable
 fun EventsScreen(viewModel: AppViewModel = viewModel(), isMock: Boolean = false) {

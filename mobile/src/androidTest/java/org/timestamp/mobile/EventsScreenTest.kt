@@ -17,7 +17,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.backend.viewModels.EventDetailedUser
-import java.time.LocalDateTime
 
 @RunWith(AndroidJUnit4::class)
 class EventsScreenTest {
@@ -30,7 +29,7 @@ class EventsScreenTest {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Screen.Events.name) {
                 composable(Screen.Events.name) {
-                    EventsScreen(auth = FirebaseAuth.getInstance(), isMock = true)
+                    EventsScreen(isMock = true)
                 }
             }
         }
@@ -48,7 +47,7 @@ class EventsScreenTest {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Screen.Events.name) {
                 composable(Screen.Events.name) {
-                    EventsScreen(auth = FirebaseAuth.getInstance(), isMock = true)
+                    EventsScreen(isMock = true)
                 }
             }
         }
@@ -65,7 +64,7 @@ class EventsScreenTest {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Screen.Events.name) {
                 composable(Screen.Events.name) {
-                    EventsScreen(auth = FirebaseAuth.getInstance(), isMock = true)
+                    EventsScreen(isMock = true)
                 }
             }
         }
@@ -91,7 +90,7 @@ class EventsScreenTest {
 //            val navController = rememberNavController()
 //            NavHost(navController = navController, startDestination = Screen.Events.name) {
 //                composable(Screen.Events.name) {
-//                    EventsScreen(auth = FirebaseAuth.getInstance(), isMock = true)
+//                    EventsScreen(isMock = true)
 //                }
 //            }
 //        }

@@ -131,8 +131,8 @@ fun FetchLocationWrapper(
 @Composable
 fun CreateEvent(
     onDismissRequest: () -> Unit,
-    isMock: Boolean,
     onConfirmation: (EventDetailed) -> Unit,
+    isMock: Boolean,
     properties: DialogProperties = DialogProperties(),
 ) {
     var eventName by remember { mutableStateOf("") }
