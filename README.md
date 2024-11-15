@@ -41,6 +41,8 @@
 
 [Release 1.2.0 - 11/01/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1.2.0-Release-Notes)
 
+[Release 1.3.0 - 11/15/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1.3.0-Release-Notes)
+
 ## Description
 
 **Android/Mobile Application**
