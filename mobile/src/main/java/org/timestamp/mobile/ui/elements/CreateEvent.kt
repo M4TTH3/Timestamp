@@ -362,15 +362,15 @@ fun CreateEvent(
                                        timeCalendar.get(Calendar.MINUTE)
                                    )
 
-                                   eventList.add(EventData(
+                                   eventList.add(EventDetailed(
                                        name = eventName,
-                                       date = selectedDateTime,
+                                       arrival = selectedDateTime,
                                        latitude = selectedLocation?.latitude!!,
                                        longitude = selectedLocation?.longitude!!,
-                                       location = "Selected Location",
+                                       description = "Selected Location",
                                        address = "Selected Address",
-                                       distance = 2.0,
-                                       estTravel = 2
+                                       // distance = 2.0,
+                                       // estTravel = 2
                                    ))
 
                                    Log.d("ADD EVENT", "EVENT ADDED")

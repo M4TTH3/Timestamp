@@ -239,7 +239,7 @@ fun EventBox(data: EventDetailed, auth: FirebaseAuth) {
 
         // Conditionally show extra content when expanded
         if (isExpanded) {
-            EventMap(locationName = data.location, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude))
+            EventMap(locationName = data.description, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude))
         }
 
         Divider(
