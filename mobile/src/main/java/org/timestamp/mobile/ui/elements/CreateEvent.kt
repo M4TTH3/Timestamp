@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -57,6 +58,77 @@ import java.time.LocalDateTime
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.sin
+import androidx.compose.runtime.SideEffect
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.*
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import android.Manifest
+import android.util.Log
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun RequestLocationPermission() {
+    val permissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    SideEffect {
+        permissionState.launchPermissionRequest()
+    }
+}
+
+@SuppressLint("MissingPermission")
+fun fetchCurrentLocation(
+    context: Context,
+    onLocationRetrieved: (LatLng) -> Unit
+) {
+    val permissionCheck = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+    if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                onLocationRetrieved(LatLng(location.latitude, location.longitude))
+            } else {
+                onLocationRetrieved(LatLng(37.7749, -122.4194)) // default, San Fran
+            }
+        }.addOnFailureListener {
+            onLocationRetrieved(LatLng(37.7749, -122.4194))
+        }
+    } else {
+        onLocationRetrieved(LatLng(37.7749, -122.4194))
+    }
+}
+
+@Composable
+fun FetchLocationWrapper(
+    context: Context,
+    onLocationRetrieved: (LatLng) -> Unit
+) {
+    var permissionGranted by remember { mutableStateOf(false) }
+    RequestLocationPermission()
+    val permissionCheck = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+    permissionGranted = permissionCheck == PackageManager.PERMISSION_GRANTED
+    LaunchedEffect(permissionGranted) {
+        if (permissionGranted) {
+            fetchCurrentLocation(context, onLocationRetrieved)
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +143,16 @@ fun CreateEvent(
     val datePickerState = rememberDatePickerState()
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
+    var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
+    var cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(37.7749, -122.4194), 10f)
+    }
+    val context = LocalContext.current
+    FetchLocationWrapper(context) { location ->
+        selectedLocation = location
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
+    }
+
     val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
     val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
     if (eventDate) {
@@ -204,19 +286,32 @@ fun CreateEvent(
                        )
                    )
                }
-               Image(
-                   painter = rememberAsyncImagePainter(
-                       model = ImageRequest.Builder(LocalContext.current)
-                           .data(R.drawable.maps_placeholder)
-                           .scale(Scale.FIT)
-                           .build()
-                   ),
-                   contentDescription = "Google Maps API Placeholder",
-                   modifier = Modifier
-                       .size(340.dp)
-                       .clip(RoundedCornerShape(16.dp))
-
+               Spacer(modifier = Modifier.height(8.dp))
+               Text(
+                   text = "Select Event Location",
+                   fontFamily = ubuntuFontFamily,
+                   fontWeight = FontWeight.Bold,
+                   fontSize = 18.sp
                )
+               Spacer(modifier = Modifier.height(16.dp))
+                   GoogleMap(
+                       modifier = Modifier
+                           .fillMaxWidth(0.95f)
+                           .height(270.dp)
+                           .clip(RoundedCornerShape(16.dp)),
+                       cameraPositionState = cameraPositionState,
+                       onMapClick = { latLng ->
+                           selectedLocation = latLng
+                       }
+                   ) {
+                       selectedLocation?.let {
+                           Marker(
+                               state = MarkerState(position = it),
+                               title = "Selected Location"
+                           )
+                       }
+                   }
+               Spacer(modifier = Modifier.height(16.dp))
                Row(
                    modifier = Modifier
                        .fillMaxWidth(),
@@ -267,17 +362,23 @@ fun CreateEvent(
                                        timeCalendar.get(Calendar.MINUTE)
                                    )
 
-                                   eventList.add(
-                                       EventDetailed(
-                                           name = eventName,
-                                           arrival = selectedDateTime,
-                                           latitude = 0.0,
-                                           longitude = 0.0,
-                                           description = "Dummy Location",
-                                           address = "Dummy Address"
-                                       )
-                                   )
+                                   eventList.add(EventDetailed(
+                                       name = eventName,
+                                       arrival = selectedDateTime,
+                                       latitude = selectedLocation?.latitude!!,
+                                       longitude = selectedLocation?.longitude!!,
+                                       description = "Selected Location",
+                                       address = "Selected Address",
+                                       // distance = 2.0,
+                                       // estTravel = 2
+                                   ))
+
+                                   Log.d("ADD EVENT", "EVENT ADDED")
+                                   Log.d("selectedDate", selectedDate)
                                }
+                           } else {
+                               Log.d("ADD EVENT", "EVENT FAILED TO ADD")
+                               Log.d("selectedDate", selectedDate)
                            }
                            onConfirmation()
                        },

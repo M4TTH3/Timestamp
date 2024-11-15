@@ -42,6 +42,12 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Scale
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 import com.google.firebase.auth.FirebaseAuth
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
@@ -49,6 +55,27 @@ import org.timestamp.mobile.eventList
 import org.timestamp.mobile.pushBackendEvents
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.format.DateTimeFormatter
+
+@Composable
+fun EventMap(locationName: String, eventName: String, eventLocation: LatLng) {
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(eventLocation, 15f)
+    }
+    val markerState = rememberMarkerState(position = eventLocation)
+    GoogleMap(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .clip(RoundedCornerShape(16.dp)),
+        cameraPositionState = cameraPositionState
+    ) {
+        Marker(
+            state = markerState,
+            title = locationName,
+            snippet = eventName
+        )
+    }
+}
 
 @Composable
 fun EventBox(data: EventDetailed, auth: FirebaseAuth) {
@@ -212,19 +239,7 @@ fun EventBox(data: EventDetailed, auth: FirebaseAuth) {
 
         // Conditionally show extra content when expanded
         if (isExpanded) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(R.drawable.maps_placeholder)
-                        .scale(Scale.FIT)
-                        .build()
-                ),
-                contentDescription = "Google Maps API Placeholder",
-                modifier = Modifier
-                    .size(340.dp)
-                    .clip(RoundedCornerShape(16.dp))
-
-            )
+            EventMap(locationName = data.description, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude))
         }
 
         Divider(
