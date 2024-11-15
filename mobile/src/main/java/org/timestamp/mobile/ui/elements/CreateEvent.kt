@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -40,23 +39,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
-import coil.request.ImageResult
 import coil.size.Scale
-import kotlinx.coroutines.selects.select
+import org.timestamp.backend.model.EventDTO
+import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
 import org.timestamp.mobile.eventList
+import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.util.Calendar
@@ -141,10 +137,6 @@ fun CreateEvent(
     onConfirmation: () -> Unit,
     properties: DialogProperties = DialogProperties(),
 ) {
-    val ubuntuFontFamily = FontFamily(
-        Font(R.font.ubuntu_regular),  // Regular
-        Font(R.font.ubuntu_bold, FontWeight.Bold)  // Bold
-    )
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(false) }
     var eventTime by remember { mutableStateOf(false) }
@@ -167,6 +159,7 @@ fun CreateEvent(
         DatePickerDialog(
             onDateSelected = { dateMillis ->
                 selectedDate = dateMillis?.let { dateFormatter.format(Date(it)) } ?: ""
+                eventDate = false
             },
             onDismiss = { eventDate = false }
         )
@@ -410,7 +403,6 @@ fun CreateEvent(
                        )
                    }
                }
-
            }
        }
    }
