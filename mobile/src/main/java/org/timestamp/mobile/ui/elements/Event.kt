@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
@@ -80,6 +81,7 @@ fun EventBox(data: EventDTO) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(vertical = 12.dp)
+                    .widthIn(max = 285.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(painter = painterResource(id = R.drawable.user_icon),
@@ -176,7 +178,7 @@ fun EventBox(data: EventDTO) {
             },
             modifier = Modifier
                 .align(Alignment.End),
-            offset = DpOffset(x = 220.dp, y = (-120).dp)
+            offset = DpOffset(x = 220.dp, y = (-130).dp)
         ) {
             DropdownMenuItem(
                 text = {

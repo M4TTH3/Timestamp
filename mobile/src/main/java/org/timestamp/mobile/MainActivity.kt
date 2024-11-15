@@ -420,22 +420,28 @@ class MainActivity : ComponentActivity() {
 
     // Assuming that pingBackend was a success and the user has successfully logged in
     private fun pullBackendEvents() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val endpoint = "${getString(R.string.backend_url)}events [GET]"
-            val res = ktorClient.post(endpoint)
+        try {
+            CoroutineScope(Dispatchers.IO).launch {
+                val endpoint = "${getString(R.string.backend_url)}events GET"
+                val res = ktorClient.post(endpoint)
 
-            if (res.status == HttpStatusCode.OK) {
-                val eventsJson = res.bodyAsText()
-                val events = Json.decodeFromString<MutableList<Event>>(eventsJson)
+                if (res.status == HttpStatusCode.OK) {
+                    val eventsJson = res.bodyAsText()
+                    val events = Json.decodeFromString<MutableList<Event>>(eventsJson)
 
-                withContext(Dispatchers.Main) {
-                    eventList.clear()
-                    for (event in events) {
-                        eventList.add(event.toDTO())
+                    withContext(Dispatchers.Main) {
+                        eventList.clear()
+                        for (event in events) {
+                            eventList.add(event.toDTO())
+                        }
+                        eventList.sortBy { it.arrival }
                     }
-                    eventList.sortBy { it.arrival }
+                } else {
+                    Log.println(Log.ERROR, "Backend Pull Error", res.status.toString())
                 }
             }
+        } catch (e: Exception) {
+            Log.e("Backend Pull Error", e.toString())
         }
     }
 

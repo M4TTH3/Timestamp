@@ -5,10 +5,10 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import java.beans.Encoder
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Base64.Decoder
+import java.util.Base64.Encoder
 
 @Serializable
 data class EventDTO(
@@ -19,9 +19,16 @@ data class EventDTO(
     val address: String = "",
     val latitude: Double,
     val longitude: Double,
-    @Contextual
+    @Serializable(with = LocalDateTimeSerializer::class)
     val arrival: LocalDateTime,
-    val users: MutableSet<@Contextual User> = mutableSetOf()
+    val users: MutableSet<EventUser> = mutableSetOf()
+)
+
+@Serializable
+data class EventUser(
+    val name: String,
+    val email: String,
+    val pfp: String,
 )
 
 fun Event.toDTO() = EventDTO(
@@ -33,7 +40,13 @@ fun Event.toDTO() = EventDTO(
     latitude = this.latitude,
     longitude = this.longitude,
     arrival = this.arrival,
-    users = this.users
+    users = this.users.mapTo(mutableSetOf()) { user ->
+        EventUser(
+            name = user.name,
+            email = user.email,
+            pfp = user.pfp,
+        )
+    }
 )
 
 fun EventDTO.toEvent() = Event(
@@ -45,6 +58,30 @@ fun EventDTO.toEvent() = Event(
     latitude = this.latitude,
     longitude = this.longitude,
     arrival = this.arrival,
-    users = this.users
+    users = this.users.mapTo(mutableSetOf()) { user ->
+        User(
+            id = "", // You'll need a way to resolve the User's ID. This is just an example.
+            name = user.name,
+            email = user.email,
+            pfp = user.pfp,
+            latitude = 0.0, // Set a default or resolve this if necessary.
+            longitude = 0.0, // Set a default or resolve this if necessary.
+            events = mutableSetOf() // Assuming this is managed elsewhere or can be ignored here.
+        )
+    }
 )
+
+object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
+    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+
+    override val descriptor = PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: kotlinx.serialization.encoding.Decoder): LocalDateTime {
+        return LocalDateTime.parse(decoder.decodeString(), formatter)
+    }
+
+    override fun serialize(encoder: kotlinx.serialization.encoding.Encoder, value: LocalDateTime) {
+        encoder.encodeString(value.format(formatter))
+    }
+}
 

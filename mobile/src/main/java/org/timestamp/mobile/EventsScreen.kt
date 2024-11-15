@@ -49,7 +49,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import org.timestamp.backend.model.EventDTO
+import org.timestamp.backend.model.LocalDateTimeSerializer
 import org.timestamp.backend.model.toEvent
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
@@ -163,12 +166,20 @@ fun EventsScreen() {
     }
 }
 
+val customJson = Json {
+    serializersModule = SerializersModule {
+        contextual(LocalDateTimeSerializer) // Register the custom serializer
+    }
+    ignoreUnknownKeys = true // If you want to ignore unknown keys in JSON
+    encodeDefaults = true // Encode default values
+}
+
 fun pushBackendEvents(context: Context) {
     CoroutineScope(Dispatchers.IO).launch {
         try {
-            val endpoint = "${context.getString(R.string.backend_url)}events [POST]"
+            val endpoint = "${context.getString(R.string.backend_url)}events POST"
             val events = eventList.map { it }
-            val eventsJson = Json.encodeToString(ListSerializer(EventDTO.serializer()), events)
+            val eventsJson = customJson.encodeToString(ListSerializer(EventDTO.serializer()), events)
 
             val res = ktorClient.post(endpoint) {
                 contentType(ContentType.Application.Json)
@@ -179,6 +190,8 @@ fun pushBackendEvents(context: Context) {
             withContext(Dispatchers.Main) {
                 if (res.status == HttpStatusCode.OK) {
                     Log.d("Events successfully pushed to backend", res.bodyAsText())
+                } else {
+                    Log.println(Log.ERROR, "Backend Events Push Error", "res status: " + res.status.toString())
                 }
             }
         } catch (e: Exception) {
