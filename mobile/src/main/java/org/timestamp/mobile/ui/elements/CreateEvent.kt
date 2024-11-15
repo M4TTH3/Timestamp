@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -39,22 +38,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
-import coil.request.ImageResult
 import coil.size.Scale
-import kotlinx.coroutines.selects.select
 import org.timestamp.backend.model.EventDTO
+import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
 import org.timestamp.mobile.eventList
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
@@ -63,7 +57,6 @@ import java.time.LocalDateTime
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -274,14 +267,16 @@ fun CreateEvent(
                                        timeCalendar.get(Calendar.MINUTE)
                                    )
 
-                                   eventList.add(EventDTO(
-                                       name = eventName,
-                                       arrival = selectedDateTime,
-                                       latitude = 0.0,
-                                       longitude = 0.0,
-                                       description = "Dummy Location",
-                                       address = "Dummy Address",
-                                   ))
+                                   eventList.add(
+                                       EventDetailed(
+                                           name = eventName,
+                                           arrival = selectedDateTime,
+                                           latitude = 0.0,
+                                           longitude = 0.0,
+                                           description = "Dummy Location",
+                                           address = "Dummy Address"
+                                       )
+                                   )
                                }
                            }
                            onConfirmation()
@@ -307,7 +302,6 @@ fun CreateEvent(
                        )
                    }
                }
-
            }
        }
    }

@@ -42,16 +42,16 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Scale
-import org.timestamp.backend.model.EventDTO
+import com.google.firebase.auth.FirebaseAuth
+import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
 import org.timestamp.mobile.eventList
 import org.timestamp.mobile.pushBackendEvents
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun EventBox(data: EventDTO) {
+fun EventBox(data: EventDetailed, auth: FirebaseAuth) {
     var isExpanded by remember { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -204,7 +204,7 @@ fun EventBox(data: EventDTO) {
                 },
                 onClick = {
                     eventList.removeIf { it.arrival == data.arrival && it.name == data.name }
-                    pushBackendEvents(context)
+                    pushBackendEvents(context, auth)
                     isDropdownExpanded = false
                 }
             )

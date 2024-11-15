@@ -76,6 +76,7 @@ import kotlinx.serialization.json.Json
 import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.EventDTO
 import org.timestamp.backend.model.toDTO
+import org.timestamp.backend.viewModels.EventDetailed
 import androidx.credentials.CredentialManager as CredentialManager
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import java.net.HttpURLConnection
@@ -199,7 +200,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(Screen.Events.name) {
-                        EventsScreen()
+                        EventsScreen(auth)
                         NavBar(navController = navController, currentScreen = "Events")
                     }
                     composable(Screen.Calendar.name) {
@@ -422,17 +423,22 @@ class MainActivity : ComponentActivity() {
     private fun pullBackendEvents() {
         try {
             CoroutineScope(Dispatchers.IO).launch {
-                val endpoint = "${getString(R.string.backend_url)}events GET"
-                val res = ktorClient.post(endpoint)
+                val token = auth.currentUser?.getIdToken(false)?.await()?.token
+                val endpoint = "${getString(R.string.backend_url)}/events"
+                val res = ktorClient.get(endpoint) {
+                    headers {
+                        append("Authorization", "Bearer $token")
+                    }
+                }
 
                 if (res.status == HttpStatusCode.OK) {
                     val eventsJson = res.bodyAsText()
-                    val events = Json.decodeFromString<MutableList<Event>>(eventsJson)
+                    val events = Json.decodeFromString<List<EventDetailed>>(eventsJson)
 
                     withContext(Dispatchers.Main) {
                         eventList.clear()
                         for (event in events) {
-                            eventList.add(event.toDTO())
+                            eventList.add(event)
                         }
                         eventList.sortBy { it.arrival }
                     }
