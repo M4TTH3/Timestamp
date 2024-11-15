@@ -155,7 +155,7 @@ fun EventBox(data: EventDTO) {
                 fontSize = 14.sp
             )
             Spacer(modifier = Modifier.weight(1f))
-            val formatter = DateTimeFormatter.ofPattern("H:mm a")
+            val formatter = DateTimeFormatter.ofPattern("h:mm a")
             val formattedTime: String = data.arrival.format(formatter)
             Text(
                 text = formattedTime,

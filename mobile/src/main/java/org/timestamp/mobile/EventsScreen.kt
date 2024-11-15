@@ -180,7 +180,6 @@ fun pushBackendEvents(context: Context) {
             val endpoint = "${context.getString(R.string.backend_url)}events POST"
             val events = eventList.map { it }
             val eventsJson = customJson.encodeToString(ListSerializer(EventDTO.serializer()), events)
-
             val res = ktorClient.post(endpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(eventsJson)
