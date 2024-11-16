@@ -33,13 +33,15 @@
   <li>To build the backend, ask for the following file:
   <code>> backend > src > main > resources > application.properties</code>
 </li>
+  <li>Another file is required to run the application (stores API keys): <code>local.properties</code></li>
 </ul>
 
 
 <p></br></p>
 [Release 1.1.0 - 10/11/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1-0-0-Release) 
 
-[Release 1.2.0 - 11/01/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1.2.0-Release-Notes)
+[Release 1.2.0 - 11/01/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1.2.0-Release-Notes)  
+[Release 1.3.0 - 11/15/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1.3.0-Release-Notes)
 
 ## Description
 

@@ -1,9 +1,27 @@
 stages:
+#  - test
   - build
 
 variables:
   IMAGE_NAME: git.uwaterloo.ca:5050/mw2auyeu/team102-4/backend
   IMAGE_TAG: $IMAGE_NAME:latest
+
+#run_android_tests:
+#  stage: test
+#  image: cirrusci/android-sdk:latest
+#  before_script:
+#    - yes | sdkmanager --licenses
+#    - sdkmanager "platforms;android-33" "build-tools;33.0.0" "system-images;android-33;google_apis;x86"
+#    - avdmanager create avd -n test -k "system-images;android-33;google_apis;x86" -d pixel
+#  script:
+#    - emulator -avd test -no-window -no-audio &
+#    - adb wait-for-device
+#    - ./gradlew connectedAndroidTest
+#  artifacts:
+#    when: always
+#    paths:
+#      - app/build/reports/androidTests/connected/
+#    expire_in: 1 week
 
 build_backend_docker_image:
   stage: build

@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.Packaging
+
 group = "org.timestamp"
 version = "1.2.0"
 
@@ -41,11 +43,18 @@ android {
     kotlinOptions {
         jvmTarget = "21"
     }
+    packaging {
+        resources{
+            excludes.add("/META-INF/*")
+            excludes.add("notice.txt")
+            excludes.add("license.txt")
+            excludes.add("META-INF/spring/*")
+        }
+    }
     buildFeatures {
         viewBinding = true
         compose = true
     }
-
 }
 
 dependencies {
@@ -61,6 +70,9 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.androidx.constraintlayout)
     implementation(platform(libs.firebase.bom))
+    implementation("com.google.maps.android:maps-compose:2.11.0")
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.30.1")
     implementation(libs.firebase.auth)
     implementation(libs.play.services.auth)
     implementation(libs.firebase.analytics)
@@ -75,8 +87,16 @@ dependencies {
     implementation(libs.composecalendar)
     implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.junit.ktx)
+    implementation(libs.play.services.location)
+    implementation(project(":backend")) {
+        exclude(group = "com.google.firebase", module = "firebase-admin")
+    }
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.ui.test.junit4.android)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+configurations.all {
+    exclude(group = "commons-logging", module = "commons-logging")
 }
