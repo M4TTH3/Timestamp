@@ -371,8 +371,8 @@ fun CreateEvent(
                                    onConfirmation(EventDetailed(
                                        name = eventName,
                                        arrival = selectedDateTime,
-                                       latitude = selectedLocation?.latitude!!,
-                                       longitude = selectedLocation?.longitude!!,
+                                       latitude = selectedLocation?.latitude ?: 0.0,
+                                       longitude = selectedLocation?.longitude ?: 0.0,
                                        description = "Selected Location",
                                        address = "Selected Address"
                                    ))
