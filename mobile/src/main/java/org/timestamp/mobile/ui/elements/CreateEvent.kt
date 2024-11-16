@@ -51,7 +51,6 @@ import coil.size.Scale
 import org.timestamp.backend.model.EventDTO
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
-import org.timestamp.mobile.eventList
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -70,9 +69,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.Manifest
 import android.util.Log
@@ -134,7 +131,7 @@ fun FetchLocationWrapper(
 @Composable
 fun CreateEvent(
     onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
+    onConfirmation: (EventDetailed) -> Unit,
     properties: DialogProperties = DialogProperties(),
 ) {
     var eventName by remember { mutableStateOf("") }
@@ -362,15 +359,13 @@ fun CreateEvent(
                                        timeCalendar.get(Calendar.MINUTE)
                                    )
 
-                                   eventList.add(EventDetailed(
+                                   onConfirmation(EventDetailed(
                                        name = eventName,
                                        arrival = selectedDateTime,
                                        latitude = selectedLocation?.latitude!!,
                                        longitude = selectedLocation?.longitude!!,
                                        description = "Selected Location",
-                                       address = "Selected Address",
-                                       // distance = 2.0,
-                                       // estTravel = 2
+                                       address = "Selected Address"
                                    ))
 
                                    Log.d("ADD EVENT", "EVENT ADDED")
@@ -380,7 +375,6 @@ fun CreateEvent(
                                Log.d("ADD EVENT", "EVENT FAILED TO ADD")
                                Log.d("selectedDate", selectedDate)
                            }
-                           onConfirmation()
                        },
                        colors = ButtonColors(
                            containerColor = Color(0xFFFF6F61),
