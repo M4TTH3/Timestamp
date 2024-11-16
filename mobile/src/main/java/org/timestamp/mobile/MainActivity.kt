@@ -15,6 +15,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,7 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
@@ -77,6 +79,7 @@ import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.EventDTO
 import org.timestamp.backend.model.toDTO
 import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.mobile.models.AppViewModel
 import androidx.credentials.CredentialManager as CredentialManager
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import java.net.HttpURLConnection
@@ -94,19 +97,11 @@ enum class Screen {
     Settings
 }
 
-val ktorClient = HttpClient(CIO) {
-    install(ContentNegotiation) {
-        json(Json {
-            prettyPrint = true
-            isLenient = true
-            ignoreUnknownKeys = true
-        })
-    }
-}
-
 class MainActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
+
+    private val appViewModel: AppViewModel by viewModels()
 
     // Scopes we want access to (Google API endpoints we want permission for)
     private val googleScopes: List<Scope> = listOf(
@@ -182,6 +177,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(Screen.Home.name) {
+                        appViewModel.getEvents()
                         HomeScreen(
                             currentUser = auth.currentUser,
                             onSignOutClick = {
@@ -200,7 +196,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(Screen.Events.name) {
-                        EventsScreen(auth)
+                        EventsScreen()
                         NavBar(navController = navController, currentScreen = "Events")
                     }
                     composable(Screen.Calendar.name) {
@@ -341,6 +337,9 @@ class MainActivity : ComponentActivity() {
      */
     suspend fun getGoogleAccessToken() = authorizeGoogleAPI(googleScopes)
 
+    /**
+     * Test function to check access tokens
+     */
     private suspend fun fetchCalendarEvents(accessToken: String): String? = withContext(Dispatchers.IO) {
         try {
             val url = URL("https://www.googleapis.com/calendar/v3/calendars/primary/events")
@@ -384,8 +383,7 @@ class MainActivity : ComponentActivity() {
             auth.signInWithCredential(firebaseCredential).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.i("Sign In", "Successfully logged in")
-                    pingBackend()
-                    pullBackendEvents()
+                    appViewModel.pingBackend()
                     navController.navigate(Screen.Home.name)
                 }
             }
@@ -393,62 +391,4 @@ class MainActivity : ComponentActivity() {
             Log.e("Sign In", "Received an invalid google id token response", e)
         }
     }
-
-    /**
-     * This will ping a request to the backend to verify the token.
-     * It will also create the user if required.
-     */
-    private fun pingBackend() {
-        auth.currentUser?.getIdToken(false)?.addOnSuccessListener { result ->
-            Log.i("ID TOKEN", "ID TOKEN: ${result.token}")
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val endpoint = "${getString(R.string.backend_url)}/users/me"
-                    Log.d("Verifying ID", endpoint)
-                    val res = ktorClient.post(endpoint) {
-                        headers {
-                            append("Authorization", "Bearer ${result.token}")
-                        }
-                    }
-                    if (res.status == HttpStatusCode.OK) Log.i("Verifying ID", res.bodyAsText())
-                    else Log.e("Verifying ID", res.bodyAsText())
-                } catch(e: Exception) {
-                    Log.e("Ping Backend Error", e.toString())
-                }
-            }
-        }
-    }
-
-    // Assuming that pingBackend was a success and the user has successfully logged in
-    private fun pullBackendEvents() {
-        try {
-            CoroutineScope(Dispatchers.IO).launch {
-                val token = auth.currentUser?.getIdToken(false)?.await()?.token
-                val endpoint = "${getString(R.string.backend_url)}/events"
-                val res = ktorClient.get(endpoint) {
-                    headers {
-                        append("Authorization", "Bearer $token")
-                    }
-                }
-
-                if (res.status == HttpStatusCode.OK) {
-                    val eventsJson = res.bodyAsText()
-                    val events = Json.decodeFromString<List<EventDetailed>>(eventsJson)
-
-                    withContext(Dispatchers.Main) {
-                        eventList.clear()
-                        for (event in events) {
-                            eventList.add(event)
-                        }
-                        eventList.sortBy { it.arrival }
-                    }
-                } else {
-                    Log.println(Log.ERROR, "Backend Pull Error", res.status.toString())
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("Backend Pull Error", e.toString())
-        }
-    }
-
 }
