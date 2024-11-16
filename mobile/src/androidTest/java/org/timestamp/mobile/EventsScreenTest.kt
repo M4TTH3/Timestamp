@@ -11,9 +11,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.firebase.auth.FirebaseAuth
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.backend.viewModels.EventDetailedUser
 
 @RunWith(AndroidJUnit4::class)
 class EventsScreenTest {
@@ -26,7 +29,7 @@ class EventsScreenTest {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Screen.Events.name) {
                 composable(Screen.Events.name) {
-                    EventsScreen()
+                    EventsScreen(isMock = true)
                 }
             }
         }
@@ -44,7 +47,7 @@ class EventsScreenTest {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Screen.Events.name) {
                 composable(Screen.Events.name) {
-                    EventsScreen()
+                    EventsScreen(isMock = true)
                 }
             }
         }
@@ -61,7 +64,7 @@ class EventsScreenTest {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Screen.Events.name) {
                 composable(Screen.Events.name) {
-                    EventsScreen()
+                    EventsScreen(isMock = true)
                 }
             }
         }
@@ -72,4 +75,26 @@ class EventsScreenTest {
         composeTestRule.onNodeWithText("Cancel").performClick()
         composeTestRule.onNodeWithText("Add Event").assertDoesNotExist()
     }
+
+//    @Test
+//    fun testEventListDisplaysEvents() {
+//        eventList.add(EventDetailed(
+//            name = "Mock Event",
+//            description = "Mock Description",
+//            address = "123 Mock Street, Mock City",
+//            latitude = 37.7749,
+//            longitude = -122.4194,
+//            arrival = LocalDateTime.parse("2023-12-01T12:00:00"),
+//        ))
+//        composeTestRule.activity.setContent {
+//            val navController = rememberNavController()
+//            NavHost(navController = navController, startDestination = Screen.Events.name) {
+//                composable(Screen.Events.name) {
+//                    EventsScreen(isMock = true)
+//                }
+//            }
+//        }
+//        composeTestRule.onNodeWithText("Mock Event").assertIsDisplayed()
+//        composeTestRule.onNodeWithText("Mock Description").assertIsDisplayed()
+//    }
 }

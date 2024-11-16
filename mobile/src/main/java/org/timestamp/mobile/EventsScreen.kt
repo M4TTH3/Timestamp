@@ -37,15 +37,12 @@ import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 
-//val eventList: MutableList<EventDetailed> = mutableStateListOf()
-
 @Composable
-fun EventsScreen(viewModel: AppViewModel = viewModel()) {
+fun EventsScreen(viewModel: AppViewModel = viewModel(), isMock: Boolean = false) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
 
     LaunchedEffect(Unit) { if (eventList.isEmpty()) viewModel.getEvents() }
-
     val createEvents = remember { mutableStateOf(false) }
     val hasEvents = remember { mutableStateOf(false) }
     if (createEvents.value) {
@@ -54,7 +51,8 @@ fun EventsScreen(viewModel: AppViewModel = viewModel()) {
             onConfirmation = { event ->
                 viewModel.postEvent(event)
                 createEvents.value = false
-            }
+            },
+            isMock = isMock
         )
     }
 
