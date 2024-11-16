@@ -1,7 +1,6 @@
 package org.timestamp.mobile.ui.elements
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,20 +38,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
-import coil.size.Scale
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-import com.google.firebase.auth.FirebaseAuth
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
-import org.timestamp.mobile.eventList
-import org.timestamp.mobile.pushBackendEvents
+import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.format.DateTimeFormatter
 
@@ -78,7 +73,7 @@ fun EventMap(locationName: String, eventName: String, eventLocation: LatLng) {
 }
 
 @Composable
-fun EventBox(data: EventDetailed, auth: FirebaseAuth) {
+fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
     var isExpanded by remember { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -230,8 +225,7 @@ fun EventBox(data: EventDetailed, auth: FirebaseAuth) {
                     )
                 },
                 onClick = {
-                    eventList.removeIf { it.arrival == data.arrival && it.name == data.name }
-                    pushBackendEvents(context, auth)
+                    viewModel.deleteEvent(data.id!!)
                     isDropdownExpanded = false
                 }
             )

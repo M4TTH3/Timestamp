@@ -20,53 +20,45 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.auth.FirebaseAuth
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.client.request.headers
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 
-val eventList: MutableList<EventDetailed> = mutableStateListOf()
+//val eventList: MutableList<EventDetailed> = mutableStateListOf()
 
 @Composable
-fun EventsScreen(auth: FirebaseAuth, isMock: Boolean = false) {
-    val context = LocalContext.current
+fun EventsScreen(viewModel: AppViewModel = viewModel(), isMock: Boolean = false) {
+    val eventListState = viewModel.events.collectAsState()
+    val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
+
+    LaunchedEffect(Unit) { if (eventList.isEmpty()) viewModel.getEvents() }
     val createEvents = remember { mutableStateOf(false) }
     val hasEvents = remember { mutableStateOf(false) }
     if (createEvents.value) {
         CreateEvent(
             onDismissRequest = { createEvents.value = false },
-            onConfirmation = {
-                pushBackendEvents(context, auth)
+            onConfirmation = { event ->
+                viewModel.postEvent(event)
                 createEvents.value = false
             },
             isMock = isMock
         )
     }
-    if (eventList.isNotEmpty()) {
-        hasEvents.value = true
-    }
+
+    if (eventList.isNotEmpty()) hasEvents.value = true
 
     Box(
         modifier = Modifier
@@ -126,11 +118,7 @@ fun EventsScreen(auth: FirebaseAuth, isMock: Boolean = false) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     eventList.sortBy { it.arrival }
-                    for (event in eventList) {
-                        item {
-                            EventBox(event, auth)
-                        }
-                    }
+                    eventList.forEach { item { EventBox(it) }}
                     item {
                         Spacer(modifier = Modifier.height(120.dp))
                     }
@@ -154,31 +142,3 @@ fun EventsScreen(auth: FirebaseAuth, isMock: Boolean = false) {
     }
 }
 
-fun pushBackendEvents(context: Context, auth: FirebaseAuth) {
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val endpoint = "${context.getString(R.string.backend_url)}/events"
-            val events = eventList.map { it }
-            val tokenResult = auth.currentUser?.getIdToken(false)?.await()
-
-            val res = ktorClient.post(endpoint) {
-                contentType(ContentType.Application.Json)
-                setBody(events.last())
-                headers {
-                    append("Authorization", "Bearer ${tokenResult?.token}")
-                }
-            }
-
-            // Check response
-            withContext(Dispatchers.Main) {
-                if (res.status == HttpStatusCode.OK) {
-                    Log.d("Events successfully pushed to backend", res.bodyAsText())
-                } else {
-                    Log.println(Log.ERROR, "Backend Events Push Error", "res status: ${res.status}, body: ${events.last()}")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("Backend Events Push Error", e.toString())
-        }
-    }
-}
