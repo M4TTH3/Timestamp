@@ -8,7 +8,7 @@ variables:
 
 run_android_tests:
   stage: test
-  image: cirrusci/android-sdk:latest
+  image: ghcr.io/android-emulator/runner:30.0.26
   before_script:
     - yes | sdkmanager --licenses
     - sdkmanager "platforms;android-33" "build-tools;33.0.0" "system-images;android-33;google_apis;x86"
