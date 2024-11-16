@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import io.github.boguszpawlowski.composecalendar.SelectableCalendar
 import io.github.boguszpawlowski.composecalendar.day.DefaultDay
@@ -19,7 +20,8 @@ fun DynamicCalendar(
         calendarState = rememberSelectableCalendarState(),
         modifier = Modifier
             .size(500.dp)
-            .padding(16.dp),
+            .padding(16.dp)
+            .testTag("calendar"),
         dayContent = { dayState ->
             DefaultDay(
                 state = dayState,

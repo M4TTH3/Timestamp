@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.composecalendar)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.androidx.junit.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.ui.test.junit4.android)
     androidTestImplementation(libs.androidx.junit)
