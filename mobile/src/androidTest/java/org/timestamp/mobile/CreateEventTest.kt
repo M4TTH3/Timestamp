@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.maps.model.LatLng
 import org.junit.Rule
 import org.junit.Test
+import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.ui.elements.CreateEvent
 
 class CreateEventTest {
@@ -39,16 +40,16 @@ class CreateEventTest {
 
     @Test
     fun addButtonWorks() {
-        var confirmed = mutableStateOf(false)
+        var confirmedEvent: EventDetailed? = null
         composeTestRule.activity.setContent {
             CreateEvent(
                 onDismissRequest = {},
-                onConfirmation = { confirmed.value = true },
+                onConfirmation = { event -> confirmedEvent = event },
                 isMock = true
             )
         }
         composeTestRule.onNodeWithText("Add").performClick()
-        assert(confirmed.value)
+        assert(confirmedEvent == null)
     }
 
     @Test
