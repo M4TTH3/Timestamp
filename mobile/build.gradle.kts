@@ -84,6 +84,9 @@ dependencies {
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.json)
+    implementation(libs.composecalendar)
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.androidx.junit.ktx)
     implementation(libs.play.services.location)
     implementation(project(":backend")) {
         exclude(group = "com.google.firebase", module = "firebase-admin")
