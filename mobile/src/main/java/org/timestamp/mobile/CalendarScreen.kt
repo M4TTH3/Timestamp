@@ -1,8 +1,6 @@
 package org.timestamp.mobile
 
 import androidx.compose.foundation.background
-import org.timestamp.mobile.eventList
-import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Typography
 import androidx.compose.material.MaterialTheme
@@ -26,26 +23,24 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.boguszpawlowski.composecalendar.SelectableCalendar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.elements.DynamicCalendar
-import org.timestamp.mobile.ui.elements.EventData
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.Month
 
 val ubuntuFontFamily = FontFamily(
     Font(R.font.ubuntu_regular),  // Regular
@@ -84,12 +79,15 @@ val calendarTypography = Typography(
 )
 
 @Composable
-fun CalendarScreen() {
-
+fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
+    val eventListState = viewModel.events.collectAsState()
+    val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
     var selectedDate by remember { mutableStateOf<LocalDate?>(null)}
 
+    LaunchedEffect(Unit) { if (eventList.isEmpty()) viewModel.getEvents() }
+
     val eventsOnSelectedDate = remember(selectedDate) {
-        eventList.filter { it.date.toLocalDate() == selectedDate }
+        eventList.filter { it.arrival.toLocalDate() == selectedDate }
     }
     MaterialTheme(typography = calendarTypography) {
         Box(
@@ -122,35 +120,38 @@ fun CalendarScreen() {
                         modifier = Modifier.padding(top = 8.dp, start = 16.dp)
                     ) {
                         if (eventsOnSelectedDate.isNotEmpty()) {
-                            items(eventsOnSelectedDate) { event ->
-                                Card(
-                                    shape = RoundedCornerShape(16.dp),
-                                    elevation = CardDefaults.cardElevation(
-                                        defaultElevation = 4.dp
-                                    ),
-                                    modifier = Modifier
-                                        .padding(vertical = 4.dp)
-                                        .width(375.dp)
-                                ) {
-                                    Row(modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(IntrinsicSize.Min)
+                            eventsOnSelectedDate.forEach { event ->
+                                item {
+                                    Card(
+                                        shape = RoundedCornerShape(16.dp),
+                                        elevation = CardDefaults.cardElevation(
+                                            defaultElevation = 4.dp
+                                        ),
+                                        modifier = Modifier
+                                            .padding(vertical = 4.dp)
+                                            .width(375.dp)
                                     ) {
-                                        Box(
+                                        Row(
                                             modifier = Modifier
-                                                .fillMaxHeight()
-                                                .width(10.dp)
-                                                .background(Colors.Bittersweet)
-                                        )
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .background(Colors.White)
-                                                .padding(16.dp)
+                                                .fillMaxWidth()
+                                                .height(IntrinsicSize.Min)
                                         ) {
-                                            Text(
-                                                text = event.name
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxHeight()
+                                                    .width(10.dp)
+                                                    .background(Colors.Bittersweet)
                                             )
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(Colors.White)
+                                                    .padding(16.dp)
+                                            ) {
+                                                Text(
+                                                    text = event.name
+                                                )
+                                            }
                                         }
                                     }
                                 }
