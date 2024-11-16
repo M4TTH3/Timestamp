@@ -1,6 +1,5 @@
 package org.timestamp.mobile.ui.elements
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -73,6 +72,10 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import android.Manifest
 import android.util.Log
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -164,7 +167,19 @@ fun CreateEvent(
     if (eventDate) {
         DatePickerDialog(
             onDateSelected = { dateMillis ->
-                selectedDate = dateMillis?.let { dateFormatter.format(Date(it)) } ?: ""
+                selectedDate = ""
+                if (dateMillis != null) {
+                    // Need to add a day to DatePicked
+                    val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+                    val timeZoneOffset = ZoneId.systemDefault().rules
+                        .getOffset(LocalDateTime.now())
+                    val formattedTime = LocalDateTime.ofEpochSecond(
+                        dateMillis / 1000,
+                        0, timeZoneOffset
+                    ).plusDays(1).format(formatter)
+                    selectedDate = formattedTime
+                }
+
                 eventDate = false
             },
             onDismiss = { eventDate = false }
