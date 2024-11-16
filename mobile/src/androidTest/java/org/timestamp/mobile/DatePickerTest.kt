@@ -10,10 +10,10 @@ import org.junit.Test
 import org.timestamp.mobile.ui.elements.DatePickerDialog
 import java.util.Calendar
 
-//class DatePickerTest {
-//    @JvmField @Rule
-//    val composeTestRule = createAndroidComposeRule<MainActivity>()
-//
+class DatePickerTest {
+    @JvmField @Rule
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
+
 //    @Test
 //    fun testDatePickerDialog_selectValidDateAndConfirm() {
 //        var selectedDate: Long? = null
