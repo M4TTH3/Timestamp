@@ -1,9 +1,14 @@
 package org.timestamp.mobile.ui.elements
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,24 +57,43 @@ import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun EventMap(locationName: String, eventName: String, eventLocation: LatLng) {
+fun EventMap(locationName: String, eventName: String, eventLocation: LatLng, context: Context) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(eventLocation, 15f)
     }
     val markerState = rememberMarkerState(position = eventLocation)
-    GoogleMap(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            .clip(RoundedCornerShape(16.dp)),
-        cameraPositionState = cameraPositionState
+            .clip(RoundedCornerShape(16.dp))
     ) {
-        Marker(
-            state = markerState,
-            title = locationName,
-            snippet = eventName
+        GoogleMap(
+            modifier = Modifier.matchParentSize(),
+            cameraPositionState = cameraPositionState
+        ) {
+            Marker(
+                state = markerState,
+                title = locationName,
+                snippet = eventName
+            )
+        }
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable {
+                    openGoogleMaps(context, eventLocation)
+                }
         )
     }
+}
+
+fun openGoogleMaps(context: Context, location: LatLng) {
+    val uri = Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")
+    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+        setPackage("com.google.android.apps.maps")
+    }
+    context.startActivity(intent)
 }
 
 @Composable
@@ -233,7 +257,7 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
 
         // Conditionally show extra content when expanded
         if (isExpanded) {
-            EventMap(locationName = data.description, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude))
+            EventMap(locationName = data.description, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude), context = context)
         }
 
         Divider(
