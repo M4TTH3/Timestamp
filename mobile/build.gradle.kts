@@ -73,6 +73,7 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:2.11.0")
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     implementation("com.google.accompanist:accompanist-permissions:0.30.1")
+    implementation("com.google.android.libraries.places:places:3.2.0")
     implementation(libs.firebase.auth)
     implementation(libs.play.services.auth)
     implementation(libs.firebase.analytics)
