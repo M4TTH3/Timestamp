@@ -2,17 +2,15 @@ package org.timestamp.mobile
 
 import androidx.activity.compose.setContent
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import org.junit.Rule
 import org.junit.Test
 import org.timestamp.mobile.ui.elements.DatePickerDialog
-import java.util.Calendar
 
 class DatePickerTest {
     @JvmField @Rule
-    val composeTestRule = createAndroidComposeRule<MainActivity>()
+    val composeTestRule = createAndroidComposeRule<TimestampActivity>()
 
 //    @Test
 //    fun testDatePickerDialog_selectValidDateAndConfirm() {

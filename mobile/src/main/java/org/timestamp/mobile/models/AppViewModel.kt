@@ -32,11 +32,23 @@ import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.backend.viewModels.LocationVm
 import org.timestamp.mobile.R
 
+val ktorClient = HttpClient(CIO) {
+    install(ContentNegotiation) {
+        json(Json {
+            prettyPrint = true
+            isLenient = true
+            ignoreUnknownKeys = true
+        })
+    }
+}
+
 /**
  * Global view model that holds Auth & Events states
  */
-class AppViewModel(private val application: Application) : AndroidViewModel(application) {
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+class AppViewModel (
+    private val application: Application
+) : AndroidViewModel(application) {
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val _events: MutableStateFlow<List<EventDetailed>> = MutableStateFlow(emptyList())
     val events: StateFlow<List<EventDetailed>> = _events
 
@@ -45,16 +57,6 @@ class AppViewModel(private val application: Application) : AndroidViewModel(appl
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
-
-    val ktorClient = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
-        }
-    }
 
     private suspend fun getToken(): String? = auth.currentUser?.getIdToken(false)?.await()?.token
 
@@ -159,6 +161,7 @@ class AppViewModel(private val application: Application) : AndroidViewModel(appl
                     Log.d("Events Post", "Successfully created: ${res.bodyAsText()}")
                     val e: EventDetailed = res.body()
                     val newList = events.value + e // Insert it into the list and create an update
+                    Log.d("Events Post", newList.toString())
                     withContext(Dispatchers.Main) {
                         _events.value = newList
                     }
@@ -186,17 +189,16 @@ class AppViewModel(private val application: Application) : AndroidViewModel(appl
                     }
                 }
 
-                // Check response
                 if (res.status.isSuccess()) {
-                    Log.d("Events Delete", "Successfully deleted $eventId")
                     // Delete the element from the current list
                     val index = events.value.indexOfFirst { it.id == eventId }
-                    val newList = _events.value.toMutableList()
+                    val newList = events.value.toMutableList()
                     newList.removeAt(index)
-
                     withContext(Dispatchers.Main) {
                         _events.value = newList
                     }
+
+                    Log.d("Events Delete", "Successfully deleted $eventId")
                 } else {
                     Log.e("Events Delete", "res status: $res")
                 }

@@ -1,17 +1,12 @@
 package org.timestamp.mobile
 
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.google.android.gms.maps.model.LatLng
 import org.junit.Rule
 import org.junit.Test
 import org.timestamp.backend.viewModels.EventDetailed
@@ -19,7 +14,7 @@ import org.timestamp.mobile.ui.elements.CreateEvent
 
 class CreateEventTest {
     @JvmField @Rule
-    val composeTestRule = createAndroidComposeRule<MainActivity>()
+    val composeTestRule = createAndroidComposeRule<TimestampActivity>()
 
     @Test
     fun elementsAreDisplayed() {

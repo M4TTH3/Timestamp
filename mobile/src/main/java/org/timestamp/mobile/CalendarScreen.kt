@@ -23,7 +23,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,8 +82,6 @@ fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
     var selectedDate by remember { mutableStateOf<LocalDate?>(null)}
-
-    LaunchedEffect(Unit) { if (eventList.isEmpty()) viewModel.getEvents() }
 
     val eventsOnSelectedDate = remember(selectedDate) {
         eventList.filter { it.arrival.toLocalDate() == selectedDate }

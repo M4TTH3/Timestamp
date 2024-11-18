@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,17 +25,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseUser
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import org.timestamp.mobile.models.AppViewModel
 
 @Composable
 fun HomeScreen(
+    viewModel: AppViewModel = viewModel(),
     modifier: Modifier = Modifier,
     currentUser: FirebaseUser?,
     onSignOutClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
+    LaunchedEffect(Unit) { viewModel.getEvents() } // Prefetch events to make it look quicker
+
     val textStyle = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Medium,

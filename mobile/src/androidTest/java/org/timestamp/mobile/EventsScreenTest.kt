@@ -1,7 +1,6 @@
 package org.timestamp.mobile
 
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -11,17 +10,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.firebase.auth.FirebaseAuth
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.timestamp.backend.viewModels.EventDetailed
-import org.timestamp.backend.viewModels.EventDetailedUser
 
 @RunWith(AndroidJUnit4::class)
 class EventsScreenTest {
     @JvmField @Rule
-    val composeTestRule = createAndroidComposeRule<MainActivity>()
+    val composeTestRule = createAndroidComposeRule<TimestampActivity>()
 
     @Test
     fun testElementRenders() {
