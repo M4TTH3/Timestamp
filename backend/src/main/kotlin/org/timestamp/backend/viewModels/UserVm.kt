@@ -4,6 +4,12 @@ import kotlinx.serialization.Serializable
 import org.timestamp.backend.model.User
 
 @Serializable
+data class LocationVm(
+    val latitude: Double,
+    val longitude: Double
+)
+
+@Serializable
 data class UserVm(
     val id: String,
     val name: String,

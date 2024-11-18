@@ -7,6 +7,9 @@ import org.timestamp.backend.model.Event
 
 interface TimestampEventRepository : JpaRepository<Event, Long> {
 
-    @Query("SELECT e FROM Event e JOIN e.users u WHERE u.id = :userId")
+    /**
+     * Filter events by current user, that is >= to Today
+     */
+    @Query("SELECT e FROM Event e JOIN e.users u WHERE u.id = :userId AND e.arrival >= CURRENT_DATE")
     fun findAllEventsByUser(@Param("userId") userId: String): List<Event>
 }

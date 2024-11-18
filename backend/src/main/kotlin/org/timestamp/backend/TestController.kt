@@ -47,7 +47,7 @@ class TestController(
 
     @PostMapping("/events")
     fun createEvent(@RequestBody event: Event): ResponseEntity<Event> {
-        val e = eventService.createEvent(event.creator, event)
+        val e = eventService.createEvent(event.creator, event) ?: return ResponseEntity.badRequest().build()
         return ResponseEntity.created(URI("/test/events/${e.id}")).body(e)
     }
 

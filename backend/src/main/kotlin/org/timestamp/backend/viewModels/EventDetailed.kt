@@ -44,7 +44,7 @@ data class EventDetailed(
     val users: List<EventDetailedUser> = emptyList(),
 ) {
     companion object {
-        suspend fun fromEvent(event: Event, profile: String = "car"): EventDetailed {
+        suspend fun from(event: Event, profile: String = "car"): EventDetailed {
             val webClient = WebClient.builder().baseUrl("https://maps.mattheway.com").build()
             val users = mutableListOf<EventDetailedUser>()
             for (user in event.users) {

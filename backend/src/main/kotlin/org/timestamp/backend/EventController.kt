@@ -7,7 +7,6 @@ import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
 import org.timestamp.backend.service.EventService
-import org.timestamp.backend.service.UserService
 import org.timestamp.backend.viewModels.EventDetailed
 import java.net.URI
 
@@ -20,16 +19,17 @@ class EventController(
     @GetMapping
     suspend fun getEvents(@AuthenticationPrincipal firebaseUser: FirebaseUser): ResponseEntity<List<EventDetailed>> {
         val events = eventService.getEvents(firebaseUser)
-        return ResponseEntity.ok(events.map { EventDetailed.fromEvent(it) })
+        return ResponseEntity.ok(events.map { EventDetailed.from(it) })
     }
 
     @PostMapping
-    fun createEvent(
+    suspend fun createEvent(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @RequestBody event: Event
-    ): ResponseEntity<Event> {
-        val e = eventService.createEvent(User(firebaseUser), event)
-        return ResponseEntity.created(URI("/events/${e.id}")).body(e)
+    ): ResponseEntity<EventDetailed> {
+        val e = eventService.createEvent(User(firebaseUser), event) ?: return ResponseEntity.badRequest().build()
+        return ResponseEntity.created(URI("/events/${e.id}")).body(EventDetailed.from(e))
+
     }
 
     @GetMapping("/{id}")
@@ -38,7 +38,25 @@ class EventController(
         @PathVariable id: Long
     ): ResponseEntity<EventDetailed> {
         val e = eventService.getEventById(firebaseUser, id) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(EventDetailed.fromEvent(e))
+        return ResponseEntity.ok(EventDetailed.from(e))
+    }
+
+    @PostMapping("/join/{id}")
+    suspend fun joinEvent(
+        @AuthenticationPrincipal firebaseUser: FirebaseUser,
+        @PathVariable id: Long
+    ): ResponseEntity<EventDetailed> {
+        val e = eventService.joinEvent(firebaseUser, id) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(EventDetailed.from(e))
+    }
+
+    @PatchMapping
+    suspend fun updateEvent(
+        @AuthenticationPrincipal firebaseUser: FirebaseUser,
+        @RequestBody event: Event
+    ): ResponseEntity<EventDetailed> {
+        val e = eventService.updateEvent(firebaseUser, event) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(EventDetailed.from(e))
     }
 
     /**
