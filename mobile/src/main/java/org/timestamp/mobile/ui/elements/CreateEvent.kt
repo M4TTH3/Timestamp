@@ -154,9 +154,24 @@ fun fetchLocationDetails(
             val results = json.getJSONArray("results")
             if (results.length() > 0) {
                 val result = results.getJSONObject(0)
-                val name = result.getString("formatted_address")
+                val addressComponents = result.getJSONArray("address_components")
+                var buildingName: String? = null
+                for (i in 0 until addressComponents.length()) {
+                    val component = addressComponents.getJSONObject(i)
+                    val types = component.getJSONArray("types")
+                    for (j in 0 until types.length()) {
+                        val type = types.getString(j)
+                        if (type == "point_of_interest" || type == "premise") {
+                            buildingName = component.getString("short_name")
+                            break
+                        }
+                    }
+                    if (buildingName != null) break
+                }
+                val formattedAddress = result.getString("formatted_address")
+                val nameToUse = buildingName ?: formattedAddress
                 withContext(Dispatchers.Main) {
-                    onResult(name, name)
+                    onResult(nameToUse, formattedAddress)
                 }
             } else {
                 throw Exception("No results found.")
