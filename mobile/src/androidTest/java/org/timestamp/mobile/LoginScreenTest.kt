@@ -8,7 +8,7 @@ import org.junit.Test
 
 class LoginScreenTest {
     @JvmField @Rule
-    val composeTestRule = createAndroidComposeRule<MainActivity>()
+    val composeTestRule = createAndroidComposeRule<TimestampActivity>()
 
     @Test
     fun elementsAreDisplayed() {

@@ -1,7 +1,5 @@
 package org.timestamp.mobile
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,9 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.painterResource
@@ -38,11 +34,13 @@ import org.timestamp.mobile.ui.elements.EventBox
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 
 @Composable
-fun EventsScreen(viewModel: AppViewModel = viewModel(), isMock: Boolean = false) {
+fun EventsScreen(
+    viewModel: AppViewModel = viewModel(),
+    isMock: Boolean = false
+) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
 
-    LaunchedEffect(Unit) { if (eventList.isEmpty()) viewModel.getEvents() }
     val createEvents = remember { mutableStateOf(false) }
     val hasEvents = remember { mutableStateOf(false) }
     if (createEvents.value) {
@@ -116,7 +114,7 @@ fun EventsScreen(viewModel: AppViewModel = viewModel(), isMock: Boolean = false)
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     eventList.sortBy { it.arrival }
-                    eventList.forEach { item { EventBox(it) }}
+                    eventList.forEach { item { EventBox(it, viewModel) }}
                     item {
                         Spacer(modifier = Modifier.height(120.dp))
                     }
