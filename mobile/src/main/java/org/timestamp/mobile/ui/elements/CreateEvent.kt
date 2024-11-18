@@ -1,6 +1,7 @@
 package org.timestamp.mobile.ui.elements
 
 import androidx.compose.foundation.background
+import android.content.pm.PackageManager
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -65,13 +66,18 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.location.Location
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import android.Manifest
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.URL
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -130,6 +136,39 @@ fun FetchLocationWrapper(
     }
 }
 
+fun fetchLocationDetails(
+    context: Context,
+    latLng: LatLng,
+    onResult: (String, String) -> Unit,
+    onError: (Exception) -> Unit
+    ) {
+    val apiKey = context.packageManager
+        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+        .metaData
+        .getString("com.google.android.geo.API_KEY")
+    val geocodeUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=$apiKey"
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = URL(geocodeUrl).readText()
+            val json = JSONObject(response)
+            val results = json.getJSONArray("results")
+            if (results.length() > 0) {
+                val result = results.getJSONObject(0)
+                val name = result.getString("formatted_address")
+                withContext(Dispatchers.Main) {
+                    onResult(name, name)
+                }
+            } else {
+                throw Exception("No results found.")
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                onError(e)
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEvent(
@@ -145,6 +184,9 @@ fun CreateEvent(
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
     var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
+    var locationName by remember { mutableStateOf("") }
+    var locationAddress by remember { mutableStateOf("") }
+    var isLoadingLocation by remember { mutableStateOf(false) }
     var cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(37.7749, -122.4194), 10f)
     }
@@ -309,10 +351,12 @@ fun CreateEvent(
                }
                Spacer(modifier = Modifier.height(8.dp))
                Text(
-                   text = "Select Event Location",
+                   text = if (isLoadingLocation) "Fetching location name..." else locationName,
                    fontFamily = ubuntuFontFamily,
-                   fontWeight = FontWeight.Bold,
-                   fontSize = 18.sp
+                   fontWeight = FontWeight.Normal,
+                   fontSize = 16.sp,
+                   color = if (isLoadingLocation) Color.Gray else Color.Black,
+                   modifier = Modifier.padding(8.dp)
                )
                Spacer(modifier = Modifier.height(16.dp))
                    GoogleMap(
@@ -323,6 +367,22 @@ fun CreateEvent(
                        cameraPositionState = cameraPositionState,
                        onMapClick = { latLng ->
                            selectedLocation = latLng
+                           isLoadingLocation = true
+                           fetchLocationDetails(
+                               context = context,
+                               latLng = latLng,
+                               onResult = { name, address ->
+                                   locationName = name
+                                   locationAddress = address
+                                   isLoadingLocation = false
+                               },
+                               onError = { error ->
+                                   Log.e("CreateEvent", "Error fetching location: ${error.message}")
+                                   locationName = "Failed to fetch location"
+                                   locationAddress = ""
+                                   isLoadingLocation = false
+                               }
+                           )
                        }
                    ) {
                        selectedLocation?.let {
@@ -360,7 +420,7 @@ fun CreateEvent(
                            color = Color(0xFFFFFFFF)
                        )
                    }
-                   Spacer(modifier = Modifier.width(32.dp))
+                   Spacer(modifier = Modifier.width(32.dp));
                    Button(
                        onClick = {
                            if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
@@ -388,8 +448,8 @@ fun CreateEvent(
                                        arrival = selectedDateTime,
                                        latitude = selectedLocation?.latitude ?: 0.0,
                                        longitude = selectedLocation?.longitude ?: 0.0,
-                                       description = "Selected Location",
-                                       address = "Selected Address"
+                                       description = locationName,
+                                       address = locationAddress
                                    ))
 
                                    Log.d("ADD EVENT", "EVENT ADDED")
