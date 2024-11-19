@@ -1,116 +1,131 @@
 package org.timestamp.mobile.ui.elements
 
 import androidx.compose.foundation.background
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerColors
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import com.vsnappy1.datepicker.data.DefaultDatePickerConfig
+import com.vsnappy1.datepicker.data.model.DatePickerDate
+import com.vsnappy1.datepicker.data.model.SelectionLimiter
+import com.vsnappy1.datepicker.ui.model.DatePickerConfiguration
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerDialog(
-    onDateSelected: (Long?) -> Unit,
-    onDismiss: () -> Unit
+    onDateSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+    initialDate: String = ""
 ) {
     val datePickerState = rememberDatePickerState()
     var invalidDateDialog by remember { mutableStateOf(false) }
-    val today = remember {
-        Calendar.getInstance(TimeZone.getTimeZone("America/New_York")).apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
+    val today = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+
+    val parsedDate = if (initialDate.isNotEmpty()) {
+        LocalDate.parse(initialDate, formatter)
+    } else {
+        today
     }
 
-    if (invalidDateDialog) {
-        AlertDialog(
-            onDismissRequest = { invalidDateDialog = false },
-            title = {
-                Text(
-                    text = "Invalid Date",
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text("Please select a date that is today or later.")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { invalidDateDialog = false }
-                ) {
-                    Text("OK")
-                }
-            }
-        )
-    }
-
-    DatePickerDialog(
+    var selectedDate by remember { mutableStateOf(parsedDate) }
+    val formattedSelectedDate by remember { derivedStateOf { selectedDate.format(formatter) } }
+    Dialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                val rawSelectedDate = datePickerState.selectedDateMillis
-                val selectedDate = Calendar.getInstance(TimeZone.getTimeZone("America/New_York")).apply {
-                    if (rawSelectedDate != null) {
-                        timeInMillis = rawSelectedDate
-                    }
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.timeInMillis
-                if (selectedDate >= today) {
-                    onDateSelected(selectedDate)
-                } else {
-                    invalidDateDialog = true
-                }
-            },
-                colors = ButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Colors.Bittersweet,
-                    disabledContentColor = Colors.Bittersweet,
-                    disabledContainerColor = Color.Transparent
-                )
-            ) {
-                Text("OK")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                colors = ButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Colors.Bittersweet,
-                    disabledContentColor = Colors.Bittersweet,
-                    disabledContainerColor = Color.Transparent
-                )
-            ) {
-                Text("Cancel")
-            }
-        },
     ) {
-        DatePicker(
-            state = datePickerState,
-        )
+        Card(
+            modifier = Modifier
+                .shadow(6.dp, shape = RoundedCornerShape(32.dp))
+                .background(color = Colors.White, shape = RoundedCornerShape(32.dp))
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .background(color = Colors.White)
+                    .fillMaxWidth()
+            ) {
+                com.vsnappy1.datepicker.DatePicker(
+                    onDateSelected = { year, month, day ->
+                        selectedDate = LocalDate.of(year, month, day)
+                    },
+                    date = DatePickerDate(
+                        year = parsedDate.year,
+                        month = parsedDate.monthValue,
+                        day = parsedDate.dayOfMonth
+                    ),
+                    selectionLimiter = SelectionLimiter(
+                        fromDate = DatePickerDate(
+                            year = today.year,
+                            month = today.monthValue,
+                            day = today.dayOfMonth
+                        )
+                    ),
+                    modifier = Modifier
+                        .background(Colors.White),
+                    configuration = DatePickerConfiguration.Builder()
+                        .height(height = 250.dp)
+                        .dateTextStyle(DefaultDatePickerConfig.dateTextStyle.copy(color = Colors.Black))
+                        .selectedDateBackgroundColor(color = Colors.Bittersweet)
+                        .sundayTextColor(color = Colors.Bittersweet)
+                        .headerTextStyle(TextStyle(
+                            fontFamily = ubuntuFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        ))
+                        .build()
+                )
+                Button(
+                    onClick = {
+                        onDateSelected(formattedSelectedDate)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Colors.Bittersweet, // Background color
+                        contentColor = Colors.White  // Text color
+                    ),
+                ) {
+                    Text(
+                        text = "OK",
+                        fontFamily = ubuntuFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp
+                    )
+                }
+            }
+        }
     }
 }
