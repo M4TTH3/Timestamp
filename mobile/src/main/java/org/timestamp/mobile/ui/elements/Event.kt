@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -44,8 +47,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseUser
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -97,7 +102,11 @@ fun openGoogleMaps(context: Context, location: LatLng) {
 }
 
 @Composable
-fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
+fun EventBox(
+    data: EventDetailed,
+    viewModel: AppViewModel = viewModel(),
+    currentUser: FirebaseUser?
+) {
     var isExpanded by remember { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var isUsersOpen by remember { mutableStateOf(false) }
@@ -203,29 +212,30 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
                 .fillMaxWidth()
 
         ) {
-            Icon(painter = painterResource(id = R.drawable.location_icon),
-                contentDescription = "location icon",
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .size(18.dp))
-            Spacer(modifier = Modifier.width(2.dp))
+            if (currentUser != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(currentUser.photoUrl),
+                    contentDescription = "current user icon",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                )
+            }
             Text(
-                text = "temp" + "km",
+                text = "Status:",
                 fontFamily = ubuntuFontFamily,
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.width(20.dp))
-            Icon(painter = painterResource(id = R.drawable.car_icon),
-                contentDescription = "transportation icon",
-                tint = Color.Unspecified,
+                fontSize = 14.sp,
                 modifier = Modifier
-                    .size(18.dp)
+                    .padding(horizontal = 4.dp)
             )
-            Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "temp" + "min",
+                text = "On time",
+                color = Color.Green,
                 fontFamily = ubuntuFontFamily,
-                fontSize = 14.sp
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
             val formatter = DateTimeFormatter.ofPattern("h:mm a")
@@ -243,6 +253,7 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
                 modifier = Modifier
                     .size(18.dp))
         }
+        Spacer(modifier = Modifier.height(8.dp))
 
         DropdownMenu(
             expanded = isDropdownExpanded,
@@ -298,6 +309,36 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
         // Conditionally show extra content when expanded
         if (isExpanded) {
             EventMap(locationName = data.description, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude), context = context)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Icon(painter = painterResource(id = R.drawable.location_icon),
+                    contentDescription = "location icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(18.dp))
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(
+                    text = "temp" + "km",
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(painter = painterResource(id = R.drawable.car_icon),
+                    contentDescription = "transportation icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "temp" + "min",
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp
+                )
+            }
         }
 
         Divider(

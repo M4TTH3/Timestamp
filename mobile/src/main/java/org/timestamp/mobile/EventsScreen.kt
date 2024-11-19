@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseUser
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.elements.CreateEvent
@@ -36,7 +37,8 @@ import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 @Composable
 fun EventsScreen(
     viewModel: AppViewModel = viewModel(),
-    isMock: Boolean = false
+    isMock: Boolean = false,
+    currentUser: FirebaseUser?
 ) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
@@ -114,7 +116,7 @@ fun EventsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     eventList.sortBy { it.arrival }
-                    eventList.forEach { item { EventBox(it, viewModel) }}
+                    eventList.forEach { item { EventBox(it, viewModel, currentUser) }}
                     item {
                         Spacer(modifier = Modifier.height(120.dp))
                     }

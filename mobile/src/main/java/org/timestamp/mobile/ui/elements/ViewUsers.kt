@@ -121,7 +121,7 @@ fun ViewUsers(
                         .fillMaxWidth(0.9f)
                         .heightIn(max = 500.dp)
                 ) {
-                    repeat(5) {
+                    repeat(5) { // for testing purposes, remove later
                     for (user in users) {
                         val isOwner = event.creator == user.name
                         println(user.name)
