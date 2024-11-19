@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -28,6 +30,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,7 +39,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,7 +62,43 @@ fun ViewUsers(
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties(),
 ) {
+    var linkCopiedDialog = remember { mutableStateOf(false) }
+
+    val clipBoardManager = LocalClipboardManager.current
+    val context = LocalContext.current
     val users = event.users.sortedBy { it.name }
+    if (linkCopiedDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                linkCopiedDialog.value = false
+            },
+            title = {
+                Text(
+                    text = "Success",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text("Link successfully copied to clipboard!")
+                   },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        linkCopiedDialog.value = false
+                    },
+                ) {
+                    Text(
+                        text = "OK",
+                        fontFamily = ubuntuFontFamily,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            },
+
+        )
+    }
+
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = properties.let {
@@ -101,7 +144,11 @@ fun ViewUsers(
                             .padding(12.dp)
                     )
                     IconButton(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                        /*TODO*/
+                            clipBoardManager.setText(AnnotatedString("Link to put in later"))
+                            linkCopiedDialog.value = true
+                        },
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .size(24.dp)

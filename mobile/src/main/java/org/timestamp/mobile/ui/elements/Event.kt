@@ -58,7 +58,9 @@ import com.google.maps.android.compose.rememberMarkerState
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
 import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -110,6 +112,7 @@ fun EventBox(
     var isExpanded by remember { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var isUsersOpen by remember { mutableStateOf(false) }
+    val isToday = data.arrival.toLocalDate() == LocalDate.now()
     val context = LocalContext.current
 
     if (isUsersOpen) {
@@ -212,46 +215,84 @@ fun EventBox(
                 .fillMaxWidth()
 
         ) {
-            if (currentUser != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(currentUser.photoUrl),
-                    contentDescription = "current user icon",
+            if (isToday) {
+                if (currentUser != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(currentUser.photoUrl),
+                        contentDescription = "current user icon",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                    )
+                }
+                Text(
+                    text = "Status:",
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp,
                     modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
+                        .padding(horizontal = 4.dp)
+                )
+                Text(
+                    text = "On time",
+                    color = Color.Green,
+                    fontFamily = ubuntuFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                val formatter = DateTimeFormatter.ofPattern("h:mm a")
+                val formattedTime: String = data.arrival.format(formatter)
+                Text(
+                    text = formattedTime,
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .offset(x = (-4).dp)
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.clock_icon),
+                    contentDescription = "clock icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(18.dp)
+                )
+            } else {
+                val timeFormatter = DateTimeFormatter.ofPattern("h:mm a")
+                val dateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy")
+                val formattedDate: String = data.arrival.format(dateFormatter)
+                val formattedTime: String = data.arrival.format(timeFormatter)
+                Icon(
+                    painter = painterResource(id = R.drawable.event_calendar),
+                    contentDescription = "calendar icon",
+                    tint = Colors.PowderBlue,
+                    modifier = Modifier
+                        .size(18.dp)
+                )
+                Text(
+                    text = formattedDate,
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .offset(x = 4.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = formattedTime,
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .offset(x = (-4).dp)
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.clock_icon),
+                    contentDescription = "clock icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(18.dp)
                 )
             }
-            Text(
-                text = "Status:",
-                fontFamily = ubuntuFontFamily,
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .padding(horizontal = 4.dp)
-            )
-            Text(
-                text = "On time",
-                color = Color.Green,
-                fontFamily = ubuntuFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .padding(horizontal = 4.dp)
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            val formatter = DateTimeFormatter.ofPattern("h:mm a")
-            val formattedTime: String = data.arrival.format(formatter)
-            Text(
-                text = formattedTime,
-                fontFamily = ubuntuFontFamily,
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .offset(x = (-4).dp)
-            )
-            Icon(painter = painterResource(id = R.drawable.clock_icon),
-                contentDescription = "clock icon",
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .size(18.dp))
         }
         Spacer(modifier = Modifier.height(8.dp))
 
