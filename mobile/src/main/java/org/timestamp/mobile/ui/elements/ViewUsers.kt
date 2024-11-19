@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -124,7 +125,6 @@ fun ViewUsers(
                     repeat(5) { // for testing purposes, remove later
                     for (user in users) {
                         val isOwner = event.creator == user.name
-                        println(user.name)
                         item {
                             Row(
                                 modifier = Modifier
@@ -151,15 +151,16 @@ fun ViewUsers(
                                     modifier = Modifier
                                         .padding(3.dp)
                                 )
+                                Spacer(modifier = Modifier.weight(1f))
                                 Text(
-                                    text = user.email,
+                                    text = "On Time",
                                     fontFamily = ubuntuFontFamily,
                                     fontSize = 14.sp,
-                                    color = Color.Gray,
+                                    color = Color.Green,
                                     modifier = Modifier
                                         .padding(3.dp)
                                 )
-                                Spacer(modifier = Modifier.weight(1f))
+                                Spacer(modifier = Modifier.width(4.dp))
                                 IconButton(
                                     onClick = { /*TODO*/ },
                                     modifier = Modifier
