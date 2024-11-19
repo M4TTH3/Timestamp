@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     pfp VARCHAR(255) NOT NULL,
+    travel_mode VARCHAR(10) NOT NULL CHECK (travel_mode IN ('car', 'foot', 'bike')),
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -27,8 +28,18 @@ CREATE TABLE IF NOT EXISTS events (
 -- Table for the many-to-many relationship between users and events
 CREATE TABLE IF NOT EXISTS user_events (
      user_id VARCHAR(255),  -- FK to users table
-     event_id BIGINT,  -- FK to events table
+     event_id BIGINT NOT NULL,  -- FK to events table
      PRIMARY KEY (user_id, event_id),
      CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
      CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
+
+-- Table for the many-to-one relationship between Arrivals and Events
+CREATE TABLE IF NOT EXISTS arrivals (
+    id SERIAL PRIMARY KEY,
+    event_id BIGINT NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+)

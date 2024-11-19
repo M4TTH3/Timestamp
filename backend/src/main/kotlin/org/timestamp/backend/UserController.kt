@@ -31,7 +31,12 @@ class UserController(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @RequestBody location: LocationVm
     ): ResponseEntity<User> {
-        val user = userService.updateLocation(firebaseUser, location.latitude, location.longitude)
+        val user = userService.updateLocation(
+            firebaseUser,
+            location.latitude,
+            location.longitude,
+            location.travelMode
+        )
         return ResponseEntity.ok(user)
     }
 }

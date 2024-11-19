@@ -1,12 +1,14 @@
 package org.timestamp.backend.viewModels
 
 import kotlinx.serialization.Serializable
+import org.timestamp.backend.model.TravelMode
 import org.timestamp.backend.model.User
 
 @Serializable
 data class LocationVm(
     val latitude: Double,
-    val longitude: Double
+    val longitude: Double,
+    val travelMode: TravelMode
 )
 
 @Serializable
