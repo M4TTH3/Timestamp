@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "events", schema = "public")
-data class Event(
+class Event(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     // Auto incremented id
@@ -32,4 +32,7 @@ data class Event(
     )
     @JsonIgnoreProperties("events")
     val users: MutableSet<User> = mutableSetOf(),
+
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val arrivals: MutableSet<Arrival> = mutableSetOf()
 ): Base()

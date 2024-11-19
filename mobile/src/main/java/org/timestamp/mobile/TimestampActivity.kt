@@ -5,7 +5,6 @@ package org.timestamp.mobile
  */
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
