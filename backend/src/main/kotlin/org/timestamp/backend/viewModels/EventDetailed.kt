@@ -18,6 +18,7 @@ data class EventDetailedUser(
     val email: String,
     val pfp: String,
     val timeEst: Long?,
+    val distance: Double?
 )
 
 @Serializable
@@ -82,6 +83,7 @@ data class EventDetailed(
             for (user in event.users) {
                 val endpoint = "/route?point=${user.latitude},${user.longitude}&point=${event.latitude},${event.longitude}&profile=${user.travelMode.value}"
                 var timeEst: Long? = null
+                var distance: Double? = null
 
                 // Only get the time est. if the event is today and the user has not arrived
                 if (user.id !in arrivalSet && event.arrival.toLocalDate() == LocalDateTime.now().toLocalDate()) {
@@ -95,10 +97,14 @@ data class EventDetailed(
                         val routeResponse = json.decodeFromString<RouteResponse>(travelData)
                         timeEst = routeResponse.paths[0].time
 
-                        // If the distance is close (150m) then the user has arrived
-                        val distance = routeResponse.paths[0].distance
+                        // If the distance is close (150m) AND the arrives after 1 hour before the event,
+                        // then the user has arrived.
+                        distance = routeResponse.paths[0].distance
                         val twoHundredMeters = 200.0
-                        if (distance <= twoHundredMeters) {
+                        val hourBefore = event.arrival.minusHours(1)
+                        val inArrivalPeriod = LocalDateTime.now().isAfter(hourBefore)
+
+                        if (distance <= twoHundredMeters && inArrivalPeriod) {
                             val arrival = arrivalService.addArrival(event.id!!, user.id)
                             arrivals.add(arrival)
                         }
@@ -112,7 +118,8 @@ data class EventDetailed(
                     name = user.name,
                     email = user.email,
                     pfp = user.pfp,
-                    timeEst = timeEst
+                    timeEst = timeEst,
+                    distance = distance
                 ))
             }
 
