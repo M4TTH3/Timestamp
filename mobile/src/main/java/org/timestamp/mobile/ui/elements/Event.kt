@@ -100,7 +100,17 @@ fun openGoogleMaps(context: Context, location: LatLng) {
 fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
     var isExpanded by remember { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
+    var isUsersOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    if (isUsersOpen) {
+        ViewUsers(
+            event = data,
+            onDismissRequest = {
+                isUsersOpen = false
+            }
+        )
+    }
 
     // Define the box content
     Column(
@@ -127,15 +137,32 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(vertical = 12.dp)
-                    .widthIn(max = 285.dp)
+                    .widthIn(max = 280.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
-            Icon(painter = painterResource(id = R.drawable.user_icon),
-                contentDescription = "user icon",
-                tint = Color.Unspecified,
+            Text(
+                text = data.users.size.toString(),
+                fontFamily = ubuntuFontFamily,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .padding(vertical = 2.dp)
+            )
+            val multUsers = data.users.size > 1
+            IconButton(
+                onClick = {
+                    isUsersOpen = true
+                },
                 modifier = Modifier
                     .size(24.dp)
-                    .offset(y = 8.dp))
+                    .offset(y = 8.dp)
+                ) {
+                Icon(
+                    painter = painterResource(id = if (multUsers) R.drawable.users_icon else R.drawable.user_icon),
+                    contentDescription = "user icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(24.dp))
+            }
             IconButton(
                 onClick = {
                     isDropdownExpanded = !isDropdownExpanded
@@ -236,6 +263,19 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
                 },
                 onClick = {
                     /*TODO*/
+                    isDropdownExpanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "View Users",
+                        fontFamily = ubuntuFontFamily,
+                        fontSize = 16.sp
+                    )
+                },
+                onClick = {
+                    isUsersOpen = true
                     isDropdownExpanded = false
                 }
             )
