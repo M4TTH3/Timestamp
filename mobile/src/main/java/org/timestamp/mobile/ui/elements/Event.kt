@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -44,8 +47,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseUser
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -53,7 +58,9 @@ import com.google.maps.android.compose.rememberMarkerState
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
 import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -97,10 +104,25 @@ fun openGoogleMaps(context: Context, location: LatLng) {
 }
 
 @Composable
-fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
+fun EventBox(
+    data: EventDetailed,
+    viewModel: AppViewModel = viewModel(),
+    currentUser: FirebaseUser?
+) {
     var isExpanded by remember { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
+    var isUsersOpen by remember { mutableStateOf(false) }
+    val isToday = data.arrival.toLocalDate() == LocalDate.now()
     val context = LocalContext.current
+
+    if (isUsersOpen) {
+        ViewUsers(
+            event = data,
+            onDismissRequest = {
+                isUsersOpen = false
+            }
+        )
+    }
 
     // Define the box content
     Column(
@@ -127,15 +149,32 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(vertical = 12.dp)
-                    .widthIn(max = 285.dp)
+                    .widthIn(max = 280.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
-            Icon(painter = painterResource(id = R.drawable.user_icon),
-                contentDescription = "user icon",
-                tint = Color.Unspecified,
+            Text(
+                text = data.users.size.toString(),
+                fontFamily = ubuntuFontFamily,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .padding(vertical = 2.dp)
+            )
+            val multUsers = data.users.size > 1
+            IconButton(
+                onClick = {
+                    isUsersOpen = true
+                },
                 modifier = Modifier
                     .size(24.dp)
-                    .offset(y = 8.dp))
+                    .offset(y = 8.dp)
+                ) {
+                Icon(
+                    painter = painterResource(id = if (multUsers) R.drawable.users_icon else R.drawable.user_icon),
+                    contentDescription = "user icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(24.dp))
+            }
             IconButton(
                 onClick = {
                     isDropdownExpanded = !isDropdownExpanded
@@ -176,46 +215,86 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
                 .fillMaxWidth()
 
         ) {
-            Icon(painter = painterResource(id = R.drawable.location_icon),
-                contentDescription = "location icon",
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .size(18.dp))
-            Spacer(modifier = Modifier.width(2.dp))
-            Text(
-                text = "temp" + "km",
-                fontFamily = ubuntuFontFamily,
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.width(20.dp))
-            Icon(painter = painterResource(id = R.drawable.car_icon),
-                contentDescription = "transportation icon",
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "temp" + "min",
-                fontFamily = ubuntuFontFamily,
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            val formatter = DateTimeFormatter.ofPattern("h:mm a")
-            val formattedTime: String = data.arrival.format(formatter)
-            Text(
-                text = formattedTime,
-                fontFamily = ubuntuFontFamily,
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .offset(x = (-4).dp)
-            )
-            Icon(painter = painterResource(id = R.drawable.clock_icon),
-                contentDescription = "clock icon",
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .size(18.dp))
+            if (isToday) {
+                if (currentUser != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(currentUser.photoUrl),
+                        contentDescription = "current user icon",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                    )
+                }
+                Text(
+                    text = "Status:",
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                )
+                Text(
+                    text = "On time",
+                    color = Color.Green,
+                    fontFamily = ubuntuFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                val formatter = DateTimeFormatter.ofPattern("h:mm a")
+                val formattedTime: String = data.arrival.format(formatter)
+                Text(
+                    text = formattedTime,
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .offset(x = (-4).dp)
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.clock_icon),
+                    contentDescription = "clock icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(18.dp)
+                )
+            } else {
+                val timeFormatter = DateTimeFormatter.ofPattern("h:mm a")
+                val dateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy")
+                val formattedDate: String = data.arrival.format(dateFormatter)
+                val formattedTime: String = data.arrival.format(timeFormatter)
+                Icon(
+                    painter = painterResource(id = R.drawable.event_calendar),
+                    contentDescription = "calendar icon",
+                    tint = Colors.PowderBlue,
+                    modifier = Modifier
+                        .size(18.dp)
+                )
+                Text(
+                    text = formattedDate,
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .offset(x = 4.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = formattedTime,
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .offset(x = (-4).dp)
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.clock_icon),
+                    contentDescription = "clock icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(18.dp)
+                )
+            }
         }
+        Spacer(modifier = Modifier.height(8.dp))
 
         DropdownMenu(
             expanded = isDropdownExpanded,
@@ -242,6 +321,19 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
             DropdownMenuItem(
                 text = {
                     Text(
+                        text = "View Users",
+                        fontFamily = ubuntuFontFamily,
+                        fontSize = 16.sp
+                    )
+                },
+                onClick = {
+                    isUsersOpen = true
+                    isDropdownExpanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = {
+                    Text(
                         text = "Remove",
                         fontFamily = ubuntuFontFamily,
                         fontSize = 16.sp,
@@ -258,6 +350,36 @@ fun EventBox(data: EventDetailed, viewModel: AppViewModel = viewModel()) {
         // Conditionally show extra content when expanded
         if (isExpanded) {
             EventMap(locationName = data.description, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude), context = context)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Icon(painter = painterResource(id = R.drawable.location_icon),
+                    contentDescription = "location icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(18.dp))
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(
+                    text = "temp" + "km",
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(painter = painterResource(id = R.drawable.car_icon),
+                    contentDescription = "transportation icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "temp" + "min",
+                    fontFamily = ubuntuFontFamily,
+                    fontSize = 14.sp
+                )
+            }
         }
 
         Divider(

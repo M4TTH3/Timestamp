@@ -11,11 +11,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.collectAsState
@@ -27,16 +29,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseUser
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
+import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Composable
 fun EventsScreen(
     viewModel: AppViewModel = viewModel(),
-    isMock: Boolean = false
+    isMock: Boolean = false,
+    currentUser: FirebaseUser?
 ) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
@@ -114,7 +121,82 @@ fun EventsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     eventList.sortBy { it.arrival }
-                    eventList.forEach { item { EventBox(it, viewModel) }}
+                    val today = LocalDate.now(ZoneId.systemDefault())
+
+                    val todayEvents = mutableListOf<EventDetailed>()
+                    val otherEvents = mutableListOf<EventDetailed>()
+
+                    for (event in eventList) {
+                        if (event.arrival.toLocalDate() == today) {
+                            todayEvents.add(event)
+                        } else {
+                            otherEvents.add(event)
+                        }
+                    }
+                    item {
+                        Text(
+                            text = "Events Today",
+                            fontFamily = ubuntuFontFamily,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            modifier = Modifier
+                                .padding(4.dp)
+                        )
+                        Divider(
+                            color = Color.LightGray,
+                            thickness = 2.dp,
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                        )
+                    }
+                    if (todayEvents.isNotEmpty()) {
+                        todayEvents.forEach { item { EventBox(it, viewModel, currentUser) }}
+                    } else {
+                        item {
+                            Text(
+                                text = "No Events Today!",
+                                fontFamily = ubuntuFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 36.sp,
+                                color = Color.LightGray,
+                                modifier = Modifier
+                                    .padding(16.dp)
+                            )
+                        }
+                    }
+                    item {
+                        Text(
+                            text = "Events Later",
+                            fontFamily = ubuntuFontFamily,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            modifier = Modifier
+                                .padding(4.dp)
+                        )
+                        Divider(
+                            color = Color.LightGray,
+                            thickness = 2.dp,
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                        )
+                    }
+                    if (otherEvents.isNotEmpty()) {
+                        otherEvents.forEach { item { EventBox(it, viewModel, currentUser) }}
+                    } else {
+                        item {
+                            Text(
+                                text = "No Events Later!",
+                                fontFamily = ubuntuFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp,
+                                color = Color.LightGray,
+                                modifier = Modifier
+                                    .padding(16.dp)
+                            )
+                        }
+                    }
                     item {
                         Spacer(modifier = Modifier.height(120.dp))
                     }

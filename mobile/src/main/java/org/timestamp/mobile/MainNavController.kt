@@ -112,7 +112,8 @@ fun MainNavController(
                 )
             }
             composable(Screen.Events.name) {
-                EventsScreen(viewModel = appViewModel)
+                EventsScreen(viewModel = appViewModel,
+                    currentUser = auth.currentUser)
                 NavBar(navController = navController, currentScreen = "Events")
             }
             composable(Screen.Calendar.name) {
