@@ -116,12 +116,15 @@ fun EventBox(
     val context = LocalContext.current
 
     if (isUsersOpen) {
-        ViewUsers(
-            event = data,
-            onDismissRequest = {
-                isUsersOpen = false
-            }
-        )
+        if (currentUser != null) {
+            ViewUsers(
+                event = data,
+                onDismissRequest = {
+                    isUsersOpen = false
+                },
+                currentUser = currentUser
+            )
+        }
     }
 
     // Define the box content
