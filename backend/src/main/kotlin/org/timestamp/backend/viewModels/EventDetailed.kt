@@ -79,9 +79,10 @@ data class EventDetailed(
             val users = mutableListOf<EventDetailedUser>()
             val arrivals = event.arrivals
             val arrivalSet = arrivals.map { it.userId }.toSet() // Used to lookup fast if an arrival exists
-
+            println(event.users.count())
             for (user in event.users) {
                 val endpoint = "/route?point=${user.latitude},${user.longitude}&point=${event.latitude},${event.longitude}&profile=${user.travelMode.value}"
+                println(endpoint)
                 val arrivalTime = event.arrival.toUtc()
                 var timeEst: Long? = null
                 var distance: Double? = null

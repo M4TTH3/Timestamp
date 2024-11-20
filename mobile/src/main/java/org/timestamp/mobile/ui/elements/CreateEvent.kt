@@ -84,6 +84,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.timestamp.backend.viewModels.toOffset
 import org.timestamp.mobile.ui.theme.Colors
 import java.net.URL
 import java.time.LocalDate
@@ -483,12 +484,13 @@ fun CreateEvent(
                                        timeCalendar.get(Calendar.MINUTE)
                                    )
                                    val currentDateTime = LocalDateTime.now()
+                                   Log.d("Time", selectedDateTime.toOffset().toString())
                                    if (selectedDateTime.isAfter(currentDateTime)) {
                                        if (editEvent != null) {
                                            onConfirmation(
                                                EventDetailed(
                                                    name = eventName,
-                                                   arrival = selectedDateTime,
+                                                   arrival = selectedDateTime.toOffset(),
                                                    latitude = selectedLocation?.latitude ?: 0.0,
                                                    longitude = selectedLocation?.longitude ?: 0.0,
                                                    description = locationName,
@@ -500,7 +502,7 @@ fun CreateEvent(
                                            onConfirmation(
                                                EventDetailed(
                                                    name = eventName,
-                                                   arrival = selectedDateTime,
+                                                   arrival = selectedDateTime.toOffset(),
                                                    latitude = selectedLocation?.latitude ?: 0.0,
                                                    longitude = selectedLocation?.longitude ?: 0.0,
                                                    description = locationName,

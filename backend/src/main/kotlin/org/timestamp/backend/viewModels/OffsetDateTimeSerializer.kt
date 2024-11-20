@@ -3,6 +3,7 @@ package org.timestamp.backend.viewModels
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -31,4 +32,8 @@ fun OffsetDateTime.toUtc(): OffsetDateTime {
 
 fun OffsetDateTime.toLocal(): OffsetDateTime {
     return this.withOffsetSameInstant(OffsetDateTime.now().offset)
+}
+
+fun LocalDateTime.toOffset(): OffsetDateTime {
+    return this.atOffset(OffsetDateTime.now().offset)
 }

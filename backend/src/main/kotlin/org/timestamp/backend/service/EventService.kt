@@ -31,13 +31,14 @@ class EventService(private val db: TimestampEventRepository, private val userDb:
      */
     fun createEvent(userId: String, event: Event): Event? {
         val user = userDb.findByIdOrNull(userId) ?: return null
-        return createEvent(user, event)
-    }
-
-    fun createEvent(user: User, event: Event): Event? {
         event.creator = user.id
         event.users.add(user)
         return db.save(event)
+
+    }
+
+    fun createEvent(user: User, event: Event): Event? {
+        return createEvent(user.id, event)
     }
 
     /**
