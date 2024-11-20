@@ -57,7 +57,8 @@ fun EventsScreen(
                 viewModel.postEvent(event)
                 createEvents.value = false
             },
-            isMock = isMock
+            isMock = isMock,
+            editEvent = null
         )
     }
 

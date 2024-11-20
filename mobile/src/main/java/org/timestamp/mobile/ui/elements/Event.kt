@@ -112,6 +112,7 @@ fun EventBox(
     var isExpanded by remember { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var isUsersOpen by remember { mutableStateOf(false) }
+    var isEditingEvent by remember { mutableStateOf(false) }
     val isToday = data.arrival.toLocalDate() == LocalDate.now()
     val context = LocalContext.current
 
@@ -125,6 +126,21 @@ fun EventBox(
                 currentUser = currentUser
             )
         }
+    }
+
+    if (isEditingEvent) {
+        CreateEvent(
+            onDismissRequest = {
+                isEditingEvent = false
+            },
+            onConfirmation = { event ->
+                Log.d("UPDATE EVENT", event.id.toString())
+                viewModel.updateEvent(event)
+                isEditingEvent = false
+            },
+            isMock = false,
+            editEvent = data
+        )
     }
 
     // Define the box content
@@ -317,7 +333,7 @@ fun EventBox(
                     )
                 },
                 onClick = {
-                    /*TODO*/
+                    isEditingEvent = true
                     isDropdownExpanded = false
                 }
             )

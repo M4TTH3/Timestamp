@@ -73,6 +73,7 @@ import com.google.android.gms.location.LocationServices
 import android.Manifest
 import android.util.Log
 import androidx.compose.material.AlertDialog
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.vsnappy1.datepicker.DatePicker
 import com.vsnappy1.datepicker.data.DefaultDatePickerConfig
 import com.vsnappy1.datepicker.data.model.DatePickerDate
@@ -199,21 +200,50 @@ fun CreateEvent(
     onConfirmation: (EventDetailed) -> Unit,
     isMock: Boolean,
     properties: DialogProperties = DialogProperties(),
+    editEvent: EventDetailed?
 ) {
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(false) }
     var eventTime by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
     var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
     var locationName by remember { mutableStateOf("") }
     var locationAddress by remember { mutableStateOf("") }
     var isLoadingLocation by remember { mutableStateOf(false) }
-    var cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(37.7749, -122.4194), 10f)
-    }
+    val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+    val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
     val context = LocalContext.current
+
+    var cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            editEvent?.let { LatLng(it.latitude, it.longitude) } ?: LatLng(37.7749, -122.4194),
+            if (editEvent != null) 15f else 10f
+        )
+    }
+
+    if (editEvent != null) {
+        eventName = editEvent.name
+        val date = Date.from(editEvent.arrival.atZone(ZoneId.systemDefault()).toInstant())
+        selectedDate = dateFormatter.format(date)
+        selectedTime = timeFormatter.format(date)
+        selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)
+        fetchLocationDetails(
+            context = context,
+            latLng = LatLng(editEvent.latitude, editEvent.longitude),
+            onResult = { name, address ->
+                locationName = name
+                locationAddress = address
+            },
+            onError = { error ->
+                // Handle any errors during location detail retrieval
+                locationName = "Unknown Location"
+                locationAddress = "Failed to fetch address"
+                error.printStackTrace()
+            }
+        )
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
+    }
     val defaultMockLocation = LatLng(37.7749, -122.4194)
     if (isMock) {
         // Use mock location
@@ -227,8 +257,6 @@ fun CreateEvent(
         }
     }
 
-    val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-    val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
     if (eventDate) {
         DatePickerDialog(
             onDateSelected = { date ->
@@ -274,7 +302,7 @@ fun CreateEvent(
                Text(
                    modifier = Modifier
                        .padding(16.dp),
-                   text = "Add Event",
+                   text = if (editEvent == null) "Add Event" else "Edit Event",
                    color = Color.Black,
                    fontFamily = ubuntuFontFamily,
                    fontWeight = FontWeight.Bold,
@@ -456,15 +484,30 @@ fun CreateEvent(
                                    )
                                    val currentDateTime = LocalDateTime.now()
                                    if (selectedDateTime.isAfter(currentDateTime)) {
-                                       onConfirmation(EventDetailed(
-                                           name = eventName,
-                                           arrival = selectedDateTime,
-                                           latitude = selectedLocation?.latitude ?: 0.0,
-                                           longitude = selectedLocation?.longitude ?: 0.0,
-                                           description = locationName,
-                                           address = locationAddress
-                                       ))
-
+                                       if (editEvent != null) {
+                                           onConfirmation(
+                                               EventDetailed(
+                                                   name = eventName,
+                                                   arrival = selectedDateTime,
+                                                   latitude = selectedLocation?.latitude ?: 0.0,
+                                                   longitude = selectedLocation?.longitude ?: 0.0,
+                                                   description = locationName,
+                                                   address = locationAddress,
+                                                   id = editEvent.id,
+                                               )
+                                           )
+                                       } else {
+                                           onConfirmation(
+                                               EventDetailed(
+                                                   name = eventName,
+                                                   arrival = selectedDateTime,
+                                                   latitude = selectedLocation?.latitude ?: 0.0,
+                                                   longitude = selectedLocation?.longitude ?: 0.0,
+                                                   description = locationName,
+                                                   address = locationAddress,
+                                               )
+                                           )
+                                       }
                                        Log.d("ADD EVENT", "EVENT ADDED")
                                        Log.d("selectedDate", selectedDate)
                                    }
@@ -487,7 +530,7 @@ fun CreateEvent(
                            .shadow(4.dp, shape = RoundedCornerShape(24.dp), ambientColor = Color(0x33000000))
                    ) {
                        Text(
-                           text = "Add",
+                           text = if (editEvent == null) "Add" else "Edit",
                            fontFamily = ubuntuFontFamily,
                            fontWeight = FontWeight.Bold,
                            fontSize = 24.sp,
