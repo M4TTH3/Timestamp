@@ -1,11 +1,8 @@
 package org.timestamp.backend.service
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.timestamp.backend.config.FirebaseUser
-import org.timestamp.backend.model.Arrival
 import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
 import org.timestamp.backend.repository.TimestampEventRepository
@@ -34,13 +31,14 @@ class EventService(private val db: TimestampEventRepository, private val userDb:
      */
     fun createEvent(userId: String, event: Event): Event? {
         val user = userDb.findByIdOrNull(userId) ?: return null
-        return createEvent(user, event)
-    }
-
-    fun createEvent(user: User, event: Event): Event? {
         event.creator = user.id
         event.users.add(user)
         return db.save(event)
+
+    }
+
+    fun createEvent(user: User, event: Event): Event? {
+        return createEvent(user.id, event)
     }
 
     /**
