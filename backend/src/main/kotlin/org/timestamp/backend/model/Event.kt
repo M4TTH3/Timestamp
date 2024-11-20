@@ -2,7 +2,7 @@ package org.timestamp.backend.model
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "events", schema = "public")
@@ -21,7 +21,7 @@ class Event(
     var longitude: Double = 0.0,
 
     // When the event starts
-    var arrival: LocalDateTime = LocalDateTime.now(),
+    var arrival: OffsetDateTime = OffsetDateTime.now(),
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

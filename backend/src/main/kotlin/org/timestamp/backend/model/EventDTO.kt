@@ -1,14 +1,13 @@
 package org.timestamp.backend.model
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import org.timestamp.backend.viewModels.OffsetDateTimeSerializer
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Base64.Decoder
-import java.util.Base64.Encoder
 
 @Serializable
 data class EventDTO(
@@ -19,8 +18,8 @@ data class EventDTO(
     val address: String = "",
     val latitude: Double,
     val longitude: Double,
-    @Serializable(with = LocalDateTimeSerializer::class)
-    val arrival: LocalDateTime,
+    @Serializable(with = OffsetDateTimeSerializer::class)
+    val arrival: OffsetDateTime,
     val users: MutableSet<EventUser> = mutableSetOf()
 )
 

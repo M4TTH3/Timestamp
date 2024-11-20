@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
     travel_mode VARCHAR(10) NOT NULL CHECK (travel_mode IN ('car', 'foot', 'bike')),
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Table for events
@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS events (
     address VARCHAR(255) NOT NULL,  -- Event location address
     latitude DOUBLE PRECISION NOT NULL,  -- Event location latitude
     longitude DOUBLE PRECISION NOT NULL, -- Event location longitude
-    arrival TIMESTAMP NOT NULL,  -- Time when the event starts
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- Auto-timestamp when created
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP  -- Auto-timestamp when updated
+    arrival TIMESTAMP WITH TIME ZONE NOT NULL,  -- Time when the event starts
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- Auto-timestamp when created
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP  -- Auto-timestamp when updated
 );
 
 -- Table for the many-to-many relationship between users and events
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS arrivals (
     id SERIAL PRIMARY KEY,
     event_id BIGINT NOT NULL,
     user_id VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 )

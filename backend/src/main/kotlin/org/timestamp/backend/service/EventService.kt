@@ -1,11 +1,8 @@
 package org.timestamp.backend.service
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.timestamp.backend.config.FirebaseUser
-import org.timestamp.backend.model.Arrival
 import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
 import org.timestamp.backend.repository.TimestampEventRepository

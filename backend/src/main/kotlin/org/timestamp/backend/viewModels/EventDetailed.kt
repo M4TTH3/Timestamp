@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.timestamp.backend.model.Arrival
 import org.timestamp.backend.model.Event
 import org.timestamp.backend.service.ArrivalService
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import javax.annotation.PostConstruct
 
 @Serializable
@@ -35,8 +35,8 @@ data class Path(
 @Serializable
 data class ArrivalVm(
     val userId: String,
-    @Serializable(with = LocalDateTimeSerializer::class)
-    val time: LocalDateTime
+    @Serializable(with = OffsetDateTimeSerializer::class)
+    val time: OffsetDateTime
 ) {
     companion object {
         fun from(arrival: Arrival): ArrivalVm {
@@ -62,8 +62,8 @@ data class EventDetailed(
     val address: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
-    @Serializable(with = LocalDateTimeSerializer::class)
-    val arrival: LocalDateTime = LocalDateTime.now(),
+    @Serializable(with = OffsetDateTimeSerializer::class)
+    val arrival: OffsetDateTime = OffsetDateTime.now(),
     val users: List<EventDetailedUser> = emptyList(),
     val arrivals: List<ArrivalVm> = emptyList()
 ) {
@@ -82,11 +82,12 @@ data class EventDetailed(
 
             for (user in event.users) {
                 val endpoint = "/route?point=${user.latitude},${user.longitude}&point=${event.latitude},${event.longitude}&profile=${user.travelMode.value}"
+                val arrivalTime = event.arrival.toUtc()
                 var timeEst: Long? = null
                 var distance: Double? = null
 
                 // Only get the time est. if the event is today and the user has not arrived
-                if (user.id !in arrivalSet && event.arrival.toLocalDate() == LocalDateTime.now().toLocalDate()) {
+                if (user.id !in arrivalSet && arrivalTime.toLocalDate() == utcNow().toLocalDate()) {
                     try {
                         val travelData = webClient.get()
                             .uri(endpoint)
@@ -101,8 +102,8 @@ data class EventDetailed(
                         // then the user has arrived.
                         distance = routeResponse.paths[0].distance
                         val twoHundredMeters = 200.0
-                        val hourBefore = event.arrival.minusHours(1)
-                        val inArrivalPeriod = LocalDateTime.now().isAfter(hourBefore)
+                        val hourBefore = arrivalTime.minusHours(1)
+                        val inArrivalPeriod = utcNow().isAfter(hourBefore)
 
                         if (distance <= twoHundredMeters && inArrivalPeriod) {
                             val arrival = arrivalService.addArrival(event.id!!, user.id)

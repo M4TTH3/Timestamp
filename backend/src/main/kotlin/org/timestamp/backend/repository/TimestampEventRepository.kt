@@ -10,6 +10,13 @@ interface TimestampEventRepository : JpaRepository<Event, Long> {
     /**
      * Filter events by current user, that is >= to Today
      */
-    @Query("SELECT e FROM Event e JOIN e.users u WHERE u.id = :userId AND e.arrival >= CURRENT_DATE")
+    @Query(nativeQuery = true,
+        value = """
+        SELECT e.* FROM events e
+        JOIN user_events ue ON e.id = ue.event_id
+        WHERE ue.user_id = :userId AND 
+        (e.arrival AT TIME ZONE 'UTC')::DATE >= (CURRENT_DATE AT TIME ZONE 'UTC')
+        """
+    )
     fun findAllEventsByUser(@Param("userId") userId: String): List<Event>
 }
