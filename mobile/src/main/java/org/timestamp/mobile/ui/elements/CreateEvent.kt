@@ -72,6 +72,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import android.Manifest
 import android.util.Log
+import androidx.compose.material.AlertDialog
 import com.vsnappy1.datepicker.DatePicker
 import com.vsnappy1.datepicker.data.DefaultDatePickerConfig
 import com.vsnappy1.datepicker.data.model.DatePickerDate
@@ -242,6 +243,7 @@ fun CreateEvent(
         TimePickerDialog(
             onConfirm = { hour, minute ->
                 selectedTime = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+                eventTime = false
             },
             onDismiss = { eventTime = false },
         )
@@ -452,18 +454,20 @@ fun CreateEvent(
                                        timeCalendar.get(Calendar.HOUR_OF_DAY),
                                        timeCalendar.get(Calendar.MINUTE)
                                    )
+                                   val currentDateTime = LocalDateTime.now()
+                                   if (selectedDateTime.isAfter(currentDateTime)) {
+                                       onConfirmation(EventDetailed(
+                                           name = eventName,
+                                           arrival = selectedDateTime,
+                                           latitude = selectedLocation?.latitude ?: 0.0,
+                                           longitude = selectedLocation?.longitude ?: 0.0,
+                                           description = locationName,
+                                           address = locationAddress
+                                       ))
 
-                                   onConfirmation(EventDetailed(
-                                       name = eventName,
-                                       arrival = selectedDateTime,
-                                       latitude = selectedLocation?.latitude ?: 0.0,
-                                       longitude = selectedLocation?.longitude ?: 0.0,
-                                       description = locationName,
-                                       address = locationAddress
-                                   ))
-
-                                   Log.d("ADD EVENT", "EVENT ADDED")
-                                   Log.d("selectedDate", selectedDate)
+                                       Log.d("ADD EVENT", "EVENT ADDED")
+                                       Log.d("selectedDate", selectedDate)
+                                   }
                                }
                            } else {
                                Log.d("ADD EVENT", "EVENT FAILED TO ADD")
