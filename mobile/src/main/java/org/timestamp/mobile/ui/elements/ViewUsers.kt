@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.FirebaseUser
 import io.ktor.util.sha1
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
@@ -61,6 +62,7 @@ fun ViewUsers(
     event: EventDetailed,
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties(),
+    currentUser: FirebaseUser
 ) {
     var linkCopiedDialog = remember { mutableStateOf(false) }
 
@@ -171,7 +173,7 @@ fun ViewUsers(
                 ) {
                     repeat(5) { // for testing purposes, remove later
                     for (user in users) {
-                        val isOwner = event.creator == user.name
+                        val isOwner = event.creator == user.id
                         item {
                             Row(
                                 modifier = Modifier
@@ -189,7 +191,11 @@ fun ViewUsers(
                                         .border(2.dp, Color.Gray, CircleShape)
                                 )
                                 var userName = user.name
-                                if (isOwner) userName = "$userName (Owner)"
+                                var suffix = ""
+                                if (isOwner) suffix = "$suffix (Owner)"
+                                if (currentUser.uid == user.id) {
+                                    suffix = "$suffix (Me)"
+                                }
                                 Text(
                                     text = userName,
                                     fontFamily = ubuntuFontFamily,
@@ -197,6 +203,13 @@ fun ViewUsers(
                                     fontSize = 16.sp,
                                     modifier = Modifier
                                         .padding(3.dp)
+                                )
+                                Text(
+                                    text = suffix,
+                                    fontFamily = ubuntuFontFamily,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier
+                                        .padding(vertical = 6.dp)
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
                                 Text(
