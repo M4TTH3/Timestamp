@@ -72,16 +72,24 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import android.Manifest
 import android.util.Log
+import androidx.compose.material.AlertDialog
+import com.vsnappy1.datepicker.DatePicker
+import com.vsnappy1.datepicker.data.DefaultDatePickerConfig
+import com.vsnappy1.datepicker.data.model.DatePickerDate
+import com.vsnappy1.datepicker.data.model.SelectionLimiter
+import com.vsnappy1.datepicker.ui.model.DatePickerConfiguration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.timestamp.mobile.ui.theme.Colors
 import java.net.URL
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -223,23 +231,11 @@ fun CreateEvent(
     val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
     if (eventDate) {
         DatePickerDialog(
-            onDateSelected = { dateMillis ->
-                selectedDate = ""
-                if (dateMillis != null) {
-                    // Need to add a day to DatePicked
-                    val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-                    val timeZoneOffset = ZoneId.systemDefault().rules
-                        .getOffset(LocalDateTime.now())
-                    val formattedTime = LocalDateTime.ofEpochSecond(
-                        dateMillis / 1000,
-                        0, timeZoneOffset
-                    ).plusDays(1).format(formatter)
-                    selectedDate = formattedTime
-                }
-
+            onDateSelected = { date ->
                 eventDate = false
-            },
-            onDismiss = { eventDate = false }
+                             selectedDate = date},
+            onDismiss = { eventDate = false },
+            initialDate = selectedDate
         )
     }
     if (eventTime) {
@@ -247,6 +243,7 @@ fun CreateEvent(
         TimePickerDialog(
             onConfirm = { hour, minute ->
                 selectedTime = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+                eventTime = false
             },
             onDismiss = { eventTime = false },
         )
@@ -457,18 +454,20 @@ fun CreateEvent(
                                        timeCalendar.get(Calendar.HOUR_OF_DAY),
                                        timeCalendar.get(Calendar.MINUTE)
                                    )
+                                   val currentDateTime = LocalDateTime.now()
+                                   if (selectedDateTime.isAfter(currentDateTime)) {
+                                       onConfirmation(EventDetailed(
+                                           name = eventName,
+                                           arrival = selectedDateTime,
+                                           latitude = selectedLocation?.latitude ?: 0.0,
+                                           longitude = selectedLocation?.longitude ?: 0.0,
+                                           description = locationName,
+                                           address = locationAddress
+                                       ))
 
-                                   onConfirmation(EventDetailed(
-                                       name = eventName,
-                                       arrival = selectedDateTime,
-                                       latitude = selectedLocation?.latitude ?: 0.0,
-                                       longitude = selectedLocation?.longitude ?: 0.0,
-                                       description = locationName,
-                                       address = locationAddress
-                                   ))
-
-                                   Log.d("ADD EVENT", "EVENT ADDED")
-                                   Log.d("selectedDate", selectedDate)
+                                       Log.d("ADD EVENT", "EVENT ADDED")
+                                       Log.d("selectedDate", selectedDate)
+                                   }
                                }
                            } else {
                                Log.d("ADD EVENT", "EVENT FAILED TO ADD")

@@ -92,6 +92,9 @@ dependencies {
     implementation(project(":backend")) {
         exclude(group = "com.google.firebase", module = "firebase-admin")
     }
+    implementation("com.github.vsnappy1:ComposeDatePicker:2.2.0") {
+        exclude(group = "androidx.compose.material3", module = "material3")
+    }
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.ui.test.junit4.android)
     androidTestImplementation(libs.androidx.junit)
