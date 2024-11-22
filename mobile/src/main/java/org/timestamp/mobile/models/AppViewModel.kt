@@ -31,6 +31,7 @@ import kotlinx.serialization.json.Json
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.backend.viewModels.LocationVm
 import org.timestamp.mobile.R
+import java.util.UUID
 
 val ktorClient = HttpClient(CIO) {
     install(ContentNegotiation) {
@@ -58,6 +59,8 @@ class AppViewModel (
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private val base = application.getString(R.string.backend_url)
+
     private suspend fun getToken(): String? = auth.currentUser?.getIdToken(false)?.await()?.token
 
     /**
@@ -68,7 +71,7 @@ class AppViewModel (
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val token = getToken()
-                val endpoint = "${application.getString(R.string.backend_url)}/users/me"
+                val endpoint = "$base/users/me"
                 val res = ktorClient.post(endpoint) {
                     headers {
                         append("Authorization", "Bearer $token")
@@ -88,7 +91,7 @@ class AppViewModel (
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val token = getToken()
-                val endpoint = "${application.getString(R.string.backend_url)}/users/me/location"
+                val endpoint = "$base/users/me/location"
                 val res = ktorClient.patch(endpoint) {
                     headers {
                         append("Authorization", "Bearer $token")
@@ -102,6 +105,34 @@ class AppViewModel (
             } catch(e: Exception) {
                 Log.e("Ping Backend Error", e.toString())
             }
+        }
+    }
+
+    /**
+     * Get Event Link
+     */
+    suspend fun getEventLink(eventId: Long): String? {
+        return withContext(Dispatchers.IO) {
+            val token = getToken()
+            val endpoint = "$base/events/link/$eventId"
+
+            try {
+                val res = ktorClient.get(endpoint) {
+                    headers {
+                        append("Authorization", "Bearer $token")
+                    }
+                }
+                Log.d("Event Link Get", "Link: ${res.bodyAsText()}")
+                if (!res.status.isSuccess()) throw Exception(res.status.description)
+                val eventLink = "$base/${res.body<String>()}"
+                Log.d("Event Link Get", "Link: $eventLink")
+                return@withContext eventLink
+            } catch (e: Exception) {
+                Log.e("Event Link Get", e.toString())
+                _error.value = e.toString()
+            }
+
+            null
         }
     }
 
@@ -215,7 +246,7 @@ class AppViewModel (
     fun updateEvent(event: EventDetailed) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val endpoint = "${application.getString(R.string.backend_url)}/events"
+                val endpoint = "$base/events"
                 val token = getToken()
 
                 val res = ktorClient.patch(endpoint) {
@@ -247,10 +278,10 @@ class AppViewModel (
     /**
      * Join an event given a specific ID, update the current state on success
      */
-    fun joinEvent(eventId: Long) {
+    fun joinEvent(eventLinkId: UUID) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val endpoint = "${application.getString(R.string.backend_url)}/events/join/$eventId"
+                val endpoint = "$base/events/join/$eventLinkId"
                 val token = getToken()
 
                 val res = ktorClient.post(endpoint) {
@@ -282,7 +313,7 @@ class AppViewModel (
     suspend fun getEvent(eventId: Long): EventDetailed? {
         return withContext(Dispatchers.IO) {
             try {
-                val endpoint = "${application.getString(R.string.backend_url)}/events/$eventId"
+                val endpoint = "$base/events/$eventId"
                 val token = getToken()
 
                 val res = ktorClient.get(endpoint) {

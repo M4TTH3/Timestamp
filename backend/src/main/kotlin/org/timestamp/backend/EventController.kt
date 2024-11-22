@@ -9,6 +9,7 @@ import org.timestamp.backend.model.User
 import org.timestamp.backend.service.EventService
 import org.timestamp.backend.viewModels.EventDetailed
 import java.net.URI
+import java.util.UUID
 
 @RestController
 @RequestMapping("/events")
@@ -41,13 +42,22 @@ class EventController(
         return ResponseEntity.ok(EventDetailed.from(e))
     }
 
-    @PostMapping("/join/{id}")
+    @PostMapping("/join/{eventLinkId}")
     suspend fun joinEvent(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
-        @PathVariable id: Long
+        @PathVariable eventLinkId: UUID
     ): ResponseEntity<EventDetailed> {
-        val e = eventService.joinEvent(firebaseUser, id) ?: return ResponseEntity.notFound().build()
+        val e = eventService.joinEvent(firebaseUser, eventLinkId) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(EventDetailed.from(e))
+    }
+
+    @GetMapping("/link/{eventId}")
+    suspend fun getEventLink(
+        @AuthenticationPrincipal firebaseUser: FirebaseUser,
+        @PathVariable eventId: Long
+    ): ResponseEntity<String> {
+        val e = eventService.getEventLink(firebaseUser, eventId) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(e.id.toString())
     }
 
     @PatchMapping

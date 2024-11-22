@@ -48,7 +48,6 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Scale
-import org.timestamp.backend.model.EventDTO
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
@@ -84,6 +83,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.timestamp.backend.viewModels.toOffset
 import org.timestamp.mobile.ui.theme.Colors
 import java.net.URL
 import java.time.LocalDate
@@ -224,7 +224,7 @@ fun CreateEvent(
 
     if (editEvent != null) {
         eventName = editEvent.name
-        val date = Date.from(editEvent.arrival.atZone(ZoneId.systemDefault()).toInstant())
+        val date = Date.from(editEvent.arrival.toInstant())
         selectedDate = dateFormatter.format(date)
         selectedTime = timeFormatter.format(date)
         selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)
@@ -483,12 +483,13 @@ fun CreateEvent(
                                        timeCalendar.get(Calendar.MINUTE)
                                    )
                                    val currentDateTime = LocalDateTime.now()
+                                   Log.d("Time", selectedDateTime.toOffset().toString())
                                    if (selectedDateTime.isAfter(currentDateTime)) {
                                        if (editEvent != null) {
                                            onConfirmation(
                                                EventDetailed(
                                                    name = eventName,
-                                                   arrival = selectedDateTime,
+                                                   arrival = selectedDateTime.toOffset(),
                                                    latitude = selectedLocation?.latitude ?: 0.0,
                                                    longitude = selectedLocation?.longitude ?: 0.0,
                                                    description = locationName,
@@ -500,7 +501,7 @@ fun CreateEvent(
                                            onConfirmation(
                                                EventDetailed(
                                                    name = eventName,
-                                                   arrival = selectedDateTime,
+                                                   arrival = selectedDateTime.toOffset(),
                                                    latitude = selectedLocation?.latitude ?: 0.0,
                                                    longitude = selectedLocation?.longitude ?: 0.0,
                                                    description = locationName,

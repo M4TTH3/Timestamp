@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.reactor)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.graphhopper.core)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit5)
     testRuntimeOnly(libs.junit5.platform.launch)
