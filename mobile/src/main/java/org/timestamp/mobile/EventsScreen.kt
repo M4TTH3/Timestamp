@@ -128,7 +128,7 @@ fun EventsScreen(
                     val otherEvents = mutableListOf<EventDetailed>()
 
                     for (event in eventList) {
-                        if (event.arrival.toLocalDate() == today) {
+                        if (event.arrival.toLocalDate() <= today) {
                             todayEvents.add(event)
                         } else {
                             otherEvents.add(event)

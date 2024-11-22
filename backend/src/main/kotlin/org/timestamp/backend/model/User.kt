@@ -8,9 +8,9 @@ import org.timestamp.backend.config.FirebaseUser
 
 @Serializable
 enum class TravelMode(val value: String) {
-    @SerialName("car") car("car"),
-    @SerialName("foot") foot("foot"),
-    @SerialName("bike") bike("bike")
+    @SerialName("car") Car("car"),
+    @SerialName("foot") Foot("foot"),
+    @SerialName("bike") Bike("bike")
 }
 
 @Entity
@@ -28,7 +28,7 @@ class User(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "travel_mode", nullable = false)
-    var travelMode: TravelMode = TravelMode.car,
+    var travelMode: TravelMode = TravelMode.Car,
 
     @ManyToMany(mappedBy = "users")
     @JsonIgnore

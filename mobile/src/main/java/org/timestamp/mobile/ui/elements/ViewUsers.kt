@@ -1,5 +1,6 @@
 package org.timestamp.mobile.ui.elements
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -52,9 +53,14 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseUser
 import io.ktor.util.sha1
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import org.timestamp.mobile.R
+import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.theme.Colors
 
 @Composable
@@ -62,7 +68,8 @@ fun ViewUsers(
     event: EventDetailed,
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties(),
-    currentUser: FirebaseUser
+    currentUser: FirebaseUser,
+    viewModel: AppViewModel
 ) {
     var linkCopiedDialog = remember { mutableStateOf(false) }
 
@@ -147,9 +154,18 @@ fun ViewUsers(
                     )
                     IconButton(
                         onClick = {
-                        /*TODO*/
-                            clipBoardManager.setText(AnnotatedString("Link to put in later"))
-                            linkCopiedDialog.value = true
+                            CoroutineScope(Dispatchers.Main).launch {
+                                val link = viewModel.getEventLink(event.id!!) ?: "Error"
+//                                clipBoardManager.setText(AnnotatedString(link))
+                                val sendIntent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_TEXT, link)
+                                    type = "text/plain"
+                                }
+                                val shareIntent = Intent.createChooser(sendIntent, null)
+                                context.startActivity(shareIntent)
+//                                linkCopiedDialog.value = true
+                            }
                         },
                         modifier = Modifier
                             .padding(vertical = 8.dp)
