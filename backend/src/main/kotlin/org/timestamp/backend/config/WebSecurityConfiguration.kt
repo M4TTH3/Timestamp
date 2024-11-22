@@ -19,6 +19,8 @@ class SecurityConfig {
         }.authorizeHttpRequests { auth ->
             auth.requestMatchers("/test/**")
                 .permitAll()
+                .requestMatchers("/.well-known/**")
+                .permitAll()
                 .anyRequest()
                 .authenticated()
         }.addFilterBefore(

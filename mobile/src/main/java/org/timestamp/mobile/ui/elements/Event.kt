@@ -123,7 +123,8 @@ fun EventBox(
                 onDismissRequest = {
                     isUsersOpen = false
                 },
-                currentUser = currentUser
+                currentUser = currentUser,
+                viewModel = viewModel
             )
         }
     }

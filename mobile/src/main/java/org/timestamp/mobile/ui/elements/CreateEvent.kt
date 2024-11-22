@@ -48,7 +48,6 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Scale
-import org.timestamp.backend.model.EventDTO
 import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
@@ -225,7 +224,7 @@ fun CreateEvent(
 
     if (editEvent != null) {
         eventName = editEvent.name
-        val date = Date.from(editEvent.arrival.atZone(ZoneId.systemDefault()).toInstant())
+        val date = Date.from(editEvent.arrival.toInstant())
         selectedDate = dateFormatter.format(date)
         selectedTime = timeFormatter.format(date)
         selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)

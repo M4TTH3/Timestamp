@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(project(":backend")) {
         exclude(group = "com.google.firebase", module = "firebase-admin")
+        exclude(group = "com.graphhopper", module = "graphhopper-core")
     }
     implementation("com.github.vsnappy1:ComposeDatePicker:2.2.0") {
         exclude(group = "androidx.compose.material3", module = "material3")

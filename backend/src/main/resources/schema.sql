@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     pfp VARCHAR(255) NOT NULL,
-    travel_mode VARCHAR(10) NOT NULL CHECK (travel_mode IN ('car', 'foot', 'bike')),
+    travel_mode VARCHAR(10) NOT NULL CHECK (travel_mode IN ('Car', 'Foot', 'Bike')),
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -42,4 +42,13 @@ CREATE TABLE IF NOT EXISTS arrivals (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-)
+);
+
+-- Table for the many-to-one relationship between EventLinks and Events
+CREATE TABLE IF NOT EXISTS event_links (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id BIGINT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+);

@@ -4,13 +4,21 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.Event
+import org.timestamp.backend.model.EventLink
 import org.timestamp.backend.model.User
+import org.timestamp.backend.repository.TimestampEventLinkRepository
 import org.timestamp.backend.repository.TimestampEventRepository
 import org.timestamp.backend.repository.TimestampUserRepository
+import org.timestamp.backend.viewModels.utcNow
+import java.util.*
 
 
 @Service
-class EventService(private val db: TimestampEventRepository, private val userDb: TimestampUserRepository) {
+class EventService(
+    private val db: TimestampEventRepository,
+    private val userDb: TimestampUserRepository,
+    private val eventLinkDb: TimestampEventLinkRepository
+) {
     fun getAllEvents(): List<Event> = db.findAll()
 
     /**
@@ -64,14 +72,24 @@ class EventService(private val db: TimestampEventRepository, private val userDb:
     /**
      * Join an event with the given user. The user must exist in the database.
      */
-    fun joinEvent(firebaseUser: FirebaseUser, id: Long): Event? {
+    fun joinEvent(firebaseUser: FirebaseUser, eventLinkId: UUID): Event? {
         val user = userDb.findByIdOrNull(firebaseUser.uid)?: return null
-        val event = db.findByIdOrNull(id) ?: return null
+        val link = eventLinkDb.findByIdOrNull(eventLinkId) ?: return null
+        val event = link.event!!
 
         val added = event.users.add(user)
         if (added) db.save(event) // Save the event if the user wasn't inside already
 
         return event
+    }
+
+    fun getEventLink(firebaseUser: FirebaseUser, id: Long): EventLink? {
+        val event = db.findByIdOrNull(id) ?: return null
+        if (event.creator != firebaseUser.uid) return null // Can only get the link if you are the creator
+
+        val threshold = utcNow().minusMinutes(30)
+        val link = eventLinkDb.findByEventIdLastThirtyMinutes(event.id!!, threshold)
+        return link ?: eventLinkDb.save(EventLink(event = event))
     }
 
     /**
