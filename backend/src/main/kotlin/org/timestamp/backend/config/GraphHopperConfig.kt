@@ -13,6 +13,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
+import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 
 data class RouteResponse(
@@ -26,8 +27,8 @@ class GraphHopperConfig {
     @Bean
     fun graphHopperInstance(): GraphHopper {
         val osmFile = System.getenv("OSM_FILE") ?: "ontario-latest.osm.pbf"
-        val path = Path("src/main/resources/$osmFile")
-        val cachePath = Path("src/main/resources/graph-cache")
+        val path = Path("osm/$osmFile")
+        val cachePath = Path("graph-cache")
 
         val hopper = createGraphHopperInstance(path, cachePath)
         return hopper
