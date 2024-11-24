@@ -30,11 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseUser
-import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
-import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.LocalDate
 import java.time.ZoneId
@@ -46,7 +45,7 @@ fun EventsScreen(
     currentUser: FirebaseUser?
 ) {
     val eventListState = viewModel.events.collectAsState()
-    val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
+    val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
 
     val createEvents = remember { mutableStateOf(false) }
     val hasEvents = remember { mutableStateOf(false) }
@@ -124,8 +123,8 @@ fun EventsScreen(
                     eventList.sortBy { it.arrival }
                     val today = LocalDate.now(ZoneId.systemDefault())
 
-                    val todayEvents = mutableListOf<EventDetailed>()
-                    val otherEvents = mutableListOf<EventDetailed>()
+                    val todayEvents = mutableListOf<EventDTO>()
+                    val otherEvents = mutableListOf<EventDTO>()
 
                     for (event in eventList) {
                         if (event.arrival.toLocalDate() <= today) {

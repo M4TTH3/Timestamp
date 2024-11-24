@@ -35,7 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.elements.DynamicCalendar
@@ -80,7 +80,7 @@ val calendarTypography = Typography(
 @Composable
 fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
     val eventListState = viewModel.events.collectAsState()
-    val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
+    val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
     var selectedDate by remember { mutableStateOf<LocalDate?>(null)}
 
     val eventsOnSelectedDate = remember(selectedDate) {

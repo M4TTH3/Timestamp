@@ -4,7 +4,7 @@ import kotlinx.serialization.json.Json
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ClassPathResource
-import org.timestamp.backend.viewModels.AssetLink
+import org.timestamp.lib.dto.AssetLink
 
 @Configuration
 class WellKnownConfig {

@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.spring)
@@ -27,9 +29,14 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.graphhopper.core)
+    implementation(project(":lib"))
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit5)
     testRuntimeOnly(libs.junit5.platform.launch)
+}
+
+tasks.named<BootJar>("bootJar") {
+    archiveFileName.set("timestamp.jar")
 }
 
 springBoot {

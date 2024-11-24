@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.User
 import org.timestamp.backend.service.UserService
-import org.timestamp.backend.viewModels.LocationVm
+import org.timestamp.lib.dto.LocationDTO
 
 @RestController
 @RequestMapping("/users")
@@ -29,7 +29,7 @@ class UserController(
     @PatchMapping("/me/location")
     fun updateLocation(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
-        @RequestBody location: LocationVm
+        @RequestBody location: LocationDTO
     ): ResponseEntity<User> {
         val user = userService.updateLocation(
             firebaseUser,
