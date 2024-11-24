@@ -48,7 +48,6 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Scale
-import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.mobile.R
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.text.SimpleDateFormat
@@ -83,7 +82,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.timestamp.backend.viewModels.toOffset
+import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.toOffset
 import org.timestamp.mobile.ui.theme.Colors
 import java.net.URL
 import java.time.LocalDate
@@ -197,10 +197,10 @@ fun fetchLocationDetails(
 @Composable
 fun CreateEvent(
     onDismissRequest: () -> Unit,
-    onConfirmation: (EventDetailed) -> Unit,
+    onConfirmation: (EventDTO) -> Unit,
     isMock: Boolean,
     properties: DialogProperties = DialogProperties(),
-    editEvent: EventDetailed?
+    editEvent: EventDTO?
 ) {
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(false) }
@@ -487,7 +487,7 @@ fun CreateEvent(
                                    if (selectedDateTime.isAfter(currentDateTime)) {
                                        if (editEvent != null) {
                                            onConfirmation(
-                                               EventDetailed(
+                                               EventDTO(
                                                    name = eventName,
                                                    arrival = selectedDateTime.toOffset(),
                                                    latitude = selectedLocation?.latitude ?: 0.0,
@@ -499,7 +499,7 @@ fun CreateEvent(
                                            )
                                        } else {
                                            onConfirmation(
-                                               EventDetailed(
+                                               EventDTO(
                                                    name = eventName,
                                                    arrival = selectedDateTime.toOffset(),
                                                    latitude = selectedLocation?.latitude ?: 0.0,

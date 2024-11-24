@@ -28,8 +28,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import org.timestamp.backend.viewModels.EventDetailed
-import org.timestamp.backend.viewModels.LocationVm
+import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.mobile.R
 import java.util.UUID
 
@@ -50,8 +50,8 @@ class AppViewModel (
     private val application: Application
 ) : AndroidViewModel(application) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val _events: MutableStateFlow<List<EventDetailed>> = MutableStateFlow(emptyList())
-    val events: StateFlow<List<EventDetailed>> = _events
+    private val _events: MutableStateFlow<List<EventDTO>> = MutableStateFlow(emptyList())
+    val events: StateFlow<List<EventDTO>> = _events
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -87,7 +87,7 @@ class AppViewModel (
         }
     }
 
-    fun updateLocation(location: LocationVm) {
+    fun updateLocation(location: LocationDTO) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val token = getToken()
@@ -152,7 +152,7 @@ class AppViewModel (
                 }
 
                 if (res.status.isSuccess()) {
-                    val eventList: List<EventDetailed> = res.body()
+                    val eventList: List<EventDTO> = res.body()
                     Log.d("Events Get", "Updated Contents: $eventList")
 
                     withContext(Dispatchers.Main) {
@@ -174,7 +174,7 @@ class AppViewModel (
     /**
      * Post an event, and modify the current list with the new event.
      */
-    fun postEvent(event: EventDetailed) {
+    fun postEvent(event: EventDTO) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val endpoint = "${application.getString(R.string.backend_url)}/events"
@@ -190,7 +190,7 @@ class AppViewModel (
                 // Check response
                 if (res.status.isSuccess()) {
                     Log.d("Events Post", "Successfully created: ${res.bodyAsText()}")
-                    val e: EventDetailed = res.body()
+                    val e: EventDTO = res.body()
                     val newList = events.value + e // Insert it into the list and create an update
                     Log.d("Events Post", newList.toString())
                     withContext(Dispatchers.Main) {
@@ -243,7 +243,7 @@ class AppViewModel (
      * This will update an event, and update the local state for that
      * event only. Improves latency.
      */
-    fun updateEvent(event: EventDetailed) {
+    fun updateEvent(event: EventDTO) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val endpoint = "$base/events"
@@ -258,7 +258,7 @@ class AppViewModel (
                 }
 
                 if (res.status.isSuccess()) {
-                    val newEvent: EventDetailed = res.body()
+                    val newEvent: EventDTO = res.body()
                     val newEventList = events.value.toMutableList().map {
                         if (it.id == newEvent.id) newEvent else it
                     }
@@ -292,7 +292,7 @@ class AppViewModel (
 
                 // Check response
                 if (res.status.isSuccess()) {
-                    val newEvent: EventDetailed = res.body()
+                    val newEvent: EventDTO = res.body()
                     val newList = _events.value + newEvent
 
                     withContext(Dispatchers.Main) {
@@ -310,7 +310,7 @@ class AppViewModel (
     /**
      * Get a single event and return it. Used for showing info when joining one.
      */
-    suspend fun getEvent(eventId: Long): EventDetailed? {
+    suspend fun getEvent(eventId: Long): EventDTO? {
         return withContext(Dispatchers.IO) {
             try {
                 val endpoint = "$base/events/$eventId"
@@ -323,7 +323,7 @@ class AppViewModel (
                 }
 
                 if (res.status.isSuccess()) {
-                    res.body<EventDetailed>() // return the event
+                    res.body<EventDTO>() // return the event
                 }
             } catch (e: Exception) {
                 Log.e("Event Get", e.toString())

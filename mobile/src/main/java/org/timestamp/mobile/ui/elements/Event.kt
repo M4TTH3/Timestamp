@@ -55,7 +55,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.R
 import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.theme.Colors
@@ -105,7 +105,7 @@ fun openGoogleMaps(context: Context, location: LatLng) {
 
 @Composable
 fun EventBox(
-    data: EventDetailed,
+    data: EventDTO,
     viewModel: AppViewModel = viewModel(),
     currentUser: FirebaseUser?
 ) {

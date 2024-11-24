@@ -46,4 +46,4 @@ dependencyResolutionManagement {
 
 rootProject.name = 'timestamp'
 
-include("backend", "mobile")
+include("backend", "mobile", "lib")

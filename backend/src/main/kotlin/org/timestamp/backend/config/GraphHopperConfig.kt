@@ -1,19 +1,14 @@
 package org.timestamp.backend.config
 
-import com.graphhopper.GHRequest
 import com.graphhopper.GraphHopper
-import com.graphhopper.ResponsePath
 import com.graphhopper.config.CHProfile
 import com.graphhopper.config.Profile
 import com.graphhopper.util.GHUtility
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.timestamp.backend.model.TravelMode
 import java.nio.file.Path
-import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
-import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 
 data class RouteResponse(
@@ -72,23 +67,3 @@ class GraphHopperConfig {
     }
 }
 
-fun GraphHopper.route(
-    fromLat: Double,
-    fromLon: Double,
-    toLat: Double,
-    toLon: Double,
-    type: TravelMode
-): ResponsePath? {
-    // Reference: https://github.com/graphhopper/graphhopper/blob/master/example/src/main/java/com/graphhopper/example/RoutingExample.java
-    val req = GHRequest(
-        fromLat,
-        fromLon,
-        toLat,
-        toLon
-    ).apply {
-        profile = type.value
-        locale = Locale.US
-    }
-    val res = this.route(req)
-    return if (res.hasErrors()) return null else res.best
-}
