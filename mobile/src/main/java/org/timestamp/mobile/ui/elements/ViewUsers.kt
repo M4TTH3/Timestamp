@@ -57,7 +57,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import org.timestamp.mobile.R
 import org.timestamp.mobile.models.AppViewModel
@@ -65,7 +65,7 @@ import org.timestamp.mobile.ui.theme.Colors
 
 @Composable
 fun ViewUsers(
-    event: EventDetailed,
+    event: EventDTO,
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties(),
     currentUser: FirebaseUser,

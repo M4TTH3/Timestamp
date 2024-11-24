@@ -9,7 +9,7 @@ import org.timestamp.backend.model.User
 import org.timestamp.backend.repository.TimestampEventLinkRepository
 import org.timestamp.backend.repository.TimestampEventRepository
 import org.timestamp.backend.repository.TimestampUserRepository
-import org.timestamp.backend.viewModels.utcNow
+import org.timestamp.lib.dto.utcNow
 import java.util.*
 
 
@@ -24,10 +24,15 @@ class EventService(
     /**
      * Get events by user ID. We only return events that the user is a part of.
      */
-    fun getEventById(firebaseUser: FirebaseUser, id: Long): Event? {
+    fun getEventByLinkId(firebaseUser: FirebaseUser, id: UUID): Event? {
         val user = userDb.findById(firebaseUser.uid).orElseThrow()
-        val event = db.findByIdOrNull(id)
-        return if (event?.users?.map { it.id }?.contains(user.id) == true) event else null
+
+        val link = eventLinkDb.findByIdOrNull(id) ?: return null
+        val threshold = utcNow().minusMinutes(30)
+        if (link.createdAt!!.isBefore(threshold)) return null
+
+        val event = link.event!!
+        return if (event.users.map { it.id }.contains(user.id)) event else null
     }
 
     fun getEventById(id: Long): Event? = db.findByIdOrNull(id)
@@ -75,6 +80,10 @@ class EventService(
     fun joinEvent(firebaseUser: FirebaseUser, eventLinkId: UUID): Event? {
         val user = userDb.findByIdOrNull(firebaseUser.uid)?: return null
         val link = eventLinkDb.findByIdOrNull(eventLinkId) ?: return null
+        val threshold = utcNow().minusMinutes(30)
+
+        if (link.createdAt!!.isBefore(threshold)) return null
+
         val event = link.event!!
 
         val added = event.users.add(user)

@@ -7,48 +7,54 @@ import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
 import org.timestamp.backend.service.EventService
-import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.backend.service.GraphHopperService
+import org.timestamp.lib.dto.EventDTO
 import java.net.URI
 import java.util.UUID
 
 @RestController
 @RequestMapping("/events")
 class EventController(
-    private val eventService: EventService
+    private val eventService: EventService,
+    private val graphHopperService: GraphHopperService
 ) {
 
+    fun Event.toDTO(): EventDTO {
+        return graphHopperService.getEventDTO(this)
+    }
+
     @GetMapping
-    suspend fun getEvents(@AuthenticationPrincipal firebaseUser: FirebaseUser): ResponseEntity<List<EventDetailed>> {
+    suspend fun getEvents(@AuthenticationPrincipal firebaseUser: FirebaseUser): ResponseEntity<List<EventDTO>> {
         val events = eventService.getEvents(firebaseUser)
-        return ResponseEntity.ok(events.map { EventDetailed.from(it) })
+        return ResponseEntity.ok(events.map { it.toDTO() })
     }
 
     @PostMapping
     suspend fun createEvent(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @RequestBody event: Event
-    ): ResponseEntity<EventDetailed> {
+    ): ResponseEntity<EventDTO> {
         val e = eventService.createEvent(User(firebaseUser), event) ?: return ResponseEntity.badRequest().build()
-        return ResponseEntity.created(URI("/events/${e.id}")).body(EventDetailed.from(e))
+        return ResponseEntity.created(URI("/events/${e.id}")).body(e.toDTO())
 
     }
 
     @GetMapping("/{id}")
-    suspend fun getEvent(
+    suspend fun getEventFromLink(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
-        @PathVariable id: Long
-    ): ResponseEntity<EventDetailed> {
-        val e = eventService.getEventById(firebaseUser, id) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(EventDetailed.from(e))
+        @PathVariable id: UUID
+    ): ResponseEntity<EventDTO> {
+        val e = eventService.getEventByLinkId(firebaseUser, id) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(e.toDTO())
     }
 
     @PostMapping("/join/{eventLinkId}")
     suspend fun joinEvent(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @PathVariable eventLinkId: UUID
-    ): ResponseEntity<EventDetailed> {
+    ): ResponseEntity<EventDTO> {
         val e = eventService.joinEvent(firebaseUser, eventLinkId) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(EventDetailed.from(e))
+        return ResponseEntity.ok(e.toDTO())
     }
 
     @GetMapping("/link/{eventId}")
@@ -64,9 +70,9 @@ class EventController(
     suspend fun updateEvent(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @RequestBody event: Event
-    ): ResponseEntity<EventDetailed> {
+    ): ResponseEntity<EventDTO> {
         val e = eventService.updateEvent(firebaseUser, event) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(EventDetailed.from(e))
+        return ResponseEntity.ok(e.toDTO())
     }
 
     /**

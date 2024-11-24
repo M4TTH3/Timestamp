@@ -1,14 +1,12 @@
 package org.timestamp.backend
 
-import kotlinx.serialization.json.Json
 import org.apache.http.HttpHeaders
-import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.timestamp.backend.viewModels.AssetLink
+import org.timestamp.lib.dto.AssetLink
 
 @RestController
 @RequestMapping("/.well-known")

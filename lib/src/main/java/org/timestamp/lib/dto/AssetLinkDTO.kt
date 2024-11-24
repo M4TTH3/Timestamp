@@ -1,4 +1,4 @@
-package org.timestamp.backend.viewModels
+package org.timestamp.lib.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

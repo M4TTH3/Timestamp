@@ -3,9 +3,9 @@ package org.timestamp.backend.service
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.timestamp.backend.config.FirebaseUser
-import org.timestamp.backend.model.TravelMode
 import org.timestamp.backend.model.User
 import org.timestamp.backend.repository.TimestampUserRepository
+import org.timestamp.lib.dto.TravelMode
 
 @Service
 class UserService(private val db: TimestampUserRepository) {
