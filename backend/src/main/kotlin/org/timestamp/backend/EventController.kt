@@ -9,6 +9,7 @@ import org.timestamp.backend.model.User
 import org.timestamp.backend.service.EventService
 import org.timestamp.backend.service.GraphHopperService
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.EventLinkDTO
 import java.net.URI
 import java.util.UUID
 
@@ -21,6 +22,20 @@ class EventController(
 
     fun Event.toDTO(): EventDTO {
         return graphHopperService.getEventDTO(this)
+    }
+
+    /**
+     * Return an EventDTO with many fields hidden
+     */
+    fun Event.toHiddenDTO(): EventDTO {
+        return EventDTO(
+            name = this.name,
+            description = this.description,
+            latitude = this.latitude,
+            longitude = this.longitude,
+            address = this.address,
+            arrival = this.arrival
+        )
     }
 
     @GetMapping
@@ -45,7 +60,7 @@ class EventController(
         @PathVariable id: UUID
     ): ResponseEntity<EventDTO> {
         val e = eventService.getEventByLinkId(firebaseUser, id) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(e.toDTO())
+        return ResponseEntity.ok(e.toHiddenDTO())
     }
 
     @PostMapping("/join/{eventLinkId}")
@@ -61,9 +76,10 @@ class EventController(
     suspend fun getEventLink(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @PathVariable eventId: Long
-    ): ResponseEntity<String> {
+    ): ResponseEntity<EventLinkDTO> {
         val e = eventService.getEventLink(firebaseUser, eventId) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(e.id.toString())
+        val eventDTO = EventLinkDTO(e.id!!)
+        return ResponseEntity.ok(eventDTO)
     }
 
     @PatchMapping

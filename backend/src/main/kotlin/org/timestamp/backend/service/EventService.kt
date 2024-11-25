@@ -22,7 +22,7 @@ class EventService(
     fun getAllEvents(): List<Event> = db.findAll()
 
     /**
-     * Get events by user ID. We only return events that the user is a part of.
+     * Get events by user ID. We only return events the user isn't part of yet.
      */
     fun getEventByLinkId(firebaseUser: FirebaseUser, id: UUID): Event? {
         val user = userDb.findById(firebaseUser.uid).orElseThrow()
@@ -32,7 +32,7 @@ class EventService(
         if (link.createdAt!!.isBefore(threshold)) return null
 
         val event = link.event!!
-        return if (event.users.map { it.id }.contains(user.id)) event else null
+        return if (event.users.map { it.id }.contains(user.id)) null else event
     }
 
     fun getEventById(id: Long): Event? = db.findByIdOrNull(id)
@@ -85,6 +85,8 @@ class EventService(
         if (link.createdAt!!.isBefore(threshold)) return null
 
         val event = link.event!!
+
+        if (user in event.users) return null
 
         val added = event.users.add(user)
         if (added) db.save(event) // Save the event if the user wasn't inside already
