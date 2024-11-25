@@ -10,12 +10,9 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.HttpSendInterceptor
-import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
-import io.ktor.client.request.headers
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -38,7 +35,6 @@ import org.timestamp.lib.dto.EventLinkDTO
 import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.mobile.R
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Global view model that holds Auth & Events states
@@ -69,6 +65,8 @@ class AppViewModel (
 
     private val base = application.getString(R.string.backend_url) // Base Url of backend
     private val eventJoinBase = "$base/events/join" // Base Url for Events Join
+
+    private val ioCoroutineScope = CoroutineScope(Dispatchers.IO) // Used for coroutine
 
     private suspend fun getToken(): String? = auth.currentUser?.getIdToken(false)?.await()?.token
 
@@ -121,7 +119,7 @@ class AppViewModel (
      */
     fun pingBackend() {
         val tag = "Ping Backend"
-        CoroutineScope(Dispatchers.IO).launch {
+        ioCoroutineScope.launch {
             handler(tag) {
                 val token = getToken()
                 val endpoint = "$base/users/me"
@@ -136,7 +134,7 @@ class AppViewModel (
 
     fun updateLocation(location: LocationDTO) {
         val tag = "Update Location"
-        CoroutineScope(Dispatchers.IO).launch {
+        ioCoroutineScope.launch {
             handler(tag) {
                 val endpoint = "$base/users/me/location"
                 val res = ktorClient.patch(endpoint) {
@@ -157,7 +155,7 @@ class AppViewModel (
         _loading.value = true
 
         val tag = "Events Get"
-        CoroutineScope(Dispatchers.IO).launch {
+        ioCoroutineScope.launch {
             handler(tag, {_loading.value = false}) {
                 val endpoint = "$base/events"
                 val res = ktorClient.get(endpoint)
@@ -182,7 +180,7 @@ class AppViewModel (
      */
     fun postEvent(event: EventDTO) {
         val tag = "Events Post"
-        CoroutineScope(Dispatchers.IO).launch {
+        ioCoroutineScope.launch {
             handler(tag) {
                 val endpoint = "$base/events"
                 val res = ktorClient.post(endpoint) {
@@ -210,7 +208,7 @@ class AppViewModel (
      */
     fun deleteEvent(eventId: Long) {
         val tag = "Events Delete"
-        CoroutineScope(Dispatchers.IO).launch {
+        ioCoroutineScope.launch {
             handler(tag) {
                 val endpoint = "$base/events/$eventId"
                 val res = ktorClient.delete(endpoint)
@@ -238,7 +236,7 @@ class AppViewModel (
      */
     fun updateEvent(event: EventDTO) {
         val tag = "Events Update"
-        CoroutineScope(Dispatchers.IO).launch {
+        ioCoroutineScope.launch {
             handler(tag) {
                 val endpoint = "$base/events"
                 val res = ktorClient.patch(endpoint) {
@@ -286,7 +284,7 @@ class AppViewModel (
      */
     fun joinPendingEvent() {
         val tag = "Events Join"
-        CoroutineScope(Dispatchers.IO).launch {
+        ioCoroutineScope.launch {
             handler(tag) {
                 val endpoint = "$eventJoinBase/${pendingEventLink.value}"
                 val res = ktorClient.post(endpoint)
@@ -318,16 +316,27 @@ class AppViewModel (
         _pendingEventLink.value = null
     }
 
-    /**
-     * Get a single event and return it. Used for showing info when joining one.
-     */
-     fun updatePendingEvent(uri: Uri?) {
+    fun setPendingEventLink(uri: Uri?) {
         val tag = "Update Pending Event"
         if (uri == null || uri.toString().startsWith("$eventJoinBase/").not()) return
 
-        CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val uuid = UUID.fromString(uri.lastPathSegment)
+            _pendingEventLink.value = uuid
+        } catch(e: Exception) {
+            Log.e(tag, e.toString())
+        }
+    }
+
+    /**
+     * Get a single event and return it. Used for showing info when joining one.
+     */
+     fun setPendingEvent() {
+        val tag = "Update Pending Event"
+        val uuid = pendingEventLink.value ?: return
+
+        ioCoroutineScope.launch {
             handler(tag) {
-                val uuid = UUID.fromString(uri.lastPathSegment)
                 val endpoint = "$base/events/$uuid"
                 val res = ktorClient.get(endpoint)
 
@@ -335,7 +344,6 @@ class AppViewModel (
                 if (success) {
                     val event = res.body<EventDTO>()
                     withContext(Dispatchers.Main) {
-                        _pendingEventLink.value = uuid
                         _pendingEvent.value = event
                     }
 
@@ -346,4 +354,5 @@ class AppViewModel (
             }
         }
     }
+
 }
