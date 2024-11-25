@@ -24,3 +24,4 @@ class EventLink (
     @JoinColumn(name = "event_id", nullable = false)
     val event: Event? = null
 ): Base()
+
