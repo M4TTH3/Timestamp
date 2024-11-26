@@ -191,6 +191,7 @@ class AppViewModel (
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
             fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
                 if (location != null) {
+                    Log.d("LOCATION TRACKER", "User Location successfully retrieved: ${location.latitude}, ${location.longitude}")
                     onLocationRetrieved(LatLng(location.latitude, location.longitude))
                 } else {
                     onLocationRetrieved(LatLng(37.7749, -122.4194)) // default, San Fran
