@@ -63,6 +63,7 @@ import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import org.timestamp.mobile.R
 import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.theme.Colors
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
@@ -71,9 +72,10 @@ fun ViewUsers(
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties(),
     currentUser: FirebaseUser,
-    viewModel: AppViewModel
+    viewModel: AppViewModel,
+    isToday: Boolean
 ) {
-    var linkCopiedDialog = remember { mutableStateOf(false) }
+    val linkCopiedDialog = remember { mutableStateOf(false) }
 
     val clipBoardManager = LocalClipboardManager.current
     val context = LocalContext.current
@@ -189,11 +191,10 @@ fun ViewUsers(
                         .fillMaxWidth(0.9f)
                         .heightIn(max = 500.dp)
                 ) {
-                    repeat(5) { // for testing purposes, remove later
                     for (user in users) {
                         val isOwner = event.creator == user.id
                         var est = 0
-                        var distance : Double = 0.0
+                        var distance: Double = 0.0
                         if (user.timeEst != null) {
                             est = (user.timeEst!! / 1000 / 60).toInt()
                         }
@@ -252,60 +253,63 @@ fun ViewUsers(
                                     )
                                 }
                                 Spacer(modifier = Modifier.weight(1f))
-                                if (!user.arrived) {
-                                    Column {
-                                        Row {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.clock_icon),
-                                                tint = Color.Unspecified,
-                                                contentDescription = "user ETA",
-                                                modifier = Modifier
-                                                    .size(18.dp)
-                                            )
-                                            Text(
-                                                text = "${est}min",
-                                                fontFamily = ubuntuFontFamily,
-                                                fontSize = 14.sp,
-                                                modifier = Modifier
-                                                    .padding(3.dp)
-                                            )
-                                        }
-                                        Row {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.location_icon),
-                                                tint = Color.Unspecified,
-                                                contentDescription = "user distance",
-                                                modifier = Modifier
-                                                    .size(18.dp)
-                                            )
-
-                                            var distanceString : String
-                                            if (unitKm) {
-                                                distanceString = String.format("%.1f", distance)
-                                                distanceString = "${distanceString}km"
-                                            } else {
-                                                distanceString = distance.roundToInt().toString()
-                                                distanceString = "${distanceString}m"
+                                if (isToday) {
+                                    if (!user.arrived) {
+                                        Column {
+                                            Row {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.clock_icon),
+                                                    tint = Color.Unspecified,
+                                                    contentDescription = "user ETA",
+                                                    modifier = Modifier
+                                                        .size(18.dp)
+                                                )
+                                                Text(
+                                                    text = "${est}min",
+                                                    fontFamily = ubuntuFontFamily,
+                                                    fontSize = 14.sp,
+                                                    modifier = Modifier
+                                                        .padding(3.dp)
+                                                )
                                             }
-                                            Text(
-                                                text = distanceString,
-                                                fontFamily = ubuntuFontFamily,
-                                                fontSize = 14.sp,
-                                                color = Colors.Black,
-                                                modifier = Modifier
-                                                    .padding(3.dp)
-                                            )
+                                            Row {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.location_icon),
+                                                    tint = Color.Unspecified,
+                                                    contentDescription = "user distance",
+                                                    modifier = Modifier
+                                                        .size(18.dp)
+                                                )
+
+                                                var distanceString: String
+                                                if (unitKm) {
+                                                    distanceString = String.format(Locale.getDefault(), "%.1f", distance)
+                                                    distanceString = "${distanceString}km"
+                                                } else {
+                                                    distanceString =
+                                                        distance.roundToInt().toString()
+                                                    distanceString = "${distanceString}m"
+                                                }
+                                                Text(
+                                                    text = distanceString,
+                                                    fontFamily = ubuntuFontFamily,
+                                                    fontSize = 14.sp,
+                                                    color = Colors.Black,
+                                                    modifier = Modifier
+                                                        .padding(3.dp)
+                                                )
+                                            }
                                         }
+                                    } else {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.arrived_icon),
+                                            contentDescription = "arrived icon",
+                                            tint = Color.Green,
+                                            modifier = Modifier
+                                                .padding(2.dp)
+                                                .size(32.dp)
+                                        )
                                     }
-                                } else {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.arrived_icon),
-                                        contentDescription = "arrived icon",
-                                        tint = Color.Green,
-                                        modifier = Modifier
-                                            .padding(2.dp)
-                                            .size(32.dp)
-                                    )
                                 }
                             }
                             Divider(
@@ -316,8 +320,6 @@ fun ViewUsers(
                             )
                         }
                     }
-                    }
-
                 }
                 TextButton(
                     onClick = onDismissRequest,

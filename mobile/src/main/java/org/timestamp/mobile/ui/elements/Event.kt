@@ -124,7 +124,8 @@ fun EventBox(
                     isUsersOpen = false
                 },
                 currentUser = currentUser,
-                viewModel = viewModel
+                viewModel = viewModel,
+                isToday = isToday
             )
         }
     }
@@ -152,8 +153,8 @@ fun EventBox(
                 shape = RoundedCornerShape(12.dp),
                 elevation = 4.dp,
             )
-            .border(width = 2.dp, Color.Black, shape = RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .border(width = 2.dp, Colors.Black, shape = RoundedCornerShape(12.dp))
+            .background(Colors.White)
             .clickable { isExpanded = !isExpanded }  // Toggle expand/collapse on click
             .padding(horizontal = 16.dp)
             .animateContentSize()  // Smooth transition for height change
@@ -164,6 +165,7 @@ fun EventBox(
         ) {
             Text(
                 text = data.name,
+                color = Colors.Black,
                 fontSize = 24.sp,
                 fontFamily = ubuntuFontFamily,
                 fontWeight = FontWeight.Bold,
@@ -174,6 +176,7 @@ fun EventBox(
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = data.users.size.toString(),
+                color = Colors.Black,
                 fontFamily = ubuntuFontFamily,
                 fontSize = 12.sp,
                 modifier = Modifier
@@ -206,7 +209,7 @@ fun EventBox(
                 Icon(
                     painter = painterResource(id = R.drawable.dots_icon),
                     contentDescription = "dots icon",
-                    tint = Color.Unspecified,
+                    tint = Colors.Black,
                     modifier = Modifier
                         .size(24.dp)
                 )
@@ -215,6 +218,7 @@ fun EventBox(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = data.description,
+            color = Colors.Black,
             fontSize = 16.sp,
             fontFamily = ubuntuFontFamily,
             style = TextStyle(lineHeight = 14.sp),
@@ -247,6 +251,7 @@ fun EventBox(
                 }
                 Text(
                     text = "Status:",
+                    color = Colors.Black,
                     fontFamily = ubuntuFontFamily,
                     fontSize = 14.sp,
                     modifier = Modifier
@@ -266,6 +271,7 @@ fun EventBox(
                 val formattedTime: String = data.arrival.format(formatter)
                 Text(
                     text = formattedTime,
+                    color = Colors.Black,
                     fontFamily = ubuntuFontFamily,
                     fontSize = 14.sp,
                     modifier = Modifier
@@ -292,6 +298,7 @@ fun EventBox(
                 )
                 Text(
                     text = formattedDate,
+                    color = Colors.Black,
                     fontFamily = ubuntuFontFamily,
                     fontSize = 14.sp,
                     modifier = Modifier
@@ -300,6 +307,7 @@ fun EventBox(
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = formattedTime,
+                    color = Colors.Black,
                     fontFamily = ubuntuFontFamily,
                     fontSize = 14.sp,
                     modifier = Modifier
@@ -322,13 +330,15 @@ fun EventBox(
                 isDropdownExpanded = false
             },
             modifier = Modifier
-                .align(Alignment.End),
+                .align(Alignment.End)
+                .background(color = Colors.White),
             offset = DpOffset(x = 220.dp, y = (-130).dp)
         ) {
             DropdownMenuItem(
                 text = {
                     Text(
                         text = "Edit",
+                        color = Colors.Black,
                         fontFamily = ubuntuFontFamily,
                         fontSize = 16.sp
                     )
@@ -342,6 +352,7 @@ fun EventBox(
                 text = {
                     Text(
                         text = "View Users",
+                        color = Colors.Black,
                         fontFamily = ubuntuFontFamily,
                         fontSize = 16.sp
                     )
@@ -383,6 +394,7 @@ fun EventBox(
                 Spacer(modifier = Modifier.width(2.dp))
                 Text(
                     text = "temp" + "km",
+                    color = Colors.Black,
                     fontFamily = ubuntuFontFamily,
                     fontSize = 14.sp
                 )
@@ -396,6 +408,7 @@ fun EventBox(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = "temp" + "min",
+                    color = Colors.Black,
                     fontFamily = ubuntuFontFamily,
                     fontSize = 14.sp
                 )
@@ -413,6 +426,7 @@ fun EventBox(
         Icon(
             painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
             contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",
+            tint = Colors.Black,
             modifier = Modifier
                 .size(24.dp)
                 .align(Alignment.CenterHorizontally)
