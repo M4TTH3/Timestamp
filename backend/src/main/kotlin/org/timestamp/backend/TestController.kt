@@ -42,7 +42,7 @@ class TestController(
     @GetMapping("/user/{id}/events")
     fun getUserEvents(@PathVariable id: String): ResponseEntity<List<Event>> {
         val u = userService.getUserById(id) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(u.events.toList())
+        return ResponseEntity.ok(u.userEvents.map { it.event!! })
     }
 
     @PostMapping("/events")
@@ -54,7 +54,6 @@ class TestController(
     @GetMapping("/events/{id}")
     fun getEvent(@PathVariable id: Long): ResponseEntity<Event> {
         val e = eventService.getEventById(id) ?: return ResponseEntity.notFound().build()
-        e.users.size // Explicitly load the users
         return ResponseEntity.ok(e)
     }
 

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
+import org.timestamp.backend.model.toDTO
 import org.timestamp.backend.service.EventService
 import org.timestamp.backend.service.GraphHopperService
 import org.timestamp.lib.dto.EventDTO
@@ -16,13 +17,8 @@ import java.util.UUID
 @RestController
 @RequestMapping("/events")
 class EventController(
-    private val eventService: EventService,
-    private val graphHopperService: GraphHopperService
+    private val eventService: EventService
 ) {
-
-    fun Event.toDTO(): EventDTO {
-        return graphHopperService.getEventDTO(this)
-    }
 
     /**
      * Return an EventDTO with many fields hidden
@@ -100,8 +96,7 @@ class EventController(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @PathVariable id: Long
     ): ResponseEntity<Unit> {
-        var success = eventService.deleteEvent(id, firebaseUser)
-        if (!success) success = eventService.removeUserFromEvent(id, firebaseUser)
+        val success = eventService.deleteEvent(id, firebaseUser)
         return if (success) ResponseEntity.noContent().build() else ResponseEntity.notFound().build()
     }
 
