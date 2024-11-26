@@ -111,6 +111,7 @@ class MainNavController(
         fun signOut() {
             auth.signOut()
             appViewModel.stopGetEventsPolling()
+            appViewModel.stopTrackingLocation()
             scope.launch {
                 credentialManager.clearCredentialState(
                     ClearCredentialStateRequest()
