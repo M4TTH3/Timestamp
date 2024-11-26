@@ -63,6 +63,7 @@ import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import org.timestamp.mobile.R
 import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.theme.Colors
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
@@ -282,7 +283,7 @@ fun ViewUsers(
 
                                                 var distanceString: String
                                                 if (unitKm) {
-                                                    distanceString = String.format("%.1f", distance)
+                                                    distanceString = String.format(Locale.getDefault(), "%.1f", distance)
                                                     distanceString = "${distanceString}km"
                                                 } else {
                                                     distanceString =
