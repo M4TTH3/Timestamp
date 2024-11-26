@@ -169,6 +169,18 @@ class AppViewModel (
      */
     fun startGetEventsPolling() {
         isPollingEvents = true
+        // need events to show relevant information immediately
+        fetchCurrentLocation(
+            context = getApplication<Application>().applicationContext,
+            onLocationRetrieved = { latlng ->
+                location = latlng
+            }
+        )
+        updateLocation( LocationDTO(
+            latitude = location.latitude,
+            longitude = location.longitude,
+            travelMode = TravelMode.Foot, // for now
+        ))
         viewModelScope.launch {
             while(isPollingEvents) {
                 getEvents()
@@ -221,7 +233,7 @@ class AppViewModel (
                 updateLocation( LocationDTO(
                     latitude = location.latitude,
                     longitude = location.longitude,
-                    travelMode = TravelMode.Car, // for now
+                    travelMode = TravelMode.Foot, // for now
                 ))
                 delay(trackingInterval)
             }
