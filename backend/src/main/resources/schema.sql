@@ -29,6 +29,12 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE TABLE IF NOT EXISTS user_events (
      user_id VARCHAR(255),  -- FK to users table
      event_id BIGINT NOT NULL,  -- FK to events table
+     time_est BIGINT DEFAULT NULL,
+     distance DOUBLE PRECISION DEFAULT NULL,
+     arrived BOOLEAN NOT NULL DEFAULT FALSE,  -- Whether the user has arrived at the event
+     time_arrived TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
      PRIMARY KEY (user_id, event_id),
      CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
      CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE

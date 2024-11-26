@@ -4,6 +4,7 @@ import android.app.Application
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -24,6 +25,7 @@ import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -43,6 +45,8 @@ class AppViewModel (
     application: Application
 ) : AndroidViewModel(application) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
+    private var isPollingEvents = false
 
     // Events model
     private val _events: MutableStateFlow<List<EventDTO>> = MutableStateFlow(emptyList())
@@ -147,6 +151,21 @@ class AppViewModel (
             }
         }
     }
+
+    /**
+     * Start polling the backend for events.
+     */
+    fun startGetEventsPolling() {
+        isPollingEvents = true
+        viewModelScope.launch {
+            while(isPollingEvents) {
+                getEvents()
+                delay(10000)
+            }
+        }
+    }
+
+    fun stopGetEventsPolling() { isPollingEvents = false }
 
     /**
      * Fetch ALL events to update UI

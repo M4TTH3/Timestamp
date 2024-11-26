@@ -1,7 +1,13 @@
 package org.timestamp.backend.model
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.graphhopper.GraphHopper
 import jakarta.persistence.*
+import org.timestamp.backend.service.route
+import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.EventUserDTO
+import org.timestamp.lib.dto.toUtc
+import org.timestamp.lib.dto.utcNow
 import java.time.OffsetDateTime
 
 @Entity
@@ -23,16 +29,36 @@ class Event(
     // When the event starts
     var arrival: OffsetDateTime = OffsetDateTime.now(),
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "user_events",
-        schema = "public",
-        joinColumns = [JoinColumn(name = "event_id", referencedColumnName = "id")],
-        inverseJoinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")]
-    )
-    @JsonIgnoreProperties("events")
-    val users: MutableSet<User> = mutableSetOf(),
-
-    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val arrivals: MutableSet<Arrival> = mutableSetOf()
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    val userEvents: MutableSet<UserEvent> = mutableSetOf(),
 ): Base()
+
+fun Event.toDTO(): EventDTO {
+    val users: List<EventUserDTO> = this.userEvents.map {
+        val user = it.user!!
+
+        // Only get the time est. if the event is today and the user has not arrived
+        EventUserDTO(
+            id = user.id,
+            name = user.name,
+            email = user.email,
+            pfp = user.pfp,
+            timeEst = it.timeEst,
+            distance = it.distance,
+            arrivedTime = it.arrivedTime,
+            arrived = it.arrived
+        )
+    }
+
+    return EventDTO(
+        id = this.id!!,
+        creator = this.creator,
+        name = this.name,
+        description = this.description,
+        address = this.address,
+        latitude = this.latitude,
+        longitude = this.longitude,
+        arrival = this.arrival,
+        users = users,
+    )
+}

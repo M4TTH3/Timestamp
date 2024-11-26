@@ -41,7 +41,7 @@ fun HomeScreen(
 ) {
     LaunchedEffect(Unit) {
         // Prefetch events to make it look quicker
-        viewModel.getEvents()
+        viewModel.startGetEventsPolling()
         viewModel.setPendingEvent()
     }
 
