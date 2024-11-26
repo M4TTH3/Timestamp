@@ -189,7 +189,7 @@ fun ViewUsers(
                         .fillMaxWidth(0.9f)
                         .heightIn(max = 500.dp)
                 ) {
-                    repeat(30) { // for testing purposes, remove later
+                    repeat(5) { // for testing purposes, remove later
                     for (user in users) {
                         val isOwner = event.creator == user.id
                         var est = 0
@@ -205,7 +205,6 @@ fun ViewUsers(
                                 unitKm = true
                             }
                         }
-                        val hasArrived = event.arrivals.any { arrival -> arrival.userId == user.id }
                         item {
                             Row {
                                 Image(
@@ -213,16 +212,14 @@ fun ViewUsers(
                                     contentDescription = "user pfp",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
-                                        .padding(horizontal = 3.dp)
-                                        .size(24.dp)
+                                        .padding(horizontal = 3.dp, vertical = 5.dp)
+                                        .size(28.dp)
                                         .clip(CircleShape)
                                 )
                                 Column {
                                     Row(
                                         modifier = Modifier
-                                            .fillMaxWidth()
                                             .background(Color.White)
-                                            .padding(4.dp)
                                     ) {
                                         val userName = user.name
                                         var suffix = ""
@@ -235,7 +232,7 @@ fun ViewUsers(
                                             fontFamily = ubuntuFontFamily,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 16.sp,
-                                            maxLines = 2,
+                                            maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                             modifier = Modifier
                                                 .width(150.dp)
@@ -255,7 +252,7 @@ fun ViewUsers(
                                     )
                                 }
                                 Spacer(modifier = Modifier.weight(1f))
-                                if (!hasArrived) {
+                                if (!user.arrived) {
                                     Column {
                                         Row {
                                             Icon(
@@ -306,13 +303,16 @@ fun ViewUsers(
                                         contentDescription = "arrived icon",
                                         tint = Color.Green,
                                         modifier = Modifier
-                                            .size(24.dp)
+                                            .padding(2.dp)
+                                            .size(32.dp)
                                     )
                                 }
                             }
                             Divider(
                                 color = Color.LightGray,
-                                thickness = 2.dp
+                                thickness = 2.dp,
+                                modifier = Modifier
+                                    .padding(4.dp)
                             )
                         }
                     }
