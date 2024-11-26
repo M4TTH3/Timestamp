@@ -426,6 +426,7 @@ fun EventBox(
         Icon(
             painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
             contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",
+            tint = Colors.Black,
             modifier = Modifier
                 .size(24.dp)
                 .align(Alignment.CenterHorizontally)
