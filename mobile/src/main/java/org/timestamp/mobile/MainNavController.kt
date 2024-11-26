@@ -6,10 +6,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
@@ -34,6 +38,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.TimestampTheme
 
 enum class Screen {
@@ -169,32 +174,51 @@ class MainNavController(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(64.dp)
                     .background(Color(0xFFFF6F61))
-                    .padding(8.dp)
                     .align(Alignment.BottomCenter)
+                    .offset(y = (-2).dp)
             ) {
+                Box (
+                    modifier = Modifier
+                        .height(3.dp)
+                        .fillMaxWidth()
+                        .background(Colors.Black)
+                        .align(Alignment.TopCenter)
+                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    Box() {}
                     IconButton(
                         onClick = {
                             navController.navigate(Screen.Events.name)
                         },
                         modifier = Modifier
+                            .padding(8.dp)
                             .size(48.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.home), contentDescription = null,
+                            painter = painterResource(id = R.drawable.home),
+                            contentDescription = null,
                             modifier = Modifier.size(32.dp),
                             tint = if (currentScreen == "Events") Color.Black else Color.Unspecified
                         )
                     }
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight(0.95f)
+                            .background(Color.LightGray)
+                            .align(Alignment.Bottom)
+                    )
                     IconButton(
                         onClick = {
                             navController.navigate(Screen.Calendar.name)
                         },
                         modifier = Modifier
+                            .padding(vertical = 8.dp, horizontal = 20.dp)
                             .size(48.dp)
                     ) {
                         Icon(
@@ -204,11 +228,19 @@ class MainNavController(
                             tint = if (currentScreen == "Calendar") Color.Black else Color.Unspecified
                         )
                     }
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight(0.95f)
+                            .background(Color.LightGray)
+                            .align(Alignment.Bottom)
+                    )
                     IconButton(
                         onClick = {
                             navController.navigate(Screen.Settings.name)
                         },
                         modifier = Modifier
+                            .padding(8.dp)
                             .size(48.dp)
                     ) {
                         Icon(
@@ -218,6 +250,7 @@ class MainNavController(
                             tint = if (currentScreen == "Settings") Color.Black else Color.Unspecified
                         )
                     }
+                    Box() {}
                 }
             }
         }

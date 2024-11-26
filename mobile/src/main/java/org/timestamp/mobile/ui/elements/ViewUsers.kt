@@ -46,6 +46,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -62,6 +63,7 @@ import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import org.timestamp.mobile.R
 import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.ui.theme.Colors
+import kotlin.math.roundToInt
 
 @Composable
 fun ViewUsers(
@@ -190,71 +192,127 @@ fun ViewUsers(
                     repeat(5) { // for testing purposes, remove later
                     for (user in users) {
                         val isOwner = event.creator == user.id
+                        var est = 0
+                        var distance : Double = 0.0
+                        if (user.timeEst != null) {
+                            est = (user.timeEst!! / 1000 / 60).toInt()
+                        }
+                        var unitKm = false
+                        if (user.distance != null) {
+                            distance = user.distance!!
+                            if (distance >= 1000) {
+                                distance /= 1000
+                                unitKm = true
+                            }
+                        }
                         item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.White)
-                                    .padding(4.dp)
-                            ) {
+                            Row {
                                 Image(
                                     painter = rememberAsyncImagePainter(user.pfp),
                                     contentDescription = "user pfp",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
-                                        .size(24.dp)
+                                        .padding(horizontal = 3.dp, vertical = 5.dp)
+                                        .size(28.dp)
                                         .clip(CircleShape)
-                                        .border(2.dp, Color.Gray, CircleShape)
                                 )
-                                var userName = user.name
-                                var suffix = ""
-                                if (isOwner) suffix = "$suffix (Owner)"
-                                if (currentUser.uid == user.id) {
-                                    suffix = "$suffix (Me)"
-                                }
-                                Text(
-                                    text = userName,
-                                    fontFamily = ubuntuFontFamily,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier
-                                        .padding(3.dp)
-                                )
-                                Text(
-                                    text = suffix,
-                                    fontFamily = ubuntuFontFamily,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier
-                                        .padding(vertical = 6.dp)
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Text(
-                                    text = "On Time",
-                                    fontFamily = ubuntuFontFamily,
-                                    fontSize = 14.sp,
-                                    color = Color.Green,
-                                    modifier = Modifier
-                                        .padding(3.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                IconButton(
-                                    onClick = { /*TODO*/ },
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.remove),
-                                        contentDescription = "remove user icon",
+                                Column {
+                                    Row(
                                         modifier = Modifier
-                                            .size(20.dp),
-                                        tint = Color.Unspecified
+                                            .background(Color.White)
+                                    ) {
+                                        val userName = user.name
+                                        var suffix = ""
+                                        if (isOwner) suffix = "$suffix (Owner)"
+                                        if (currentUser.uid == user.id) {
+                                            suffix = "$suffix (Me)"
+                                        }
+                                        Text(
+                                            text = userName,
+                                            fontFamily = ubuntuFontFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier
+                                                .width(150.dp)
+                                                .padding(vertical = 3.dp)
+                                        )
+                                        Text(
+                                            text = suffix,
+                                            fontFamily = ubuntuFontFamily,
+                                            fontSize = 14.sp,
+                                            modifier = Modifier
+                                        )
+                                    }
+                                    Text(
+                                        text = user.email,
+                                        fontFamily = ubuntuFontFamily,
+                                        fontSize = 14.sp,
                                     )
                                 }
+                                Spacer(modifier = Modifier.weight(1f))
+                                if (!user.arrived) {
+                                    Column {
+                                        Row {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.clock_icon),
+                                                tint = Color.Unspecified,
+                                                contentDescription = "user ETA",
+                                                modifier = Modifier
+                                                    .size(18.dp)
+                                            )
+                                            Text(
+                                                text = "${est}min",
+                                                fontFamily = ubuntuFontFamily,
+                                                fontSize = 14.sp,
+                                                modifier = Modifier
+                                                    .padding(3.dp)
+                                            )
+                                        }
+                                        Row {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.location_icon),
+                                                tint = Color.Unspecified,
+                                                contentDescription = "user distance",
+                                                modifier = Modifier
+                                                    .size(18.dp)
+                                            )
 
+                                            var distanceString : String
+                                            if (unitKm) {
+                                                distanceString = String.format("%.1f", distance)
+                                                distanceString = "${distanceString}km"
+                                            } else {
+                                                distanceString = distance.roundToInt().toString()
+                                                distanceString = "${distanceString}m"
+                                            }
+                                            Text(
+                                                text = distanceString,
+                                                fontFamily = ubuntuFontFamily,
+                                                fontSize = 14.sp,
+                                                color = Colors.Black,
+                                                modifier = Modifier
+                                                    .padding(3.dp)
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.arrived_icon),
+                                        contentDescription = "arrived icon",
+                                        tint = Color.Green,
+                                        modifier = Modifier
+                                            .padding(2.dp)
+                                            .size(32.dp)
+                                    )
+                                }
                             }
                             Divider(
                                 color = Color.LightGray,
-                                thickness = 2.dp
+                                thickness = 2.dp,
+                                modifier = Modifier
+                                    .padding(4.dp)
                             )
                         }
                     }
