@@ -105,6 +105,7 @@ class MainNavController(
         fun signIn() { scope.launch{ handleSignIn(navController) } }
         fun signOut() {
             auth.signOut()
+            appViewModel.stopGetEventsPolling()
             scope.launch {
                 credentialManager.clearCredentialState(
                     ClearCredentialStateRequest()

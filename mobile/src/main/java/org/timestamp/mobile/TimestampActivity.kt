@@ -50,6 +50,6 @@ class TimestampActivity : ComponentActivity() {
         // ATTENTION: This was auto-generated to handle app links.
         val appLinkIntent: Intent = intent
         val appLinkData: Uri? = appLinkIntent.data
-        appViewModel.updatePendingEvent(appLinkData)
+        appViewModel.setPendingEventLink(appLinkData)
     }
 }

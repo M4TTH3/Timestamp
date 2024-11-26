@@ -19,6 +19,5 @@ data class EventDTO(
     val longitude: Double = 0.0,
     @Serializable(with = OffsetDateTimeSerializer::class)
     val arrival: OffsetDateTime = OffsetDateTime.now(),
-    val users: List<EventUserDTO> = emptyList(),
-    val arrivals: List<ArrivalDTO> = emptyList()
+    val users: List<EventUserDTO> = emptyList()
 )
