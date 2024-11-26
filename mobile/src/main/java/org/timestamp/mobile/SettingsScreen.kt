@@ -61,6 +61,7 @@ fun SettingsScreen(
 
     // Maintains state of whether we should be in light mode or dark mode
     var darkModeOn by remember { mutableStateOf(false) }
+    val sliderPosition by remember { mutableStateOf(0f) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -195,6 +196,7 @@ fun SettingsScreen(
                     ),
                     modifier = Modifier.scale(1.3f)
                 )
+
             }
         }
     }

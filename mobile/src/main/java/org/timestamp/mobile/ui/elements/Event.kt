@@ -394,15 +394,21 @@ fun EventBox(
                     modifier = Modifier
                         .size(18.dp))
                 Spacer(modifier = Modifier.width(2.dp))
+
                 var distance : Double = 0.0
-                viewModel.calculateDistance(
-                pos1 = viewModel.location,
-                pos2 = LatLng(data.latitude, data.longitude),
-                onDistanceCalculated = { d ->
-                    distance = d.toDouble()
-                })
+                for (user in data.users) {
+                    if (user.id == data.creator) {
+                        if (user.distance != null) {
+                            distance = user.distance!!
+                            break
+                        } else {
+                            distance = 0.0
+                            break
+                        }
+                    }
+                }
                 var unitKm = false
-                if (distance >= 1000L) {
+                if (distance >= 1000) {
                     unitKm = true
                     distance /= 1000
                 }

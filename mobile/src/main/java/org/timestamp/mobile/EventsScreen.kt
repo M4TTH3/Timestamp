@@ -50,9 +50,6 @@ fun EventsScreen(
     isMock: Boolean = false,
     currentUser: FirebaseUser?
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.startTrackingLocation()
-    }
 
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
