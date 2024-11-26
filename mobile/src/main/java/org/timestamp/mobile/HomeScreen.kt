@@ -39,7 +39,11 @@ fun HomeScreen(
     onSignOutClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
-    LaunchedEffect(Unit) { viewModel.getEvents() } // Prefetch events to make it look quicker
+    LaunchedEffect(Unit) {
+        // Prefetch events to make it look quicker
+        viewModel.startGetEventsPolling()
+        viewModel.setPendingEvent()
+    }
 
     val textStyle = TextStyle(
         fontFamily = FontFamily.Monospace,

@@ -10,6 +10,6 @@ interface TimestampEventRepository : JpaRepository<Event, Long> {
     /**
      * Filter events by current user, that is >= to Today
      */
-    @Query("SELECT e FROM Event e JOIN e.users u WHERE u.id = :userId AND e.arrival >= CURRENT_DATE")
+    @Query("SELECT e FROM Event e JOIN e.userEvents ue WHERE ue.id.userId = :userId AND e.arrival >= CURRENT_TIMESTAMP - 2 HOUR")
     fun findAllEventsByUser(@Param("userId") userId: String): List<Event>
 }

@@ -4,24 +4,24 @@ import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import jakarta.persistence.PrePersist
 import jakarta.persistence.PreUpdate
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 @MappedSuperclass
 abstract class Base(
     @Column(name = "created_at")
-    var createdAt: LocalDateTime? = null,
+    var createdAt: OffsetDateTime? = null,
 
     @Column(name = "updated_at")
-    var updatedAt: LocalDateTime? = null,
+    var updatedAt: OffsetDateTime? = null,
 ) {
     @PrePersist
     fun onPrePersist() {
-        createdAt = LocalDateTime.now()
-        updatedAt = LocalDateTime.now()
+        createdAt = OffsetDateTime.now()
+        updatedAt = OffsetDateTime.now()
     }
 
     @PreUpdate
     fun onPreUpdate() {
-        updatedAt = LocalDateTime.now()
+        updatedAt = OffsetDateTime.now()
     }
 }

@@ -89,9 +89,7 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.junit.ktx)
     implementation(libs.play.services.location)
-    implementation(project(":backend")) {
-        exclude(group = "com.google.firebase", module = "firebase-admin")
-    }
+    implementation(project(":lib"))
     implementation("com.github.vsnappy1:ComposeDatePicker:2.2.0") {
         exclude(group = "androidx.compose.material3", module = "material3")
     }

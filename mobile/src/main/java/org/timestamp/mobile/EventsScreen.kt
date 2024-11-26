@@ -1,6 +1,7 @@
 package org.timestamp.mobile
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,13 +31,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseUser
-import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.ui.elements.AcceptEvent
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneId
 
 @Composable
@@ -46,7 +50,12 @@ fun EventsScreen(
     currentUser: FirebaseUser?
 ) {
     val eventListState = viewModel.events.collectAsState()
-    val eventList: MutableList<EventDetailed> = eventListState.value.toMutableList()
+    val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
+
+    val pendingEventState = viewModel.pendingEvent.collectAsState()
+    val pendingEvent: EventDTO? = pendingEventState.value
+
+    if (pendingEvent != null) AcceptEvent(viewModel, pendingEvent)
 
     val createEvents = remember { mutableStateOf(false) }
     val hasEvents = remember { mutableStateOf(false) }
@@ -67,6 +76,7 @@ fun EventsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Colors.White)
     ) {
         IconButton(onClick = {
             //todo
@@ -88,7 +98,7 @@ fun EventsScreen(
         ) {
             Text(
                 text = "Upcoming Events...",
-                color = Color(0xFF000000),
+                color = Colors.Black,
                 fontFamily = ubuntuFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
@@ -122,14 +132,15 @@ fun EventsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     eventList.sortBy { it.arrival }
-                    val today = LocalDate.now(ZoneId.systemDefault())
+                    val now = OffsetDateTime.now(ZoneId.systemDefault())
+                    val next24Hours = now.plusHours(24)
 
-                    val todayEvents = mutableListOf<EventDetailed>()
-                    val otherEvents = mutableListOf<EventDetailed>()
+                    val next24HourEvents = mutableListOf<EventDTO>()
+                    val otherEvents = mutableListOf<EventDTO>()
 
                     for (event in eventList) {
-                        if (event.arrival.toLocalDate() == today) {
-                            todayEvents.add(event)
+                        if (event.arrival.isAfter(now) && event.arrival.isBefore(next24Hours)) {
+                            next24HourEvents.add(event)
                         } else {
                             otherEvents.add(event)
                         }
@@ -139,7 +150,7 @@ fun EventsScreen(
                             text = "Events Today",
                             fontFamily = ubuntuFontFamily,
                             fontWeight = FontWeight.Medium,
-                            color = Color.Black,
+                            color = Colors.Black,
                             fontSize = 16.sp,
                             modifier = Modifier
                                 .padding(4.dp)
@@ -151,8 +162,8 @@ fun EventsScreen(
                                 .fillMaxWidth(0.7f)
                         )
                     }
-                    if (todayEvents.isNotEmpty()) {
-                        todayEvents.forEach { item { EventBox(it, viewModel, currentUser) }}
+                    if (next24HourEvents.isNotEmpty()) {
+                        next24HourEvents.forEach { item { EventBox(it, viewModel, currentUser) }}
                     } else {
                         item {
                             Text(
@@ -171,7 +182,7 @@ fun EventsScreen(
                             text = "Events Later",
                             fontFamily = ubuntuFontFamily,
                             fontWeight = FontWeight.Medium,
-                            color = Color.Black,
+                            color = Colors.Black,
                             fontSize = 16.sp,
                             modifier = Modifier
                                 .padding(4.dp)

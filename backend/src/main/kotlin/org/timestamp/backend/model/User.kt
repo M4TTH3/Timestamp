@@ -1,17 +1,11 @@
 package org.timestamp.backend.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import org.timestamp.backend.config.FirebaseUser
-
-@Serializable
-enum class TravelMode(val value: String) {
-    @SerialName("car") car("car"),
-    @SerialName("foot") foot("foot"),
-    @SerialName("bike") bike("bike")
-}
+import org.timestamp.lib.dto.TravelMode
+import org.timestamp.lib.dto.UserDTO
 
 @Entity
 @Table(name = "users", schema = "public")
@@ -28,11 +22,10 @@ class User(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "travel_mode", nullable = false)
-    var travelMode: TravelMode = TravelMode.car,
+    var travelMode: TravelMode = TravelMode.Car,
 
-    @ManyToMany(mappedBy = "users")
-    @JsonIgnore
-    val events: MutableSet<Event> = mutableSetOf(),
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    val userEvents: MutableSet<UserEvent> = mutableSetOf(),
 ): Base()
 {
     constructor(firebaseUser: FirebaseUser): this(
@@ -42,5 +35,16 @@ class User(
         pfp = firebaseUser.picture,
         latitude = 0.0,
         longitude = 0.0,
+    )
+}
+
+fun User.toDTO(): UserDTO {
+    return UserDTO(
+        id = id,
+        name = name,
+        email = email,
+        pfp = pfp,
+        latitude = latitude,
+        longitude = longitude
     )
 }

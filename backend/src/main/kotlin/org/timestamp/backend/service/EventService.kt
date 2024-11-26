@@ -1,28 +1,41 @@
 package org.timestamp.backend.service
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.graphhopper.GraphHopper
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.timestamp.backend.config.FirebaseUser
-import org.timestamp.backend.model.Arrival
 import org.timestamp.backend.model.Event
+import org.timestamp.backend.model.EventLink
 import org.timestamp.backend.model.User
+import org.timestamp.backend.model.UserEvent
+import org.timestamp.backend.repository.TimestampEventLinkRepository
 import org.timestamp.backend.repository.TimestampEventRepository
 import org.timestamp.backend.repository.TimestampUserRepository
+import org.timestamp.lib.dto.utcNow
+import java.util.*
 
 
 @Service
-class EventService(private val db: TimestampEventRepository, private val userDb: TimestampUserRepository) {
+class EventService(
+    private val db: TimestampEventRepository,
+    private val userDb: TimestampUserRepository,
+    private val eventLinkDb: TimestampEventLinkRepository,
+    private val graphHopperService: GraphHopperService
+) {
     fun getAllEvents(): List<Event> = db.findAll()
 
     /**
-     * Get events by user ID. We only return events that the user is a part of.
+     * Get events by user ID. We only return events the user isn't part of yet.
      */
-    fun getEventById(firebaseUser: FirebaseUser, id: Long): Event? {
+    fun getEventByLinkId(firebaseUser: FirebaseUser, id: UUID): Event? {
         val user = userDb.findById(firebaseUser.uid).orElseThrow()
-        val event = db.findByIdOrNull(id)
-        return if (event?.users?.map { it.id }?.contains(user.id) == true) event else null
+
+        val link = eventLinkDb.findByIdOrNull(id) ?: return null
+        val threshold = utcNow().minusMinutes(30)
+        if (link.createdAt!!.isBefore(threshold)) return null
+
+        val event = link.event!!
+        return if (event.userEvents.firstOrNull { it.id.userId == user.id } != null) null else event
     }
 
     fun getEventById(id: Long): Event? = db.findByIdOrNull(id)
@@ -34,13 +47,15 @@ class EventService(private val db: TimestampEventRepository, private val userDb:
      */
     fun createEvent(userId: String, event: Event): Event? {
         val user = userDb.findByIdOrNull(userId) ?: return null
-        return createEvent(user, event)
+        event.creator = user.id
+
+        val userEvent = graphHopperService.createUserEvent(user, event)
+        event.userEvents.add(userEvent)
+        return db.save(event)
     }
 
     fun createEvent(user: User, event: Event): Event? {
-        event.creator = user.id
-        event.users.add(user)
-        return db.save(event)
+        return createEvent(user.id, event)
     }
 
     /**
@@ -66,38 +81,47 @@ class EventService(private val db: TimestampEventRepository, private val userDb:
     /**
      * Join an event with the given user. The user must exist in the database.
      */
-    fun joinEvent(firebaseUser: FirebaseUser, id: Long): Event? {
+    fun joinEvent(firebaseUser: FirebaseUser, eventLinkId: UUID): Event? {
         val user = userDb.findByIdOrNull(firebaseUser.uid)?: return null
+        val link = eventLinkDb.findByIdOrNull(eventLinkId) ?: return null
+        val threshold = utcNow().minusMinutes(30)
+
+        if (link.createdAt!!.isBefore(threshold)) return null
+
+        val event = link.event!!
+        if (user.id in event.userEvents.map { it.id.userId }) return null
+
+        val userEvent = graphHopperService.createUserEvent(user, event)
+        event.userEvents.add(userEvent)
+
+        return db.save(event)
+    }
+
+    fun getEventLink(firebaseUser: FirebaseUser, id: Long): EventLink? {
         val event = db.findByIdOrNull(id) ?: return null
+        if (event.creator != firebaseUser.uid) return null // Can only get the link if you are the creator
 
-        val added = event.users.add(user)
-        if (added) db.save(event) // Save the event if the user wasn't inside already
-
-        return event
+        val threshold = utcNow().minusMinutes(30)
+        val link = eventLinkDb.findByEventIdLastThirtyMinutes(event.id!!, threshold)
+        return link ?: eventLinkDb.save(EventLink(event = event))
     }
 
     /**
-     * Delete a user from an event. The user must exist in the database.
+     * Delete an event. The user must exist in the database.
+     * If the user is the creator of the event, the event will be deleted.
+     * If the user is NOT the creator, the user will be removed from the event.
+     * Returns true if the event was deleted, false otherwise.
      */
     fun deleteEvent(id: Long, firebaseUser: FirebaseUser): Boolean {
-        val item: Event? = db.findByIdOrNull(id)
+        val item: Event = db.findByIdOrNull(id) ?: return false
 
-        if (item?.creator != firebaseUser.uid) return false
+        if (item.creator == firebaseUser.uid) {
+            db.deleteById(id)
+            return true
+        }
 
-        db.deleteById(id)
-        return true
-    }
-
-    /**
-     * Remove oneself from an event if they are NOT the creator
-     */
-    fun removeUserFromEvent(id: Long, firebaseUser: FirebaseUser): Boolean {
-        val item: Event? = db.findByIdOrNull(id)
-
-        if (item == null || item.creator == firebaseUser.uid) return false
-
-        val user = userDb.findById(firebaseUser.uid).orElseThrow()
-        item.users.remove(user)
+        val joinRow = item.userEvents.firstOrNull { it.id.userId == firebaseUser.uid } ?: return false
+        item.userEvents.remove(joinRow)
         db.save(item)
         return true
     }

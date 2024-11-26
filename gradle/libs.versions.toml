@@ -17,7 +17,7 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.5"
 activityCompose = "1.9.2"
 composeBom = "2024.04.01"
-spring-boot = "3.3.4"
+spring-boot = "3.4.0"
 spring-dependency-management = "1.1.6"
 appcompat = "1.6.1"
 material = "1.10.0"
@@ -32,11 +32,12 @@ material3Android = "1.3.0"
 volley = "1.2.1"
 navigationCompose = "2.8.2"
 googleid = "1.1.1"
-postgresql = "42.6.0"
+postgresql = "42.7.2"
 google-services = "4.4.2"
 uiTestJunit4Android = "1.7.5"
 junitKtx = "1.2.1"
 playServicesLocation = "21.3.0"
+graphhopper = "10.0"
 
 [libraries]
 androidx-activity-compose-v161 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
@@ -94,6 +95,7 @@ googleid = { group = "com.google.android.libraries.identity.googleid", name = "g
 androidx-ui-test-junit4-android = { group = "androidx.compose.ui", name = "ui-test-junit4-android", version.ref = "uiTestJunit4Android" }
 androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+graphhopper-core = { group = "com.graphhopper", name = "graphhopper-core", version.ref = "graphhopper" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }

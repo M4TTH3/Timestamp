@@ -17,7 +17,7 @@ class SecurityConfig {
         http.csrf {
             it.disable() // Don't need cross site request forgery protection
         }.authorizeHttpRequests { auth ->
-            auth.requestMatchers("/test/**")
+            auth.requestMatchers("/.well-known/**", "/", "/index.html", "/test/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()

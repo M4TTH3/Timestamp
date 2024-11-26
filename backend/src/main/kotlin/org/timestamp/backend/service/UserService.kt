@@ -3,12 +3,15 @@ package org.timestamp.backend.service
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.timestamp.backend.config.FirebaseUser
-import org.timestamp.backend.model.TravelMode
 import org.timestamp.backend.model.User
 import org.timestamp.backend.repository.TimestampUserRepository
+import org.timestamp.lib.dto.TravelMode
 
 @Service
-class UserService(private val db: TimestampUserRepository) {
+class UserService(
+    private val db: TimestampUserRepository,
+    private val graphHopperService: GraphHopperService
+) {
     fun getUserById(id: String): User? = db.findByIdOrNull(id)
 
     /**
@@ -22,6 +25,13 @@ class UserService(private val db: TimestampUserRepository) {
 
     fun createUser(user: User): User {
         val existingUser: User? = db.findByIdOrNull(user.id)
+        if (existingUser != null) {
+            // Update fields in case google changes them.
+            existingUser.name = user.name
+            existingUser.pfp = user.pfp
+            db.save(existingUser)
+        }
+
         return existingUser ?: db.save(user)
     }
 
@@ -35,6 +45,8 @@ class UserService(private val db: TimestampUserRepository) {
         user.latitude = latitude
         user.longitude = longitude
         user.travelMode = travelMode
+
+        for (userEvent in user.userEvents) graphHopperService.updateUserEvent(userEvent)
         return db.save(user)
     }
 }

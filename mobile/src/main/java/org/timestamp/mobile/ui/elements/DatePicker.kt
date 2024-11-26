@@ -48,8 +48,6 @@ fun DatePickerDialog(
     onDismiss: () -> Unit,
     initialDate: String = ""
 ) {
-    val datePickerState = rememberDatePickerState()
-    var invalidDateDialog by remember { mutableStateOf(false) }
     val today = LocalDate.now()
     val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
