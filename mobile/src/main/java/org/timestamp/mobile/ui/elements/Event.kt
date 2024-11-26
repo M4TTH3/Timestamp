@@ -124,7 +124,8 @@ fun EventBox(
                     isUsersOpen = false
                 },
                 currentUser = currentUser,
-                viewModel = viewModel
+                viewModel = viewModel,
+                isToday = isToday
             )
         }
     }
