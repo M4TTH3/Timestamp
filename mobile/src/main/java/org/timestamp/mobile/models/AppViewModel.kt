@@ -58,7 +58,7 @@ class AppViewModel (
 
     // User Location
     var location: LatLng = LatLng(0.0, 0.0)
-    private var trackingInterval : Long = 1000L
+    private var trackingInterval : Long = 30000L
 
     // Events model
     private val _events: MutableStateFlow<List<EventDTO>> = MutableStateFlow(emptyList())
