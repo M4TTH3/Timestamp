@@ -77,17 +77,17 @@ fun DatePickerDialog(
             ) {
                 com.vsnappy1.datepicker.DatePicker(
                     onDateSelected = { year, month, day ->
-                        selectedDate = LocalDate.of(year, month, day)
+                        selectedDate = LocalDate.of(year, month + 1, day)
                     },
                     date = DatePickerDate(
                         year = parsedDate.year,
-                        month = parsedDate.monthValue,
+                        month = parsedDate.monthValue - 1,
                         day = parsedDate.dayOfMonth
                     ),
                     selectionLimiter = SelectionLimiter(
                         fromDate = DatePickerDate(
                             year = today.year,
-                            month = today.monthValue,
+                            month = today.monthValue - 1,
                             day = today.dayOfMonth
                         )
                     ),
