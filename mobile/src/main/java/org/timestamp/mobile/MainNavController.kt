@@ -16,11 +16,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.credentials.ClearCredentialStateRequest
@@ -185,7 +190,7 @@ class MainNavController(
                     modifier = Modifier
                         .height(3.dp)
                         .fillMaxWidth()
-                        .background(Colors.Black)
+                        .background(Color.Black)
                         .align(Alignment.TopCenter)
                 )
                 Row(
@@ -202,10 +207,10 @@ class MainNavController(
                             .size(48.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.home),
+                            imageVector = Icons.Filled.Home,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = if (currentScreen == "Events") Color.Black else Color.Unspecified
+                            tint = if (currentScreen == "Events") Color.Black else Color(0xFF522D2A)
                         )
                     }
                     Box(
@@ -224,10 +229,10 @@ class MainNavController(
                             .size(48.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.calendar),
+                            imageVector = Icons.Filled.CalendarMonth,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = if (currentScreen == "Calendar") Color.Black else Color.Unspecified
+                            tint = if (currentScreen == "Calendar") Color.Black else Color(0xFF522D2A)
                         )
                     }
                     Box(
@@ -246,10 +251,10 @@ class MainNavController(
                             .size(48.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.settings),
+                            imageVector = Icons.Filled.Settings,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = if (currentScreen == "Settings") Color.Black else Color.Unspecified
+                            tint = if (currentScreen == "Settings") Color.Black else Color(0xFF522D2A)
                         )
                     }
                     Box() {}
