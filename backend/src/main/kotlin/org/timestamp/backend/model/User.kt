@@ -1,7 +1,6 @@
 package org.timestamp.backend.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonManagedReference
 import jakarta.persistence.*
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.lib.dto.TravelMode
@@ -25,6 +24,7 @@ class User(
     var travelMode: TravelMode = TravelMode.Car,
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference("user-userEvents")
     val userEvents: MutableSet<UserEvent> = mutableSetOf(),
 ): Base()
 {

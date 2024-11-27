@@ -111,6 +111,7 @@ class MainNavController(
         fun signOut() {
             auth.signOut()
             appViewModel.stopGetEventsPolling()
+            appViewModel.stopTrackingLocation()
             scope.launch {
                 credentialManager.clearCredentialState(
                     ClearCredentialStateRequest()
@@ -154,7 +155,8 @@ class MainNavController(
                 composable(Screen.Settings.name) {
                     SettingsScreen(
                         currentUser = auth.currentUser,
-                        onSignOutClick = ::signOut
+                        onSignOutClick = ::signOut,
+                        viewModel = appViewModel
                     )
                     NavBar(navController = navController, currentScreen = "Settings")
                 }

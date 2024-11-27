@@ -1,10 +1,16 @@
 package org.timestamp.mobile.models
 
 import android.app.Application
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -35,6 +41,7 @@ import kotlinx.serialization.json.Json
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventLinkDTO
 import org.timestamp.lib.dto.LocationDTO
+import org.timestamp.lib.dto.TravelMode
 import org.timestamp.mobile.R
 import java.util.UUID
 
@@ -47,6 +54,11 @@ class AppViewModel (
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private var isPollingEvents = false
+    private var isTrackingLocation = false
+
+    // User Location
+    var location: LatLng = LatLng(0.0, 0.0)
+    private var trackingInterval : Long = 30000L
 
     // Events model
     private val _events: MutableStateFlow<List<EventDTO>> = MutableStateFlow(emptyList())
@@ -157,6 +169,18 @@ class AppViewModel (
      */
     fun startGetEventsPolling() {
         isPollingEvents = true
+        // need events to show relevant information immediately
+        fetchCurrentLocation(
+            context = getApplication<Application>().applicationContext,
+            onLocationRetrieved = { latlng ->
+                location = latlng
+            }
+        )
+        updateLocation( LocationDTO(
+            latitude = location.latitude,
+            longitude = location.longitude,
+            travelMode = TravelMode.Foot, // for now
+        ))
         viewModelScope.launch {
             while(isPollingEvents) {
                 getEvents()
@@ -166,6 +190,77 @@ class AppViewModel (
     }
 
     fun stopGetEventsPolling() { isPollingEvents = false }
+
+    private fun fetchCurrentLocation(
+        context: Context,
+        onLocationRetrieved: (LatLng) -> Unit
+    ) {
+        val permissionCheck = ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        )
+        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+            val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    Log.d("LOCATION TRACKER", "User Location successfully retrieved: ${location.latitude}, ${location.longitude}")
+                    onLocationRetrieved(LatLng(location.latitude, location.longitude))
+                } else {
+                    onLocationRetrieved(LatLng(37.7749, -122.4194)) // default, San Fran
+                }
+            }.addOnFailureListener {
+                onLocationRetrieved(LatLng(37.7749, -122.4194))
+            }
+        } else {
+            onLocationRetrieved(LatLng(37.7749, -122.4194))
+        }
+    }
+
+    fun updateTrackingInterval(newInterval: Long) {
+        trackingInterval = newInterval
+    }
+
+    fun startTrackingLocation() {
+        isTrackingLocation = true
+        viewModelScope.launch {
+            while (isTrackingLocation) {
+                fetchCurrentLocation(
+                    context = getApplication<Application>().applicationContext,
+                    onLocationRetrieved = { latlng ->
+                        location = latlng
+                    }
+                )
+                updateLocation( LocationDTO(
+                    latitude = location.latitude,
+                    longitude = location.longitude,
+                    travelMode = TravelMode.Foot, // for now
+                ))
+                delay(trackingInterval)
+            }
+        }
+    }
+
+    fun stopTrackingLocation() { isTrackingLocation = false }
+
+    // meters
+    fun calculateDistance(
+        pos1: LatLng,
+        pos2: LatLng,
+        onDistanceCalculated: (Long) -> Unit
+    ) {
+        val location1 = Location("").apply {
+            latitude = pos1.latitude
+            longitude = pos1.longitude
+        }
+
+        val location2 = Location("").apply {
+            latitude = pos2.latitude
+            longitude = pos2.longitude
+        }
+
+        val distanceInMeters = location1.distanceTo(location2).toLong()
+        onDistanceCalculated(distanceInMeters)
+    }
 
     /**
      * Fetch ALL events to update UI

@@ -101,9 +101,7 @@ class EventService(
         val event = db.findByIdOrNull(id) ?: return null
         if (event.creator != firebaseUser.uid) return null // Can only get the link if you are the creator
 
-        val threshold = utcNow().minusMinutes(30)
-        val link = eventLinkDb.findByEventIdLastThirtyMinutes(event.id!!, threshold)
-        return link ?: eventLinkDb.save(EventLink(event = event))
+        return eventLinkDb.save(EventLink(event = event))
     }
 
     /**

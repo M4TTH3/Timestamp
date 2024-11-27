@@ -1,5 +1,6 @@
 package org.timestamp.backend.model
 
+import com.fasterxml.jackson.annotation.JsonBackReference
 import jakarta.persistence.*
 import java.io.Serializable
 import java.time.OffsetDateTime
@@ -25,11 +26,13 @@ class UserEvent(
     @MapsId("eventId")
     @ManyToOne
     @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false)
+    @JsonBackReference("event-userEvents")
     var event: Event? = null,
 
     @MapsId("userId")
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JsonBackReference("user-userEvents")
     var user: User? = null,
 ): Base()
 

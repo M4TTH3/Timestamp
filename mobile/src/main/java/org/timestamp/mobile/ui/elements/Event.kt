@@ -62,6 +62,8 @@ import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.math.roundToInt
 
 @Composable
 fun EventMap(locationName: String, eventName: String, eventLocation: LatLng, context: Context) {
@@ -392,8 +394,31 @@ fun EventBox(
                     modifier = Modifier
                         .size(18.dp))
                 Spacer(modifier = Modifier.width(2.dp))
+
+                var distance : Double = 0.0
+                for (user in data.users) {
+                    if (user.id == data.creator) {
+                        if (user.distance != null) {
+                            distance = user.distance!!
+                            break
+                        } else {
+                            distance = 0.0
+                            break
+                        }
+                    }
+                }
+                var unitKm = false
+                if (distance >= 1000) {
+                    unitKm = true
+                    distance /= 1000
+                }
+                val userDistance : String = if (unitKm) {
+                    String.format(locale = Locale.getDefault(), "%.1f", distance) + "km"
+                } else {
+                    distance.toInt().toString() + "m"
+                }
                 Text(
-                    text = "temp" + "km",
+                    text = userDistance,
                     color = Colors.Black,
                     fontFamily = ubuntuFontFamily,
                     fontSize = 14.sp
@@ -406,8 +431,20 @@ fun EventBox(
                         .size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
+                var time = 0
+                for (user in data.users) {
+                    if (user.id == data.creator) {
+                        if (user.timeEst != null) {
+                            time = ((user.timeEst!! / 1000) / 60).toInt()
+                            break
+                        } else {
+                            time = 0
+                            break
+                        }
+                    }
+                }
                 Text(
-                    text = "temp" + "min",
+                    text = time.toString() + "min",
                     color = Colors.Black,
                     fontFamily = ubuntuFontFamily,
                     fontSize = 14.sp
