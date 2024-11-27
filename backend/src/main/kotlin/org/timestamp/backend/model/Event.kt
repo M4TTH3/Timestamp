@@ -1,13 +1,9 @@
 package org.timestamp.backend.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.graphhopper.GraphHopper
+import com.fasterxml.jackson.annotation.JsonManagedReference
 import jakarta.persistence.*
-import org.timestamp.backend.service.route
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventUserDTO
-import org.timestamp.lib.dto.toUtc
-import org.timestamp.lib.dto.utcNow
 import java.time.OffsetDateTime
 
 @Entity
@@ -30,6 +26,7 @@ class Event(
     var arrival: OffsetDateTime = OffsetDateTime.now(),
 
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference("event-userEvents")
     val userEvents: MutableSet<UserEvent> = mutableSetOf(),
 ): Base()
 

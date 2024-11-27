@@ -6,6 +6,7 @@ import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.User
 import org.timestamp.backend.repository.TimestampUserRepository
 import org.timestamp.lib.dto.TravelMode
+import org.timestamp.lib.dto.utcNow
 
 @Service
 class UserService(
@@ -46,7 +47,16 @@ class UserService(
         user.longitude = longitude
         user.travelMode = travelMode
 
-        for (userEvent in user.userEvents) graphHopperService.updateUserEvent(userEvent)
+        for (userEvent in user.userEvents) {
+            // Only update if the event is within the next -2 hours -> 24 hours
+            val twoHoursBefore = utcNow().minusHours(2)
+            val nextDay = utcNow().plusDays(1)
+            val arrival = userEvent.event!!.arrival
+            val withinPeriod = arrival.isAfter(twoHoursBefore) && arrival.isBefore(nextDay)
+
+            if (withinPeriod) graphHopperService.updateUserEvent(userEvent)
+        }
+
         return db.save(user)
     }
 }
