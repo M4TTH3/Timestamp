@@ -1,6 +1,5 @@
 package org.timestamp.mobile
 
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -23,7 +22,6 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,20 +34,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.elements.AcceptEvent
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
-import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
 @Composable
 fun EventsScreen(
-    viewModel: AppViewModel = viewModel(LocalContext.current as TimestampActivity),
+    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
     isMock: Boolean = false,
     currentUser: FirebaseUser?
 ) {

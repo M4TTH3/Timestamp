@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.timestamp.lib.dto.EventDTO
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.elements.DynamicCalendar
 import java.time.LocalDate
@@ -49,7 +49,7 @@ val ubuntuFontFamily = FontFamily(
 
 @Composable
 fun CalendarScreen(
-    viewModel: AppViewModel = viewModel(LocalContext.current as TimestampActivity)
+    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity)
 ) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()

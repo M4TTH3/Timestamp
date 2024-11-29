@@ -25,13 +25,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.google.android.gms.maps.model.LatLng
 import org.timestamp.lib.dto.EventDTO
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun AcceptEvent(
-    appViewModel: AppViewModel,
+    eventViewModel: EventViewModel,
     event: EventDTO
 ) {
 
@@ -93,11 +93,11 @@ fun AcceptEvent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(onClick = appViewModel::cancelPendingEvents) {
+                Button(onClick = eventViewModel::cancelPendingEvents) {
                     Text("Cancel")
                 }
 
-                Button(onClick = appViewModel::joinPendingEvent) {
+                Button(onClick = eventViewModel::joinPendingEvent) {
                     Text("Accept")
                 }
             }

@@ -28,11 +28,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 
 @Composable
 fun HomeScreen(
-    viewModel: AppViewModel = viewModel(LocalContext.current as TimestampActivity),
+    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
     modifier: Modifier = Modifier,
     onSignOutClick: () -> Unit,
     onContinueClick: () -> Unit,

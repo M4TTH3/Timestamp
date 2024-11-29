@@ -21,7 +21,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBlzpHwjEUlP5yMuix-QwMxFXn8CVWvM3E" />
 
-        <service android:name=".LocationService"
+        <service android:name=".TimestampService"
             android:exported="false"
             android:enabled="true"
             android:foregroundServiceType="location"

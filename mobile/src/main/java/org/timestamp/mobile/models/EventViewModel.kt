@@ -1,53 +1,37 @@
 package org.timestamp.mobile.models
 
 import android.app.Application
-import android.content.Context
-import android.content.pm.PackageManager
-import android.location.Location
 import android.net.Uri
 import android.util.Log
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
-import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.HttpSend
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.plugin
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.http.isSuccess
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventLinkDTO
-import org.timestamp.lib.dto.LocationDTO
-import org.timestamp.lib.dto.TravelMode
 import org.timestamp.mobile.R
+import org.timestamp.mobile.utility.KtorClient
+import org.timestamp.mobile.utility.KtorClient.success
 import java.util.UUID
 
 /**
  * Global view model that holds Auth & Events states
  */
-class AppViewModel (
+class EventViewModel (
     application: Application
 ) : AndroidViewModel(application) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -77,45 +61,7 @@ class AppViewModel (
 
     private val ioCoroutineScope = CoroutineScope(Dispatchers.IO) // Used for coroutine
 
-    private suspend fun getToken(): String? = auth.currentUser?.getIdToken(false)?.await()?.token
-
-    private val ktorClient = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
-        }
-    }
-
-    /**
-     * Inject the Authorization header into the ktorClient.
-     * Required for backend authorization & access.
-     */
-    init {
-        ktorClient.plugin(HttpSend).intercept { req ->
-            val token = getToken()
-            req.headers.append("Authorization", "Bearer $token")
-            execute(req)
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        ktorClient.close()
-    }
-
-    /**
-     * Check if we get a successful response. If not, then return false and
-     * log the response values.
-     */
-    private fun HttpResponse.success(tag: String = "Timestamp Request"): Boolean {
-        if (this.status.isSuccess()) return true
-
-        Log.e(tag, "${this.status.value} - ${this.status.description}: $this")
-        return false
-    }
+    private val ktorClient = KtorClient.backend
 
     /**
      * Handler for a request, performs try catch and updates
@@ -126,14 +72,12 @@ class AppViewModel (
         onError: suspend () -> Unit = {},
         action: suspend () -> T?
     ): T? {
-        try {
-            return action()
-        } catch (e: Exception) {
-            Log.e(tag, e.toString())
-            _error.value = e.toString()
+        suspend fun onErrorHandler(e: Exception?) {
+            _error.value = e?.message ?: "An error occurred"
             onError()
         }
-        return null
+
+        return KtorClient.handler(tag, ::onErrorHandler, action)
     }
 
     /**
@@ -143,26 +87,10 @@ class AppViewModel (
     fun pingBackend() = ioCoroutineScope.launch {
         val tag = "Ping Backend"
         handler(tag) {
-            val token = getToken()
             val endpoint = "$base/users/me"
             val res = ktorClient.post(endpoint)
 
             if (!res.success(tag)) return@handler
-            Log.d(tag, "ID TOKEN: $token")
-        }
-    }
-
-    fun updateLocation(location: LocationDTO) = ioCoroutineScope.launch {
-        val tag = "Update Location"
-        handler(tag) {
-            val endpoint = "$base/users/me/location"
-            val res = ktorClient.patch(endpoint) {
-                contentType(ContentType.Application.Json)
-                setBody(location)
-            }
-
-            if (!res.success(tag)) return@handler
-            Log.d(tag, "Updated location with $location")
         }
     }
 

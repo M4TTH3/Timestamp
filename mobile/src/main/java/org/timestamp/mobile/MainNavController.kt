@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
@@ -33,8 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
@@ -49,16 +47,14 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.elements.BackgroundLocationDialog
-import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import org.timestamp.mobile.utility.PermissionProvider
 
@@ -72,10 +68,10 @@ enum class Screen {
 
 class MainNavController(
     private val context: Context,
-    private val appViewModel: AppViewModel,
+    private val eventViewModel: EventViewModel,
     private val themeViewModel: ThemeViewModel
 ) {
-    private val auth = appViewModel.auth
+    private val auth = eventViewModel.auth
     private val credentialManager: CredentialManager = CredentialManager.create(context)
     private val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption
         .Builder(context.getString(R.string.web_client_id))
@@ -108,7 +104,7 @@ class MainNavController(
             auth.signInWithCredential(firebaseCredential).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.i("Sign In", "Successfully logged in")
-                    appViewModel.pingBackend()
+                    eventViewModel.pingBackend()
                     navController.navigate(Screen.Home.name)
                 }
             }
@@ -133,12 +129,15 @@ class MainNavController(
         val scope = rememberCoroutineScope()
         val startDestination = if (auth.currentUser == null) Screen.Login.name else Screen.Home.name
 
-        LaunchedEffect(Unit) { permissions.launchMultiplePermissionRequest() }
+        LaunchedEffect(Unit) {
+            if (!permissions.allPermissionsGranted) navController.navigate(startDestination)
+            permissions.launchMultiplePermissionRequest()
+        }
 
         fun signIn() { scope.launch { handleSignIn(navController) } }
         fun signOut() {
             auth.signOut()
-            appViewModel.stopGetEventsPolling()
+            eventViewModel.stopGetEventsPolling()
             clearLocationService()
             scope.launch {
                 credentialManager.clearCredentialState(
@@ -147,12 +146,6 @@ class MainNavController(
                 navController.popBackStack()
                 navController.navigate(Screen.Login.name)
             }
-        }
-        fun openSettings() {
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", context.packageName, null)
-            }
-            context.startActivity(intent)
         }
 
         TimestampTheme(darkTheme = isDarkTheme) {
@@ -172,9 +165,12 @@ class MainNavController(
                     val permissionGranted = permissions.allPermissionsGranted
                     val showRationale = permissions.shouldShowRationale
                     val bgPermissionGranted = bgPermission.status.isGranted
-                    var showBackgroundRationale = remember { mutableStateOf(!bgPermissionGranted) }
+                    val showBackgroundRationale = remember { mutableStateOf(!bgPermissionGranted) }
 
-                    if (permissionGranted) startLocationService()
+                    LaunchedEffect(permissionGranted) {
+                        if (permissionGranted) startLocationService()
+                        else clearLocationService()
+                    }
 
                     HomeScreen(
                         onSignOutClick = ::signOut,
@@ -194,7 +190,7 @@ class MainNavController(
                         continueText = if (permissionGranted) "Continue" else "Settings",
                         warningText = if (permissionGranted) null else "Please enable all permissions"
                     )
-                    Log.d("Permission", "Permission Granted: $bgPermissionGranted")
+
                     if (permissionGranted && showBackgroundRationale.value) {
                         BackgroundLocationDialog(
                             onAllow = {
@@ -319,12 +315,12 @@ class MainNavController(
     }
 
     private fun startLocationService() {
-        val serviceIntent = Intent(context, LocationService::class.java)
+        val serviceIntent = Intent(context, TimestampService::class.java)
         context.startService(serviceIntent)
     }
 
     private fun clearLocationService() {
-        val serviceIntent = Intent(context, LocationService::class.java)
+        val serviceIntent = Intent(context, TimestampService::class.java)
         context.stopService(serviceIntent)
     }
 }

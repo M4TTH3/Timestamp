@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -58,13 +57,12 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.R
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.math.roundToInt
 
 @Composable
 fun EventMap(locationName: String, eventName: String, eventLocation: LatLng, context: Context) {
@@ -109,7 +107,7 @@ fun openGoogleMaps(context: Context, location: LatLng) {
 @Composable
 fun EventBox(
     data: EventDTO,
-    viewModel: AppViewModel = viewModel(),
+    viewModel: EventViewModel = viewModel(),
     currentUser: FirebaseUser?
 ) {
     var isExpanded by remember { mutableStateOf(false) }
