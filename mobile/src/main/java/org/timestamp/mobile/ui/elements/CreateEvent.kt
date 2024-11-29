@@ -262,7 +262,7 @@ fun CreateEvent(
         DatePickerDialog(
             onDateSelected = { date ->
                 eventDate = false
-                             selectedDate = date},
+                selectedDate = date},
             onDismiss = { eventDate = false },
             initialDate = selectedDate
         )

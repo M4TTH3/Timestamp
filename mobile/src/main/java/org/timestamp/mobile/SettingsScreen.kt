@@ -2,7 +2,6 @@ package org.timestamp.mobile
 
 // Imports...
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,23 +15,16 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.runtime.mutableStateOf
@@ -40,13 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -54,23 +42,22 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseUser
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.theme.Colors
-import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
+    themeViewModel: ThemeViewModel = viewModel(LocalContext.current as TimestampActivity),
     currentUser: FirebaseUser?,
-    onSignOutClick: () -> Unit,
-    viewModel: AppViewModel,
-    themeViewModel: ThemeViewModel
+    onSignOutClick: () -> Unit
 ) {
     val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
     // Set up common style formatting
@@ -252,7 +239,7 @@ fun SettingsScreen(
                 value = sliderPosition.toFloat(),
                 onValueChange = { value ->
                     sliderPosition = value.roundToInt().coerceIn(0, availablePositions.lastIndex)
-                    viewModel.updateTrackingInterval(availablePositions.get(sliderPosition).toLong() * 1000)
+//                    val interval = availablePositions.get(sliderPosition).toLong() * 1000
                 },
                 colors = androidx.compose.material3.SliderDefaults.colors(
                     activeTrackColor = MaterialTheme.colors.primary,
