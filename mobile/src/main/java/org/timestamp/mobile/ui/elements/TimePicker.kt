@@ -12,11 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,52 +57,57 @@ fun TimePickerDialog(
         currentTime
     }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .shadow(6.dp, shape = RoundedCornerShape(32.dp))
-                .background(color = Colors.White, shape = RoundedCornerShape(32.dp))
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(16.dp)
-        ) {
-            Column(
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colors.secondary) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card(
                 modifier = Modifier
-                    .background(color = Colors.White)
-                    .fillMaxWidth()
-            ) {
-                TimePicker(
-                    onTimeSelected = { h, m ->
-                        selectedHour.value = h
-                        selectedMinute.value = m
-                    },
-                    modifier = Modifier
-                        .padding(8.dp),
-                    time = TimePickerTime(
-                        hour = selectedHour.value,
-                        minute = selectedMinute.value
-                    ),
-                )
-                Button(
-                    onClick = {
-                        onConfirm(selectedHour.value, selectedMinute.value)
-                    },
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Colors.Bittersweet, // Background color
-                        contentColor = Colors.White  // Text color
-                    ),
-                ) {
-                    androidx.compose.material3.Text(
-                        text = "OK",
-                        fontFamily = ubuntuFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
+                    .shadow(6.dp, shape = RoundedCornerShape(32.dp))
+                    .background(
+                        color = MaterialTheme.colors.primary,
+                        shape = RoundedCornerShape(32.dp)
                     )
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(color = MaterialTheme.colors.primary)
+                        .fillMaxWidth()
+                ) {
+                    TimePicker(
+                        onTimeSelected = { h, m ->
+                            selectedHour.value = h
+                            selectedMinute.value = m
+                        },
+                        modifier = Modifier
+                            .padding(8.dp),
+                        time = TimePickerTime(
+                            hour = selectedHour.value,
+                            minute = selectedMinute.value
+                        ),
+                    )
+                    Button(
+                        onClick = {
+                            onConfirm(selectedHour.value, selectedMinute.value)
+                        },
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Colors.Bittersweet, // Background color
+                            contentColor = MaterialTheme.colors.primary  // Text color
+                        ),
+                    ) {
+                        androidx.compose.material3.Text(
+                            text = "OK",
+                            fontFamily = ubuntuFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp,
+                            color = MaterialTheme.colors.secondary
+                        )
+                    }
                 }
             }
         }
-
     }
 }

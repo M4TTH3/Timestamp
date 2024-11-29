@@ -11,6 +11,7 @@ import io.github.boguszpawlowski.composecalendar.day.DefaultDay
 import io.github.boguszpawlowski.composecalendar.rememberCalendarState
 import io.github.boguszpawlowski.composecalendar.rememberSelectableCalendarState
 import java.time.LocalDate
+import org.timestamp.mobile.ui.theme.Colors
 
 @Composable
 fun DynamicCalendar(
@@ -18,12 +19,14 @@ fun DynamicCalendar(
 ) {
     SelectableCalendar(
         calendarState = rememberSelectableCalendarState(),
+        showAdjacentMonths = false,
         modifier = Modifier
             .size(500.dp)
             .padding(16.dp)
             .testTag("calendar"),
         dayContent = { dayState ->
             DefaultDay(
+                selectionColor = Colors.Bittersweet,
                 state = dayState,
                 onClick = { selectedDate ->
                     onDateSelected(selectedDate)

@@ -17,6 +17,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.utility.GoogleAPI
 
 class TimestampActivity : ComponentActivity() {
@@ -25,6 +26,7 @@ class TimestampActivity : ComponentActivity() {
     private lateinit var googleAPI: GoogleAPI
     private lateinit var mainNavController: MainNavController
     private val appViewModel: AppViewModel by viewModels()
+    private val themeViewModel: ThemeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +35,7 @@ class TimestampActivity : ComponentActivity() {
         // Setup variables
         auth = Firebase.auth
         googleAPI = GoogleAPI(this)
-        mainNavController = MainNavController(this.applicationContext, appViewModel)
+        mainNavController = MainNavController(this.applicationContext, appViewModel, themeViewModel)
 
         // Setup Places API
         val apiKey = packageManager

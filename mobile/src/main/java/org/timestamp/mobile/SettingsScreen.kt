@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
@@ -57,6 +58,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseUser
 import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import kotlin.math.abs
 import kotlin.math.max
@@ -67,8 +69,10 @@ import kotlin.math.roundToInt
 fun SettingsScreen(
     currentUser: FirebaseUser?,
     onSignOutClick: () -> Unit,
-    viewModel: AppViewModel
+    viewModel: AppViewModel,
+    themeViewModel: ThemeViewModel
 ) {
+    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
     // Set up common style formatting
     val ubuntuFontFamily = FontFamily(
         Font(R.font.ubuntu_regular),  // Regular
@@ -81,13 +85,12 @@ fun SettingsScreen(
     )
 
     // Maintains state of whether we should be in light mode or dark mode
-    var darkModeOn by remember { mutableStateOf(false) }
     var sliderPosition by remember { mutableStateOf(2) }
     val availablePositions = listOf(5, 10, 30, 60, 120, 300)
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Colors.White)
+            .background(MaterialTheme.colors.primary)
     ) {
         Column(
             modifier = Modifier
@@ -98,7 +101,7 @@ fun SettingsScreen(
         ) {
             Spacer(modifier = Modifier.size(70.dp))
             Text(text = "Settings",
-                color = Colors.Black,
+                color = MaterialTheme.colors.secondary,
                 fontFamily = ubuntuFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
@@ -110,7 +113,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.size(30.dp))
             // Account Information Section
             Text(text = "Account Information",
-                color = Colors.Black,
+                color = MaterialTheme.colors.secondary,
                 fontFamily = ubuntuFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
@@ -124,7 +127,7 @@ fun SettingsScreen(
             Row() {
                 Column() {
                     Text(text = "Name",
-                        color = Colors.Black,
+                        color = MaterialTheme.colors.secondary,
                         fontFamily = ubuntuFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
@@ -134,7 +137,7 @@ fun SettingsScreen(
                         user.displayName?.let { name ->
                             Text(
                                 text = name,
-                                color = Colors.Black,
+                                color = MaterialTheme.colors.secondary,
                                 fontFamily = ubuntuFontFamily,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -148,14 +151,14 @@ fun SettingsScreen(
                             Log.d("SettingsScreen","signed out")
                             onSignOutClick() },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Colors.Black
+                            containerColor = MaterialTheme.colors.secondary
                         )) {
                         androidx.compose.material3.Text(
                             text = "Sign Out",
                             style = textStyle.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
-                            color = Colors.White
+                            color = MaterialTheme.colors.primary
                         )
                     }
                     Spacer(modifier = Modifier.height(50.dp))
@@ -187,7 +190,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.size(20.dp))
             // Account Preferences section
             Text(text = "Account Preferences",
-                color = Colors.Black,
+                color = MaterialTheme.colors.secondary,
                 fontFamily = ubuntuFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
@@ -197,10 +200,9 @@ fun SettingsScreen(
                 color = Colors.Platinum
             )
             Spacer(modifier = Modifier.size(20.dp))
-            // NOT YET IMPLEMENTED: Switch between dark and light mode
             Row() {
-                Text(text = if (darkModeOn) "Dark Mode" else "Light Mode",
-                    color = Colors.Black,
+                Text(text = if (isDarkTheme) "Dark Mode" else "Light Mode",
+                    color = MaterialTheme.colors.secondary,
                     fontFamily = ubuntuFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
@@ -208,13 +210,12 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.width(150.dp))
                 Switch(
-                    checked = darkModeOn,
+                    checked = isDarkTheme,
                     onCheckedChange = {
-                        darkModeOn = it
-                        Colors.setThemeColors(darkModeOn) },
+                        themeViewModel.toggleTheme() },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Colors.Black,
-                        uncheckedThumbColor = Colors.White
+                        checkedThumbColor = MaterialTheme.colors.secondary,
+                        uncheckedThumbColor = MaterialTheme.colors.primary
                     ),
                     modifier = Modifier.scale(1.3f)
                 )
@@ -228,7 +229,7 @@ fun SettingsScreen(
                 Text(
                     modifier = Modifier,
                     text = "Location Request Interval",
-                    color = Colors.Black,
+                    color = MaterialTheme.colors.secondary,
                     fontFamily = ubuntuFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
@@ -237,7 +238,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .offset(x = 40.dp),
                     text = availablePositions.get(sliderPosition).toString() + "sec",
-                    color = Colors.Black,
+                    color = MaterialTheme.colors.secondary,
                     fontFamily = ubuntuFontFamily,
                     fontSize = 20.sp,
                     maxLines = 1,
@@ -254,11 +255,11 @@ fun SettingsScreen(
                     viewModel.updateTrackingInterval(availablePositions.get(sliderPosition).toLong() * 1000)
                 },
                 colors = androidx.compose.material3.SliderDefaults.colors(
-                    activeTrackColor = Colors.White,
+                    activeTrackColor = MaterialTheme.colors.primary,
                     inactiveTrackColor = Color.Gray,
                     thumbColor = Color.White,
-                    disabledActiveTickColor = Colors.Black,
-                    inactiveTickColor = Colors.Black,
+                    disabledActiveTickColor = MaterialTheme.colors.secondary,
+                    inactiveTickColor = MaterialTheme.colors.secondary,
                     activeTickColor = Color.Gray,
                 ),
                 steps = availablePositions.size - 2,

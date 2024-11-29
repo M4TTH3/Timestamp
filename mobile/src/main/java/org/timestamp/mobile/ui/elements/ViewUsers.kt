@@ -26,6 +26,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
@@ -123,13 +124,13 @@ fun ViewUsers(
         Card(
             modifier = Modifier
                 .shadow(6.dp, shape = RoundedCornerShape(32.dp))
-                .background(color = Color.White, shape = RoundedCornerShape(32.dp))
+                .background(color = MaterialTheme.colors.primary, shape = RoundedCornerShape(32.dp))
                 .fillMaxWidth(0.9f)
                 .wrapContentHeight(),
         ) {
             Column(
                 modifier = Modifier
-                    .background(color = Color.White)
+                    .background(color = MaterialTheme.colors.primary)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -138,6 +139,7 @@ fun ViewUsers(
                     fontFamily = ubuntuFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
+                    color = MaterialTheme.colors.secondary,
                     modifier = Modifier
                         .padding(16.dp)
                 )
@@ -153,6 +155,7 @@ fun ViewUsers(
                         fontFamily = ubuntuFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
+                        color = MaterialTheme.colors.secondary,
                         modifier = Modifier
                             .padding(12.dp)
                     )
@@ -220,7 +223,7 @@ fun ViewUsers(
                                 Column {
                                     Row(
                                         modifier = Modifier
-                                            .background(Color.White)
+                                            .background(MaterialTheme.colors.primary)
                                     ) {
                                         val userName = user.name
                                         var suffix = ""
@@ -234,6 +237,7 @@ fun ViewUsers(
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 16.sp,
                                             maxLines = 1,
+                                            color = MaterialTheme.colors.secondary,
                                             overflow = TextOverflow.Ellipsis,
                                             modifier = Modifier
                                                 .width(150.dp)
@@ -243,6 +247,7 @@ fun ViewUsers(
                                             text = suffix,
                                             fontFamily = ubuntuFontFamily,
                                             fontSize = 14.sp,
+                                            color = MaterialTheme.colors.secondary,
                                             modifier = Modifier
                                         )
                                     }
@@ -250,6 +255,7 @@ fun ViewUsers(
                                         text = user.email,
                                         fontFamily = ubuntuFontFamily,
                                         fontSize = 14.sp,
+                                        color = MaterialTheme.colors.secondary
                                     )
                                 }
                                 Spacer(modifier = Modifier.weight(1f))
@@ -268,6 +274,7 @@ fun ViewUsers(
                                                     text = "${est}min",
                                                     fontFamily = ubuntuFontFamily,
                                                     fontSize = 14.sp,
+                                                    color = MaterialTheme.colors.secondary,
                                                     modifier = Modifier
                                                         .padding(3.dp)
                                                 )
@@ -294,7 +301,7 @@ fun ViewUsers(
                                                     text = distanceString,
                                                     fontFamily = ubuntuFontFamily,
                                                     fontSize = 14.sp,
-                                                    color = Colors.Black,
+                                                    color = MaterialTheme.colors.secondary,
                                                     modifier = Modifier
                                                         .padding(3.dp)
                                                 )
@@ -325,9 +332,9 @@ fun ViewUsers(
                     onClick = onDismissRequest,
                     colors = ButtonColors(
                         containerColor = Color(0xFFFF6F61),
-                        contentColor = Color(0xFFFFFFFF),
+                        contentColor = MaterialTheme.colors.primary,
                         disabledContainerColor = Color(0xFFFF6F61),
-                        disabledContentColor = Color(0xFFFFFFFF)
+                        disabledContentColor = MaterialTheme.colors.primary
                     ),
                     modifier = Modifier
                         .align(alignment = Alignment.CenterHorizontally)
@@ -339,6 +346,7 @@ fun ViewUsers(
                         fontSize = 20.sp,
                         fontFamily = ubuntuFontFamily,
                         fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.secondary,
                         modifier = Modifier
                             .padding(4.dp)
                     )
