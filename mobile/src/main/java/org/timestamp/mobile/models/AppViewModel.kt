@@ -23,9 +23,8 @@ import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
@@ -52,11 +51,14 @@ class AppViewModel (
     application: Application
 ) : AndroidViewModel(application) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val base = application.getString(R.string.backend_url) // Base Url of backend
+    private val eventJoinBase = "$base/events/join" // Base Url for Events Join
 
     private var isPollingEvents = false
     private var isTrackingLocation = false
 
     // User Location
+    private val locationDTO: LocationDTO = LocationDTO(0.0, 0.0, TravelMode.Foot)
     var location: LatLng = LatLng(0.0, 0.0)
     private var trackingInterval : Long = 30000L
 
@@ -76,11 +78,7 @@ class AppViewModel (
     // We will prefetch _pendingEvent to make requests look faster
     private val _pendingEventLink: MutableStateFlow<UUID?> = MutableStateFlow(null)
     private val _pendingEvent: MutableStateFlow<EventDTO?> = MutableStateFlow(null)
-    val pendingEventLink: StateFlow<UUID?> = _pendingEventLink
     val pendingEvent: StateFlow<EventDTO?> = _pendingEvent
-
-    private val base = application.getString(R.string.backend_url) // Base Url of backend
-    private val eventJoinBase = "$base/events/join" // Base Url for Events Join
 
     private val ioCoroutineScope = CoroutineScope(Dispatchers.IO) // Used for coroutine
 
@@ -110,10 +108,24 @@ class AppViewModel (
 
     override fun onCleared() {
         super.onCleared()
-        // Safely close it
         ktorClient.close()
     }
 
+    /**
+     * Check if we get a successful response. If not, then return false and
+     * log the response values.
+     */
+    private fun HttpResponse.success(tag: String = "Timestamp Request"): Boolean {
+        if (this.status.isSuccess()) return true
+
+        Log.e(tag, "${this.status.value} - ${this.status.description}: $this")
+        return false
+    }
+
+    /**
+     * Handler for a request, performs try catch and updates
+     * states if required.
+     */
     private suspend fun <T> handler(
         tag: String = "Backend Request",
         onError: suspend () -> Unit = {},
@@ -133,34 +145,29 @@ class AppViewModel (
      * This will ping a request to the backend to verify the token.
      * It will also create the user if required.
      */
-    fun pingBackend() {
+    fun pingBackend() = ioCoroutineScope.launch {
         val tag = "Ping Backend"
-        ioCoroutineScope.launch {
-            handler(tag) {
-                val token = getToken()
-                val endpoint = "$base/users/me"
-                val res = ktorClient.post(endpoint)
+        handler(tag) {
+            val token = getToken()
+            val endpoint = "$base/users/me"
+            val res = ktorClient.post(endpoint)
 
-                Log.i(tag, "ID TOKEN: $token")
-                if (res.status == HttpStatusCode.OK) Log.i("Verifying ID", res.bodyAsText())
-                else Log.e(tag, res.bodyAsText())
-            }
+            if (!res.success(tag)) return@handler
+            Log.d(tag, "ID TOKEN: $token")
         }
     }
 
-    fun updateLocation(location: LocationDTO) {
+    fun updateLocation(location: LocationDTO) = ioCoroutineScope.launch {
         val tag = "Update Location"
-        ioCoroutineScope.launch {
-            handler(tag) {
-                val endpoint = "$base/users/me/location"
-                val res = ktorClient.patch(endpoint) {
-                    contentType(ContentType.Application.Json)
-                    setBody(location)
-                }
-
-                if (res.status.isSuccess()) Log.i(tag, "Success")
-                else Log.e(tag, res.toString())
+        handler(tag) {
+            val endpoint = "$base/users/me/location"
+            val res = ktorClient.patch(endpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(location)
             }
+
+            if (!res.success(tag)) return@handler
+            Log.d(tag, "Updated location with $location")
         }
     }
 
@@ -220,127 +227,89 @@ class AppViewModel (
         trackingInterval = newInterval
     }
 
-    fun startTrackingLocation() {
+    fun startTrackingLocation() = viewModelScope.launch {
         isTrackingLocation = true
-        viewModelScope.launch {
-            while (isTrackingLocation) {
-                fetchCurrentLocation(
-                    context = getApplication<Application>().applicationContext,
-                    onLocationRetrieved = { latlng ->
-                        location = latlng
-                    }
-                )
-                updateLocation( LocationDTO(
-                    latitude = location.latitude,
-                    longitude = location.longitude,
-                    travelMode = TravelMode.Foot, // for now
-                ))
-                delay(trackingInterval)
-            }
+        while (isTrackingLocation) {
+            fetchCurrentLocation(
+                context = getApplication<Application>().applicationContext,
+                onLocationRetrieved = { latlng ->
+                    location = latlng
+                }
+            )
+            updateLocation( LocationDTO(
+                latitude = location.latitude,
+                longitude = location.longitude,
+                travelMode = TravelMode.Foot, // for now
+            ))
+            delay(trackingInterval)
         }
     }
 
-    fun stopTrackingLocation() { isTrackingLocation = false }
-
-    // meters
-    fun calculateDistance(
-        pos1: LatLng,
-        pos2: LatLng,
-        onDistanceCalculated: (Long) -> Unit
-    ) {
-        val location1 = Location("").apply {
-            latitude = pos1.latitude
-            longitude = pos1.longitude
-        }
-
-        val location2 = Location("").apply {
-            latitude = pos2.latitude
-            longitude = pos2.longitude
-        }
-
-        val distanceInMeters = location1.distanceTo(location2).toLong()
-        onDistanceCalculated(distanceInMeters)
-    }
+    fun stopTrackingLocation() = viewModelScope.launch { isTrackingLocation = false }
 
     /**
      * Fetch ALL events to update UI
      */
-    fun getEvents() {
-        _loading.value = true
-
+    private fun getEvents() = ioCoroutineScope.launch {
         val tag = "Events Get"
-        ioCoroutineScope.launch {
-            handler(tag, {_loading.value = false}) {
-                val endpoint = "$base/events"
-                val res = ktorClient.get(endpoint)
+        handler(tag) {
+            val endpoint = "$base/events"
+            val res = ktorClient.get(endpoint)
+            if (!res.success(tag)) return@handler
 
-                if (res.status.isSuccess()) {
-                    val eventList: List<EventDTO> = res.body()
-                    Log.d(tag, "Updated Contents: $eventList")
-
-                    withContext(Dispatchers.Main) {
-                        _events.value = eventList.sortedBy { it.arrival }
-                        _loading.value = false
-                    }
-                } else {
-                    Log.e(tag, res.status.toString())
-                }
+            val eventList: List<EventDTO> = res.body()
+            withContext(Dispatchers.Main) {
+                _events.value = eventList.sortedBy { it.arrival }
             }
+
+            Log.d(tag, "Updated Contents: $eventList")
         }
     }
 
     /**
      * Post an event, and modify the current list with the new event.
      */
-    fun postEvent(event: EventDTO) {
+    fun postEvent(event: EventDTO) = ioCoroutineScope.launch {
         val tag = "Events Post"
-        ioCoroutineScope.launch {
-            handler(tag) {
-                val endpoint = "$base/events"
-                val res = ktorClient.post(endpoint) {
-                    contentType(ContentType.Application.Json)
-                    setBody(event)
-                }
-
-                // Check response
-                if (res.status.isSuccess()) {
-                    val e: EventDTO = res.body()
-                    val newList = events.value + e // Insert it into the list and create an update
-                    withContext(Dispatchers.Main) {
-                        _events.value = newList
-                    }
-                    Log.d(tag, newList.toString())
-                } else {
-                    Log.e(tag, "res status: ${res.status}, $event")
-                }
+        handler(tag) {
+            val endpoint = "$base/events"
+            val res = ktorClient.post(endpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(event)
             }
+
+            // Insert event into the list state
+            if (!res.success(tag)) return@handler
+            val e: EventDTO = res.body()
+            val newList = events.value + e
+            withContext(Dispatchers.Main) {
+                _events.value = newList
+            }
+
+            Log.d(tag, newList.toString())
         }
     }
 
     /**
      * Delete an event, and modify the current list without the current event
      */
-    fun deleteEvent(eventId: Long) {
+    fun deleteEvent(eventId: Long) = ioCoroutineScope.launch {
         val tag = "Events Delete"
-        ioCoroutineScope.launch {
-            handler(tag) {
-                val endpoint = "$base/events/$eventId"
-                val res = ktorClient.delete(endpoint)
+        handler(tag) {
+            val endpoint = "$base/events/$eventId"
+            val res = ktorClient.delete(endpoint)
 
-                if (res.status.isSuccess()) {
-                    // Delete the element from the current list
-                    val index = events.value.indexOfFirst { it.id == eventId }
-                    val newList = events.value.toMutableList()
-                    newList.removeAt(index)
-                    withContext(Dispatchers.Main) {
-                        _events.value = newList
-                    }
+            if (!res.success(tag)) return@handler
 
-                    Log.d(tag, "Successfully deleted $eventId")
-                } else {
-                    Log.e(tag, "res status: $res")
-                }
+            // Delete the element from the current list
+            val index = events.value.indexOfFirst { it.id == eventId }
+            val newList = events.value.toMutableList()
+            newList.removeAt(index)
+            withContext(Dispatchers.Main) {
+                _events.value = newList
             }
+
+            Log.d(tag, "Successfully deleted $eventId")
         }
     }
 
@@ -348,28 +317,23 @@ class AppViewModel (
      * This will update an event, and update the local state for that
      * event only. Improves latency.
      */
-    fun updateEvent(event: EventDTO) {
+    fun updateEvent(event: EventDTO) = ioCoroutineScope.launch {
         val tag = "Events Update"
-        ioCoroutineScope.launch {
-            handler(tag) {
-                val endpoint = "$base/events"
-                val res = ktorClient.patch(endpoint) {
-                    contentType(ContentType.Application.Json)
-                    setBody(event)
-                }
+        handler(tag) {
+            val endpoint = "$base/events"
+            val res = ktorClient.patch(endpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(event)
+            }
 
-                if (res.status.isSuccess()) {
-                    val newEvent: EventDTO = res.body()
-                    val newEventList = events.value.toMutableList().map {
-                        if (it.id == newEvent.id) newEvent else it
-                    }
+            if (!res.success(tag)) return@handler
+            val newEvent: EventDTO = res.body()
+            val newEventList = events.value.toMutableList().map {
+                if (it.id == newEvent.id) newEvent else it
+            }
 
-                    withContext(Dispatchers.Main) {
-                        _events.value = newEventList
-                    }
-                } else {
-                    Log.e(tag, res.toString())
-                }
+            withContext(Dispatchers.Main) {
+                _events.value = newEventList
             }
         }
     }
@@ -377,18 +341,16 @@ class AppViewModel (
     /**
      * Get Event Link base_url/events/join/
      */
-    suspend fun getEventLink(eventId: Long): String? {
+    suspend fun getEventLink(eventId: Long): String? = withContext(Dispatchers.IO) {
         val tag = "Event Link"
-        return withContext(Dispatchers.IO) {
-            handler(tag) {
-                val endpoint = "$base/events/link/$eventId"
-                val res = ktorClient.get(endpoint)
-                if (!res.status.isSuccess()) throw Exception(res.status.description)
-                val eventLinkDTO: EventLinkDTO = res.body()
-                val eventLink = "$eventJoinBase/${eventLinkDTO.id}"
-                Log.d(tag, "Link: $eventLink")
-                return@handler eventLink
-            }
+        return@withContext handler(tag) {
+            val endpoint = "$base/events/link/$eventId"
+            val res = ktorClient.get(endpoint)
+
+            if (!res.success(tag)) return@handler null
+            val eventLinkDTO: EventLinkDTO = res.body()
+            val eventLink = "$eventJoinBase/${eventLinkDTO.id}"
+            return@handler eventLink
         }
     }
 
@@ -396,28 +358,22 @@ class AppViewModel (
      * Join the current pending event and add it to the list on accept.
      * Reset all information on pending events
      */
-    fun joinPendingEvent() {
+    fun joinPendingEvent() = ioCoroutineScope.launch {
         val tag = "Events Join"
-        ioCoroutineScope.launch {
-            handler(tag) {
-                val endpoint = "$eventJoinBase/${pendingEventLink.value}"
-                val res = ktorClient.post(endpoint)
-                val success = res.status.isSuccess()
+        handler(tag) {
+            val endpoint = "$eventJoinBase/${_pendingEventLink.value}"
+            val res = ktorClient.post(endpoint)
 
-                if (success) {
-                    val newEvent: EventDTO = res.body()
-                    val newList = _events.value + newEvent
+            if (!res.success(tag)) return@handler
 
-                    withContext(Dispatchers.Main) {
-                        _events.value = newList
+            val newEvent: EventDTO = res.body()
+            val newList = _events.value + newEvent
+            withContext(Dispatchers.Main) {
+                _events.value = newList
 
-                        // Remove the current pending events
-                        _pendingEvent.value = null
-                        _pendingEventLink.value = null
-                    }
-                } else {
-                    Log.e(tag, res.toString())
-                }
+                // Remove the current pending events
+                _pendingEvent.value = null
+                _pendingEventLink.value = null
             }
         }
     }
@@ -445,27 +401,22 @@ class AppViewModel (
     /**
      * Get a single event and return it. Used for showing info when joining one.
      */
-     fun setPendingEvent() {
+     fun setPendingEvent() = ioCoroutineScope.launch {
         val tag = "Update Pending Event"
-        val uuid = pendingEventLink.value ?: return
+        val uuid = _pendingEventLink.value ?: return@launch
 
-        ioCoroutineScope.launch {
-            handler(tag) {
-                val endpoint = "$base/events/$uuid"
-                val res = ktorClient.get(endpoint)
+        handler(tag) {
+            val endpoint = "$base/events/$uuid"
+            val res = ktorClient.get(endpoint)
 
-                val success = res.status.isSuccess()
-                if (success) {
-                    val event = res.body<EventDTO>()
-                    withContext(Dispatchers.Main) {
-                        _pendingEvent.value = event
-                    }
+            if (!res.success(tag)) return@handler
 
-                    Log.d(tag, "Link UUID: $uuid, Event: $event")
-                } else {
-                    Log.e(tag, res.toString())
-                }
+            val event = res.body<EventDTO>()
+            withContext(Dispatchers.Main) {
+                _pendingEvent.value = event
             }
+
+            Log.d(tag, "Link UUID: $uuid, Event: $event")
         }
     }
 

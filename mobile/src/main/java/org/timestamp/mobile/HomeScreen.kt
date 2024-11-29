@@ -35,9 +35,13 @@ import org.timestamp.mobile.models.AppViewModel
 fun HomeScreen(
     viewModel: AppViewModel = viewModel(),
     modifier: Modifier = Modifier,
-    currentUser: FirebaseUser?,
     onSignOutClick: () -> Unit,
-    onContinueClick: () -> Unit
+    onContinueClick: () -> Unit,
+
+    // When we don't have all the permissions
+    // We want to show a rationale dialog
+    continueText: String = "Continue",
+    warningText: String? = null
 ) {
     LaunchedEffect(Unit) {
         // Prefetch events to make it look quicker
@@ -64,7 +68,7 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            currentUser?.let { user ->
+            viewModel.auth.currentUser?.let { user ->
                 user.photoUrl?.let {
                     AsyncImage(
                         modifier = Modifier
@@ -95,7 +99,7 @@ fun HomeScreen(
                         containerColor = Color(0xFF2A2B2E)
                     )) {
                     Text(
-                        text = "Continue",
+                        text = continueText,
                         style = textStyle.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
@@ -114,6 +118,17 @@ fun HomeScreen(
                             fontWeight = FontWeight.SemiBold
                         ),
                         color = Color(0xFFFFFFFF)
+                    )
+                }
+                Spacer(modifier = Modifier.size(16.dp))
+                warningText?.let {
+                    Text(
+                        text = it,
+                        style = textStyle.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFD32F2F)
+                        ),
+                        color = Color(0xFFD32F2F)
                     )
                 }
             }

@@ -44,14 +44,16 @@ class TimestampActivity : ComponentActivity() {
             .getString("com.google.android.geo.API_KEY")
         Places.initialize(this, apiKey!!)
 
-        // Main content
-        setContent {
-            mainNavController.TimestampNavController()
-        }
-
         // ATTENTION: This was auto-generated to handle app links.
         val appLinkIntent: Intent = intent
         val appLinkData: Uri? = appLinkIntent.data
         appViewModel.setPendingEventLink(appLinkData)
+
+        // Main content
+        setContent {
+            mainNavController.TimestampNavController()
+        }
     }
+
+
 }

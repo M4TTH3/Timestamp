@@ -1,6 +1,7 @@
 package org.timestamp.mobile
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +41,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -48,6 +55,7 @@ import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.TimestampTheme
+import org.timestamp.mobile.utility.PermissionProvider
 
 enum class Screen {
     Login,
@@ -110,17 +118,23 @@ class MainNavController(
      * Main composable for navigation features. Includes credential management.
      * Sets up Credential Manager.
      */
+    @OptIn(ExperimentalPermissionsApi::class)
     @Composable
     fun TimestampNavController() {
+        val permissions = rememberMultiplePermissionsState(PermissionProvider.PERMISSIONS)
+        val bgPermission = rememberPermissionState(PermissionProvider.BACKGROUND_LOCATION)
         val navController = rememberNavController()
         val scope = rememberCoroutineScope()
         val startDestination = if (auth.currentUser == null) Screen.Login.name else Screen.Home.name
 
-        fun signIn() { scope.launch{ handleSignIn(navController) } }
+        LaunchedEffect(Unit) { permissions.launchMultiplePermissionRequest() }
+
+        fun signIn() { scope.launch { handleSignIn(navController) } }
         fun signOut() {
             auth.signOut()
             appViewModel.stopGetEventsPolling()
             appViewModel.stopTrackingLocation()
+            clearLocationService()
             scope.launch {
                 credentialManager.clearCredentialState(
                     ClearCredentialStateRequest()
@@ -144,13 +158,18 @@ class MainNavController(
                     )
                 }
                 composable(Screen.Home.name) {
+                    // False if all permissions granted
+                    val permissionGranted = permissions.allPermissionsGranted
+                    val bgPermissionGranted = bgPermission.status.isGranted
+                    if (permissionGranted) startLocationService()
+
                     HomeScreen(
-                        viewModel = appViewModel,
-                        currentUser = auth.currentUser,
                         onSignOutClick = ::signOut,
                         onContinueClick = {
-                            navController.navigate(Screen.Events.name)
-                        }
+                            if (permissionGranted) navController.navigate(Screen.Events.name)
+                            else permissions.launchMultiplePermissionRequest()
+                        },
+                        warningText = if (permissionGranted) null else "Please enable all permissions"
                     )
                 }
                 composable(Screen.Events.name) {
@@ -267,5 +286,15 @@ class MainNavController(
                 }
             }
         }
+    }
+
+    private fun startLocationService() {
+        val serviceIntent = Intent(context, LocationService::class.java)
+        context.startService(serviceIntent)
+    }
+
+    private fun clearLocationService() {
+        val serviceIntent = Intent(context, LocationService::class.java)
+        context.stopService(serviceIntent)
     }
 }
