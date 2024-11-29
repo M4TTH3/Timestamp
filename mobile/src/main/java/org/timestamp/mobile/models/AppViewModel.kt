@@ -54,13 +54,8 @@ class AppViewModel (
     private val base = application.getString(R.string.backend_url) // Base Url of backend
     private val eventJoinBase = "$base/events/join" // Base Url for Events Join
 
+    // Whether we are polling events
     private var isPollingEvents = false
-    private var isTrackingLocation = false
-
-    // User Location
-    private val locationDTO: LocationDTO = LocationDTO(0.0, 0.0, TravelMode.Foot)
-    var location: LatLng = LatLng(0.0, 0.0)
-    private var trackingInterval : Long = 30000L
 
     // Events model
     private val _events: MutableStateFlow<List<EventDTO>> = MutableStateFlow(emptyList())
@@ -177,17 +172,6 @@ class AppViewModel (
     fun startGetEventsPolling() {
         isPollingEvents = true
         // need events to show relevant information immediately
-        fetchCurrentLocation(
-            context = getApplication<Application>().applicationContext,
-            onLocationRetrieved = { latlng ->
-                location = latlng
-            }
-        )
-        updateLocation( LocationDTO(
-            latitude = location.latitude,
-            longitude = location.longitude,
-            travelMode = TravelMode.Foot, // for now
-        ))
         viewModelScope.launch {
             while(isPollingEvents) {
                 getEvents()
@@ -197,55 +181,6 @@ class AppViewModel (
     }
 
     fun stopGetEventsPolling() { isPollingEvents = false }
-
-    private fun fetchCurrentLocation(
-        context: Context,
-        onLocationRetrieved: (LatLng) -> Unit
-    ) {
-        val permissionCheck = ContextCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        )
-        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-            val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    Log.d("LOCATION TRACKER", "User Location successfully retrieved: ${location.latitude}, ${location.longitude}")
-                    onLocationRetrieved(LatLng(location.latitude, location.longitude))
-                } else {
-                    onLocationRetrieved(LatLng(37.7749, -122.4194)) // default, San Fran
-                }
-            }.addOnFailureListener {
-                onLocationRetrieved(LatLng(37.7749, -122.4194))
-            }
-        } else {
-            onLocationRetrieved(LatLng(37.7749, -122.4194))
-        }
-    }
-
-    fun updateTrackingInterval(newInterval: Long) {
-        trackingInterval = newInterval
-    }
-
-    fun startTrackingLocation() = viewModelScope.launch {
-        isTrackingLocation = true
-        while (isTrackingLocation) {
-            fetchCurrentLocation(
-                context = getApplication<Application>().applicationContext,
-                onLocationRetrieved = { latlng ->
-                    location = latlng
-                }
-            )
-            updateLocation( LocationDTO(
-                latitude = location.latitude,
-                longitude = location.longitude,
-                travelMode = TravelMode.Foot, // for now
-            ))
-            delay(trackingInterval)
-        }
-    }
-
-    fun stopTrackingLocation() = viewModelScope.launch { isTrackingLocation = false }
 
     /**
      * Fetch ALL events to update UI

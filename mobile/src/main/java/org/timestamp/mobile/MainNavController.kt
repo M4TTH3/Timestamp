@@ -2,6 +2,8 @@ package org.timestamp.mobile
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +57,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import org.timestamp.mobile.models.AppViewModel
 import org.timestamp.mobile.models.ThemeViewModel
+import org.timestamp.mobile.ui.elements.BackgroundLocationDialog
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import org.timestamp.mobile.utility.PermissionProvider
@@ -123,6 +128,7 @@ class MainNavController(
     fun TimestampNavController() {
         val permissions = rememberMultiplePermissionsState(PermissionProvider.PERMISSIONS)
         val bgPermission = rememberPermissionState(PermissionProvider.BACKGROUND_LOCATION)
+        val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
         val navController = rememberNavController()
         val scope = rememberCoroutineScope()
         val startDestination = if (auth.currentUser == null) Screen.Login.name else Screen.Home.name
@@ -133,7 +139,6 @@ class MainNavController(
         fun signOut() {
             auth.signOut()
             appViewModel.stopGetEventsPolling()
-            appViewModel.stopTrackingLocation()
             clearLocationService()
             scope.launch {
                 credentialManager.clearCredentialState(
@@ -143,8 +148,13 @@ class MainNavController(
                 navController.navigate(Screen.Login.name)
             }
         }
+        fun openSettings() {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", context.packageName, null)
+            }
+            context.startActivity(intent)
+        }
 
-        val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
         TimestampTheme(darkTheme = isDarkTheme) {
             NavHost(
                 navController = navController,
@@ -160,33 +170,53 @@ class MainNavController(
                 composable(Screen.Home.name) {
                     // False if all permissions granted
                     val permissionGranted = permissions.allPermissionsGranted
+                    val showRationale = permissions.shouldShowRationale
                     val bgPermissionGranted = bgPermission.status.isGranted
+                    var showBackgroundRationale = remember { mutableStateOf(!bgPermissionGranted) }
+
                     if (permissionGranted) startLocationService()
 
                     HomeScreen(
                         onSignOutClick = ::signOut,
                         onContinueClick = {
                             if (permissionGranted) navController.navigate(Screen.Events.name)
-                            else permissions.launchMultiplePermissionRequest()
+                            else if (showRationale) permissions.launchMultiplePermissionRequest()
+                            else {
+                                // Need the user to update manually in settings
+                                // after many denials
+                                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                    data = Uri.fromParts("package", context.packageName, null)
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                                context.startActivity(intent)
+                            }
                         },
+                        continueText = if (permissionGranted) "Continue" else "Settings",
                         warningText = if (permissionGranted) null else "Please enable all permissions"
                     )
+                    Log.d("Permission", "Permission Granted: $bgPermissionGranted")
+                    if (permissionGranted && showBackgroundRationale.value) {
+                        BackgroundLocationDialog(
+                            onAllow = {
+                                bgPermission.launchPermissionRequest()
+                                showBackgroundRationale.value = false
+                            },
+                            onDeny = { showBackgroundRationale.value = false }
+                        )
+                    }
                 }
                 composable(Screen.Events.name) {
-                    EventsScreen(viewModel = appViewModel,
-                        currentUser = auth.currentUser)
+                    EventsScreen(currentUser = auth.currentUser)
                     NavBar(navController = navController, currentScreen = "Events")
                 }
                 composable(Screen.Calendar.name) {
-                    CalendarScreen(viewModel = appViewModel)
+                    CalendarScreen()
                     NavBar(navController = navController, currentScreen = "Calendar")
                 }
                 composable(Screen.Settings.name) {
                     SettingsScreen(
                         currentUser = auth.currentUser,
-                        onSignOutClick = ::signOut,
-                        viewModel = appViewModel,
-                        themeViewModel = themeViewModel
+                        onSignOutClick = ::signOut
                     )
                     NavBar(navController = navController, currentScreen = "Settings")
                 }

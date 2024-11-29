@@ -29,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +48,9 @@ val ubuntuFontFamily = FontFamily(
 )
 
 @Composable
-fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
+fun CalendarScreen(
+    viewModel: AppViewModel = viewModel(LocalContext.current as TimestampActivity)
+) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
     var selectedDate by remember { mutableStateOf<LocalDate?>(null)}

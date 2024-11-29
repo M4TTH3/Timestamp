@@ -54,6 +54,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseUser
@@ -67,10 +68,10 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    viewModel: AppViewModel = viewModel(LocalContext.current as TimestampActivity),
+    themeViewModel: ThemeViewModel = viewModel(LocalContext.current as TimestampActivity),
     currentUser: FirebaseUser?,
-    onSignOutClick: () -> Unit,
-    viewModel: AppViewModel,
-    themeViewModel: ThemeViewModel
+    onSignOutClick: () -> Unit
 ) {
     val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
     // Set up common style formatting
@@ -252,7 +253,7 @@ fun SettingsScreen(
                 value = sliderPosition.toFloat(),
                 onValueChange = { value ->
                     sliderPosition = value.roundToInt().coerceIn(0, availablePositions.lastIndex)
-                    viewModel.updateTrackingInterval(availablePositions.get(sliderPosition).toLong() * 1000)
+//                    val interval = availablePositions.get(sliderPosition).toLong() * 1000
                 },
                 colors = androidx.compose.material3.SliderDefaults.colors(
                     activeTrackColor = MaterialTheme.colors.primary,

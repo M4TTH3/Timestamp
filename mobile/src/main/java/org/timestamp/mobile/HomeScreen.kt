@@ -17,23 +17,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.auth.FirebaseUser
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.timestamp.mobile.models.AppViewModel
 
 @Composable
 fun HomeScreen(
-    viewModel: AppViewModel = viewModel(),
+    viewModel: AppViewModel = viewModel(LocalContext.current as TimestampActivity),
     modifier: Modifier = Modifier,
     onSignOutClick: () -> Unit,
     onContinueClick: () -> Unit,
@@ -46,7 +45,6 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         // Prefetch events to make it look quicker
         viewModel.startGetEventsPolling()
-        viewModel.startTrackingLocation()
         viewModel.setPendingEvent()
     }
 
