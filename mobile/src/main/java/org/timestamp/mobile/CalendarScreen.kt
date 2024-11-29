@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.elements.DynamicCalendar
 import java.time.LocalDate
@@ -55,6 +56,8 @@ fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
     val eventsOnSelectedDate = remember(selectedDate) {
         eventList.filter { it.arrival.toLocalDate() == selectedDate }
     }
+
+    var editingEvent by remember { mutableStateOf<EventDTO?>(null) }
 
     val calendarTypography = Typography(
         body1 = TextStyle(
@@ -129,7 +132,8 @@ fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
                                         ),
                                         modifier = Modifier
                                             .padding(vertical = 4.dp)
-                                            .width(375.dp)
+                                            .width(375.dp),
+                                        onClick = { editingEvent = event }
                                     ) {
                                         Row(
                                             modifier = Modifier
@@ -163,6 +167,17 @@ fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
                         }
                     }
                 }
+            }
+            editingEvent?.let { event ->
+                CreateEvent(
+                    onDismissRequest = { editingEvent = null },
+                    onConfirmation = { updatedEvent ->
+                        viewModel.postEvent(updatedEvent)
+                        editingEvent = null
+                    },
+                    isMock = false,
+                    editEvent = event
+                )
             }
         }
     }
