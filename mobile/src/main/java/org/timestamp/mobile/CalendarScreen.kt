@@ -46,37 +46,6 @@ val ubuntuFontFamily = FontFamily(
     Font(R.font.ubuntu_bold, FontWeight.Bold)  // Bold
 )
 
-val calendarTypography = Typography(
-    body1 = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.Medium,
-        fontSize = 18.sp
-    ),
-    h1 = TextStyle(
-        color = Colors.Black,
-        fontFamily = ubuntuFontFamily,
-        fontWeight = FontWeight.Bold,
-        fontSize = 28.sp,
-    ),
-    h4 = TextStyle(
-        color = Colors.Bittersweet,
-        fontFamily = ubuntuFontFamily,
-        fontWeight = FontWeight.Bold,
-        fontSize = 28.sp,
-    ),
-    h5 = TextStyle(
-        color = Colors.Black,
-        fontFamily = ubuntuFontFamily,
-        fontSize = 24.sp,
-    ),
-    h6 = TextStyle(
-        color = Colors.Black,
-        fontFamily = ubuntuFontFamily,
-        fontWeight = FontWeight.Bold,
-        fontSize = 20.sp,
-    )
-)
-
 @Composable
 fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
     val eventListState = viewModel.events.collectAsState()
@@ -86,10 +55,44 @@ fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
     val eventsOnSelectedDate = remember(selectedDate) {
         eventList.filter { it.arrival.toLocalDate() == selectedDate }
     }
+
+    val calendarTypography = Typography(
+        body1 = TextStyle(
+            color = MaterialTheme.colors.secondary,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Medium,
+            fontSize = 18.sp
+        ),
+        h1 = TextStyle(
+            color = MaterialTheme.colors.secondary,
+            fontFamily = ubuntuFontFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 28.sp,
+        ),
+        h4 = TextStyle(
+            color = Colors.Bittersweet,
+            fontFamily = ubuntuFontFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 28.sp,
+        ),
+        h5 = TextStyle(
+            color = MaterialTheme.colors.secondary,
+            fontFamily = ubuntuFontFamily,
+            fontSize = 24.sp,
+        ),
+        h6 = TextStyle(
+            color = MaterialTheme.colors.secondary,
+            fontFamily = ubuntuFontFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp,
+        )
+    )
+
     MaterialTheme(typography = calendarTypography) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(color = MaterialTheme.colors.primary)
         ) {
             Column(
                 modifier = Modifier
@@ -142,7 +145,7 @@ fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
                                             Column(
                                                 modifier = Modifier
                                                     .fillMaxSize()
-                                                    .background(Colors.White)
+                                                    .background(MaterialTheme.colors.primary)
                                                     .padding(16.dp)
                                             ) {
                                                 Text(

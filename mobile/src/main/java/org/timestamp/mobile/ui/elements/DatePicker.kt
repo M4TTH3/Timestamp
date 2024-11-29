@@ -10,6 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -65,14 +66,14 @@ fun DatePickerDialog(
         Card(
             modifier = Modifier
                 .shadow(6.dp, shape = RoundedCornerShape(32.dp))
-                .background(color = Colors.White, shape = RoundedCornerShape(32.dp))
+                .background(color = MaterialTheme.colors.primary, shape = RoundedCornerShape(32.dp))
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(16.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .background(color = Colors.White)
+                    .background(color = MaterialTheme.colors.primary)
                     .fillMaxWidth()
             ) {
                 com.vsnappy1.datepicker.DatePicker(
@@ -92,16 +93,17 @@ fun DatePickerDialog(
                         )
                     ),
                     modifier = Modifier
-                        .background(Colors.White),
+                        .background(MaterialTheme.colors.primary),
                     configuration = DatePickerConfiguration.Builder()
                         .height(height = 250.dp)
-                        .dateTextStyle(DefaultDatePickerConfig.dateTextStyle.copy(color = Colors.Black))
+                        .dateTextStyle(DefaultDatePickerConfig.dateTextStyle.copy(color = MaterialTheme.colors.secondary))
                         .selectedDateBackgroundColor(color = Colors.Bittersweet)
                         .sundayTextColor(color = Colors.Bittersweet)
                         .headerTextStyle(TextStyle(
                             fontFamily = ubuntuFontFamily,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colors.secondary
                         ))
                         .build()
                 )
@@ -113,11 +115,12 @@ fun DatePickerDialog(
                         .align(Alignment.CenterHorizontally),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Colors.Bittersweet, // Background color
-                        contentColor = Colors.White  // Text color
+                        contentColor = MaterialTheme.colors.primary  // Text color
                     ),
                 ) {
                     Text(
                         text = "OK",
+                        color = MaterialTheme.colors.secondary,
                         fontFamily = ubuntuFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp

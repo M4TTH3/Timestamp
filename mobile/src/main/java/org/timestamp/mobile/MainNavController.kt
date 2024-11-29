@@ -21,6 +21,8 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +45,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.TimestampTheme
 
@@ -56,7 +59,8 @@ enum class Screen {
 
 class MainNavController(
     private val context: Context,
-    private val appViewModel: AppViewModel
+    private val appViewModel: AppViewModel,
+    private val themeViewModel: ThemeViewModel
 ) {
     private val auth = appViewModel.auth
     private val credentialManager: CredentialManager = CredentialManager.create(context)
@@ -126,7 +130,8 @@ class MainNavController(
             }
         }
 
-        TimestampTheme {
+        val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
+        TimestampTheme(darkTheme = isDarkTheme) {
             NavHost(
                 navController = navController,
                 startDestination = startDestination
@@ -161,7 +166,8 @@ class MainNavController(
                     SettingsScreen(
                         currentUser = auth.currentUser,
                         onSignOutClick = ::signOut,
-                        viewModel = appViewModel
+                        viewModel = appViewModel,
+                        themeViewModel = themeViewModel
                     )
                     NavBar(navController = navController, currentScreen = "Settings")
                 }

@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -78,7 +79,7 @@ fun EventsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Colors.White)
+            .background(MaterialTheme.colors.primary)
     ) {
         IconButton(onClick = {
             //todo
@@ -100,7 +101,7 @@ fun EventsScreen(
         ) {
             Text(
                 text = "Upcoming Events...",
-                color = Colors.Black,
+                color = MaterialTheme.colors.secondary,
                 fontFamily = ubuntuFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
@@ -152,13 +153,13 @@ fun EventsScreen(
                             text = "Events Today",
                             fontFamily = ubuntuFontFamily,
                             fontWeight = FontWeight.Medium,
-                            color = Colors.Black,
+                            color = MaterialTheme.colors.secondary,
                             fontSize = 16.sp,
                             modifier = Modifier
                                 .padding(4.dp)
                         )
                         Divider(
-                            color = Color.LightGray,
+                            color = MaterialTheme.colors.background,
                             thickness = 2.dp,
                             modifier = Modifier
                                 .fillMaxWidth(0.7f)
@@ -173,7 +174,7 @@ fun EventsScreen(
                                 fontFamily = ubuntuFontFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 36.sp,
-                                color = Color.LightGray,
+                                color = MaterialTheme.colors.background,
                                 modifier = Modifier
                                     .padding(16.dp)
                             )
@@ -184,13 +185,13 @@ fun EventsScreen(
                             text = "Events Later",
                             fontFamily = ubuntuFontFamily,
                             fontWeight = FontWeight.Medium,
-                            color = Colors.Black,
+                            color = MaterialTheme.colors.secondary,
                             fontSize = 16.sp,
                             modifier = Modifier
                                 .padding(4.dp)
                         )
                         Divider(
-                            color = Color.LightGray,
+                            color = MaterialTheme.colors.background,
                             thickness = 2.dp,
                             modifier = Modifier
                                 .fillMaxWidth(0.7f)
@@ -205,7 +206,7 @@ fun EventsScreen(
                                 fontFamily = ubuntuFontFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 24.sp,
-                                color = Color.LightGray,
+                                color = MaterialTheme.colors.background,
                                 modifier = Modifier
                                     .padding(16.dp)
                             )

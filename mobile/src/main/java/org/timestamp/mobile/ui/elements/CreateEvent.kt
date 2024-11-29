@@ -71,6 +71,7 @@ import com.google.android.gms.location.LocationServices
 import android.Manifest
 import android.util.Log
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.MaterialTheme
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.vsnappy1.datepicker.DatePicker
 import com.vsnappy1.datepicker.data.DefaultDatePickerConfig
@@ -289,12 +290,12 @@ fun CreateEvent(
                .fillMaxWidth(0.92f)
                .height(640.dp)
                .shadow(6.dp, shape = RoundedCornerShape(32.dp))
-               .background(Color.White, shape = RoundedCornerShape(32.dp)),
+               .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(32.dp)),
            shape = RoundedCornerShape(32.dp)
        ) {
            Column(
                modifier = Modifier
-                   .background(Color.White)
+                   .background(MaterialTheme.colors.primary)
                    .fillMaxSize(),
                verticalArrangement = Arrangement.Center,
                horizontalAlignment = Alignment.CenterHorizontally
@@ -303,7 +304,7 @@ fun CreateEvent(
                    modifier = Modifier
                        .padding(16.dp),
                    text = if (editEvent == null) "Add Event" else "Edit Event",
-                   color = Color.Black,
+                   color = MaterialTheme.colors.secondary,
                    fontFamily = ubuntuFontFamily,
                    fontWeight = FontWeight.Bold,
                    fontSize = 24.sp
@@ -320,7 +321,7 @@ fun CreateEvent(
                        .fillMaxWidth(0.9f)
                        .shadow(4.dp, shape = RoundedCornerShape(16.dp), ambientColor = Color(0x33000000))
                        .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
-                       .background(Color.White, shape = RoundedCornerShape(16.dp)),
+                       .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(16.dp)),
                    value = eventName,
                    onValueChange = {eventName = it},
                    placeholder = { Text(
@@ -330,6 +331,7 @@ fun CreateEvent(
                    singleLine = true,
                    colors = TextFieldDefaults.textFieldColors(
                        backgroundColor = Color.Transparent,
+                       textColor = MaterialTheme.colors.secondary
                    )
                )
                Spacer(modifier = Modifier.height(12.dp))
@@ -343,7 +345,7 @@ fun CreateEvent(
                            .fillMaxWidth(0.45f)
                            .shadow(4.dp, shape = RoundedCornerShape(16.dp), ambientColor = Color(0x33000000))
                            .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
-                           .background(Color.White, shape = RoundedCornerShape(16.dp)),
+                           .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(16.dp)),
                        value = selectedDate,
                        onValueChange = { },
                        readOnly = true,
@@ -364,6 +366,7 @@ fun CreateEvent(
                        },
                        colors = TextFieldDefaults.textFieldColors(
                            backgroundColor = Color.Transparent,
+                           textColor = MaterialTheme.colors.secondary
                        )
                    )
                    Spacer(modifier = Modifier.width(8.dp))
@@ -372,7 +375,7 @@ fun CreateEvent(
                            .fillMaxWidth(0.8f)
                            .shadow(4.dp, shape = RoundedCornerShape(16.dp), ambientColor = Color(0x33000000))
                            .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
-                           .background(Color.White, shape = RoundedCornerShape(16.dp))
+                           .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(16.dp))
                            .clickable { eventTime = !eventTime },
                        enabled = false,
                        value = selectedTime,
@@ -385,7 +388,7 @@ fun CreateEvent(
                        readOnly = true,
                        colors = TextFieldDefaults.textFieldColors(
                            backgroundColor = Color.Transparent,
-                           textColor = Color.Black,
+                           textColor = MaterialTheme.colors.secondary,
                        )
                    )
                }
@@ -395,7 +398,7 @@ fun CreateEvent(
                    fontFamily = ubuntuFontFamily,
                    fontWeight = FontWeight.Normal,
                    fontSize = 16.sp,
-                   color = if (isLoadingLocation) Color.Gray else Color.Black,
+                   color = if (isLoadingLocation) Color.Gray else MaterialTheme.colors.secondary,
                    modifier = Modifier.padding(8.dp)
                )
                Spacer(modifier = Modifier.height(16.dp))
