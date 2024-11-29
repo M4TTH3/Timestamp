@@ -2,7 +2,6 @@ package org.timestamp.mobile.utility
 
 import android.content.Context
 import android.os.Looper
-import android.util.Log
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -15,7 +14,7 @@ class LocationProvider(context: Context) {
     private val locationClient = LocationServices.getFusedLocationProviderClient(context)
     private val permission = PermissionProvider(context)
     private var locationCallback: LocationCallback? = null
-    private var travelMode: TravelMode = TravelMode.Car
+    var travelMode: TravelMode = TravelMode.Car
     var locationDTO = LocationDTO(0.0, 0.0, travelMode)
         private set
 

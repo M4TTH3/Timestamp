@@ -63,6 +63,11 @@ class EventViewModel (
 
     private val ktorClient = KtorClient.backend
 
+    override fun onCleared() {
+        super.onCleared()
+        stopGetEventsPolling()
+    }
+
     /**
      * Handler for a request, performs try catch and updates
      * states if required.
@@ -98,6 +103,8 @@ class EventViewModel (
      * Start polling the backend for events.
      */
     fun startGetEventsPolling() {
+        if (isPollingEvents) return
+
         isPollingEvents = true
         // need events to show relevant information immediately
         viewModelScope.launch {
@@ -106,6 +113,8 @@ class EventViewModel (
                 delay(10000)
             }
         }
+
+        isPollingEvents = false
     }
 
     fun stopGetEventsPolling() { isPollingEvents = false }

@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.timestamp.lib.dto.LocationDTO
+import org.timestamp.mobile.utility.ActivityRecognitionProvider
 import org.timestamp.mobile.utility.KtorClient
 import org.timestamp.mobile.utility.KtorClient.handler
 import org.timestamp.mobile.utility.KtorClient.success
@@ -29,6 +30,7 @@ import org.timestamp.mobile.utility.PermissionProvider
 const val CHANNEL_ID = "location"
 const val CHANNEL_NAME = "Timestamp Service"
 const val ACTION_LOCATION_UPDATE = "org.timestamp.mobile.LOCATION_UPDATE"
+const val ACTION_DETECTED_ACTIVITY = "org.timestamp.mobile.DETECTED_ACTIVITY"
 const val INTENT_EXTRA_LOCATION = "location"
 
 /**
@@ -37,20 +39,27 @@ const val INTENT_EXTRA_LOCATION = "location"
  */
 class TimestampService: Service() {
 
-    private lateinit var permissionProvider: PermissionProvider
-    private lateinit var locationProvider: LocationProvider
+    private lateinit var pmp: PermissionProvider
+    private lateinit var lp: LocationProvider
+    private lateinit var arp: ActivityRecognitionProvider
     private lateinit var ktorClient: HttpClient
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        locationProvider = LocationProvider(this)
-        permissionProvider = PermissionProvider(this)
+        lp = LocationProvider(this)
+        pmp = PermissionProvider(this)
+        arp = ActivityRecognitionProvider(this)
         ktorClient = KtorClient.backend
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        arp.cleanup()
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (!permissionProvider.fineLocationPermission) {
+        if (!pmp.fineLocationPermission || !pmp.activityRecognitionPermission) {
             Log.d("LocationService", "Permissions not granted")
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
@@ -59,12 +68,16 @@ class TimestampService: Service() {
 
         try {
             startForeground(1, createNotification())
-            locationProvider.startLocationUpdates(30000) {
+            arp.startActivityRecognition { travelMode ->
+                lp.travelMode = travelMode
+            }
+            lp.startLocationUpdates(30000) {
                 broadcastLocation(it)
                 updateLocation(it)
             }
         } catch (e: SecurityException) {
             Log.d("LocationService", "Permissions not granted")
+            arp.stopActivityRecognition()
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY
