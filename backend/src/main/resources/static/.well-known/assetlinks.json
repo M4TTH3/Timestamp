@@ -4,7 +4,8 @@
     "namespace": "android_app",
     "package_name": "org.timestamp.mobile",
     "sha256_cert_fingerprints": [
-      "8E:8C:65:72:FF:24:C1:75:87:DC:C2:99:A4:5C:4F:0E:BC:6A:EF:F8:81:8E:1A:10:88:2D:1B:AA:6B:90:1C:5E"
+      "8E:8C:65:72:FF:24:C1:75:87:DC:C2:99:A4:5C:4F:0E:BC:6A:EF:F8:81:8E:1A:10:88:2D:1B:AA:6B:90:1C:5E",
+      "77:4C:0C:80:EB:08:CC:CA:4D:C4:A9:44:3A:0B:94:BD:9C:CA:18:2D:87:18:62:C1:88:6E:71:E1:15:3C:FE:1B"
     ]
   }
 }]
