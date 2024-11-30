@@ -11,6 +11,7 @@ import org.timestamp.backend.model.UserEvent
 import org.timestamp.backend.repository.TimestampEventLinkRepository
 import org.timestamp.backend.repository.TimestampEventRepository
 import org.timestamp.backend.repository.TimestampUserRepository
+import org.timestamp.lib.dto.NotificationDTO
 import org.timestamp.lib.dto.utcNow
 import java.util.*
 
@@ -122,5 +123,15 @@ class EventService(
         item.userEvents.remove(joinRow)
         db.save(item)
         return true
+    }
+
+    /**
+     * For now, we are only showing the closest event upcoming. We can change this later.
+     * We will return the event and the distance to the event.
+     */
+    fun getNotifications(firebaseUser: FirebaseUser): NotificationDTO? {
+        val event = db.findNextEventByUser(firebaseUser.uid) ?: return null
+        val userEvent = event.userEvents.firstOrNull { it.id.userId == firebaseUser.uid } ?: return null
+        return graphHopperService.getNotificationDto(userEvent)
     }
 }
