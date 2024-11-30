@@ -5,13 +5,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.User
+import org.timestamp.backend.service.EventService
 import org.timestamp.backend.service.UserService
 import org.timestamp.lib.dto.LocationDTO
+import org.timestamp.lib.dto.NotificationDTO
 
 @RestController
 @RequestMapping("/users")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val eventService: EventService
 ) {
 
     /**
@@ -38,5 +41,17 @@ class UserController(
             location.travelMode
         )
         return ResponseEntity.ok(user)
+    }
+
+    /**
+     * Get the most recent Events that the user is part of.
+     * This is used to show the user their upcoming events.
+     */
+    @GetMapping("/me/notifications")
+    suspend fun getNotifications(
+        @AuthenticationPrincipal firebaseUser: FirebaseUser
+    ): ResponseEntity<NotificationDTO> {
+        val notification = eventService.getNotifications(firebaseUser) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(notification)
     }
 }

@@ -12,4 +12,7 @@ interface TimestampEventRepository : JpaRepository<Event, Long> {
      */
     @Query("SELECT e FROM Event e JOIN e.userEvents ue WHERE ue.id.userId = :userId AND e.arrival >= CURRENT_TIMESTAMP - 2 HOUR")
     fun findAllEventsByUser(@Param("userId") userId: String): List<Event>
+
+    @Query("SELECT e FROM Event e JOIN e.userEvents ue WHERE ue.id.userId = :userId AND e.arrival BETWEEN CURRENT_TIMESTAMP AND CURRENT_TIMESTAMP + 24 HOUR ORDER BY e.arrival ASC LIMIT 1")
+    fun findNextEventByUser(@Param("userId") userId: String): Event?
 }
