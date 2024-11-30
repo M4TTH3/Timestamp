@@ -71,6 +71,10 @@ fun EventMap(locationName: String, eventName: String, eventLocation: LatLng, con
         position = CameraPosition.fromLatLngZoom(eventLocation, 15f)
     }
     val markerState = rememberMarkerState(position = eventLocation)
+    var uiSettings = MapUiSettings()
+    if (!isClickable) {
+        uiSettings = uiSettings.copy(zoomControlsEnabled = false)
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -79,7 +83,8 @@ fun EventMap(locationName: String, eventName: String, eventLocation: LatLng, con
     ) {
         GoogleMap(
             modifier = Modifier.matchParentSize(),
-            cameraPositionState = cameraPositionState
+            cameraPositionState = cameraPositionState,
+            uiSettings = uiSettings
         ) {
             Marker(
                 state = markerState,
@@ -146,7 +151,8 @@ fun EventBox(
                 isEditingEvent = false
             },
             isMock = false,
-            editEvent = data
+            editEvent = data,
+            currentUser = currentUser
         )
     }
 

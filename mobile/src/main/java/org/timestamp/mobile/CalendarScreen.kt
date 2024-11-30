@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.elements.CreateEvent
@@ -50,7 +51,8 @@ val ubuntuFontFamily = FontFamily(
 
 @Composable
 fun CalendarScreen(
-    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity)
+    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
+    currentUser: FirebaseUser?
 ) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
@@ -67,7 +69,6 @@ fun CalendarScreen(
             color = MaterialTheme.colors.secondary,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Medium,
-            fontSize = 18.sp
         ),
         h1 = TextStyle(
             color = MaterialTheme.colors.secondary,
@@ -179,7 +180,8 @@ fun CalendarScreen(
                         editingEvent = null
                     },
                     isMock = false,
-                    editEvent = event
+                    editEvent = event,
+                    currentUser = currentUser
                 )
             }
         }

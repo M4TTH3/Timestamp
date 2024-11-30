@@ -73,6 +73,7 @@ import android.util.Log
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.MaterialTheme
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.firebase.auth.FirebaseUser
 import com.vsnappy1.datepicker.DatePicker
 import com.vsnappy1.datepicker.data.DefaultDatePickerConfig
 import com.vsnappy1.datepicker.data.model.DatePickerDate
@@ -201,7 +202,8 @@ fun CreateEvent(
     onConfirmation: (EventDTO) -> Unit,
     isMock: Boolean,
     properties: DialogProperties = DialogProperties(),
-    editEvent: EventDTO?
+    editEvent: EventDTO?,
+    currentUser: FirebaseUser?
 ) {
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(false) }
@@ -303,7 +305,7 @@ fun CreateEvent(
                Text(
                    modifier = Modifier
                        .padding(16.dp),
-                   text = if (editEvent == null) "Add Event" else "Edit Event",
+                   text = if (currentUser?.uid != editEvent?.creator && editEvent != null) "View Event" else if (editEvent == null) "Add Event" else "Edit Event",
                    color = MaterialTheme.colors.secondary,
                    fontFamily = ubuntuFontFamily,
                    fontWeight = FontWeight.Bold,
@@ -463,83 +465,85 @@ fun CreateEvent(
                            color = Color(0xFFFFFFFF)
                        )
                    }
-                   Spacer(modifier = Modifier.width(32.dp));
-                   Button(
-                       onClick = {
-                           if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
-                               val date = dateFormatter.parse(selectedDate)
-                               val parsedTime = timeFormatter.parse(selectedTime)
+                   if (currentUser?.uid == editEvent?.creator || editEvent == null) {
+                       Spacer(modifier = Modifier.width(32.dp));
+                       Button(
+                           onClick = {
+                               if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
+                                   val date = dateFormatter.parse(selectedDate)
+                                   val parsedTime = timeFormatter.parse(selectedTime)
 
-                               if (date != null && parsedTime != null) {
-                                   val calendar = Calendar.getInstance().apply {
-                                       time = date
-                                   }
-                                   val timeCalendar = Calendar.getInstance().apply {
-                                       time = parsedTime
-                                   }
-
-                                   val selectedDateTime = LocalDateTime.of(
-                                       calendar.get(Calendar.YEAR),
-                                       calendar.get(Calendar.MONTH) + 1, // Months are zero-based
-                                       calendar.get(Calendar.DAY_OF_MONTH),
-                                       timeCalendar.get(Calendar.HOUR_OF_DAY),
-                                       timeCalendar.get(Calendar.MINUTE)
-                                   )
-                                   val currentDateTime = LocalDateTime.now()
-                                   Log.d("Time", selectedDateTime.toOffset().toString())
-                                   if (selectedDateTime.isAfter(currentDateTime)) {
-                                       if (editEvent != null) {
-                                           onConfirmation(
-                                               EventDTO(
-                                                   name = eventName,
-                                                   arrival = selectedDateTime.toOffset(),
-                                                   latitude = selectedLocation?.latitude ?: 0.0,
-                                                   longitude = selectedLocation?.longitude ?: 0.0,
-                                                   description = locationName,
-                                                   address = locationAddress,
-                                                   id = editEvent.id,
-                                               )
-                                           )
-                                       } else {
-                                           onConfirmation(
-                                               EventDTO(
-                                                   name = eventName,
-                                                   arrival = selectedDateTime.toOffset(),
-                                                   latitude = selectedLocation?.latitude ?: 0.0,
-                                                   longitude = selectedLocation?.longitude ?: 0.0,
-                                                   description = locationName,
-                                                   address = locationAddress,
-                                               )
-                                           )
+                                   if (date != null && parsedTime != null) {
+                                       val calendar = Calendar.getInstance().apply {
+                                           time = date
                                        }
-                                       Log.d("ADD EVENT", "EVENT ADDED")
-                                       Log.d("selectedDate", selectedDate)
+                                       val timeCalendar = Calendar.getInstance().apply {
+                                           time = parsedTime
+                                       }
+
+                                       val selectedDateTime = LocalDateTime.of(
+                                           calendar.get(Calendar.YEAR),
+                                           calendar.get(Calendar.MONTH) + 1, // Months are zero-based
+                                           calendar.get(Calendar.DAY_OF_MONTH),
+                                           timeCalendar.get(Calendar.HOUR_OF_DAY),
+                                           timeCalendar.get(Calendar.MINUTE)
+                                       )
+                                       val currentDateTime = LocalDateTime.now()
+                                       Log.d("Time", selectedDateTime.toOffset().toString())
+                                       if (selectedDateTime.isAfter(currentDateTime)) {
+                                           if (editEvent != null) {
+                                               onConfirmation(
+                                                   EventDTO(
+                                                       name = eventName,
+                                                       arrival = selectedDateTime.toOffset(),
+                                                       latitude = selectedLocation?.latitude ?: 0.0,
+                                                       longitude = selectedLocation?.longitude ?: 0.0,
+                                                       description = locationName,
+                                                       address = locationAddress,
+                                                       id = editEvent.id,
+                                                   )
+                                               )
+                                           } else {
+                                               onConfirmation(
+                                                   EventDTO(
+                                                       name = eventName,
+                                                       arrival = selectedDateTime.toOffset(),
+                                                       latitude = selectedLocation?.latitude ?: 0.0,
+                                                       longitude = selectedLocation?.longitude ?: 0.0,
+                                                       description = locationName,
+                                                       address = locationAddress,
+                                                   )
+                                               )
+                                           }
+                                           Log.d("ADD EVENT", "EVENT ADDED")
+                                           Log.d("selectedDate", selectedDate)
+                                       }
                                    }
+                               } else {
+                                   Log.d("ADD EVENT", "EVENT FAILED TO ADD")
+                                   Log.d("selectedDate", selectedDate)
                                }
-                           } else {
-                               Log.d("ADD EVENT", "EVENT FAILED TO ADD")
-                               Log.d("selectedDate", selectedDate)
-                           }
-                       },
-                       colors = ButtonColors(
-                           containerColor = Color(0xFFFF6F61),
-                           contentColor = Color(0xFFFFFFFF),
-                           disabledContainerColor = Color(0xFFFF6F61),
-                           disabledContentColor = Color(0xFFFFFFFF)
-                       ),
-                       shape = RoundedCornerShape(24.dp),
-                       modifier = Modifier
-                           .width(130.dp)
-                           .height(50.dp)
-                           .shadow(4.dp, shape = RoundedCornerShape(24.dp), ambientColor = Color(0x33000000))
-                   ) {
-                       Text(
-                           text = if (editEvent == null) "Add" else "Edit",
-                           fontFamily = ubuntuFontFamily,
-                           fontWeight = FontWeight.Bold,
-                           fontSize = 24.sp,
-                           color = Color(0xFFFFFFFF)
-                       )
+                           },
+                           colors = ButtonColors(
+                               containerColor = Color(0xFFFF6F61),
+                               contentColor = Color(0xFFFFFFFF),
+                               disabledContainerColor = Color(0xFFFF6F61),
+                               disabledContentColor = Color(0xFFFFFFFF)
+                           ),
+                           shape = RoundedCornerShape(24.dp),
+                           modifier = Modifier
+                               .width(130.dp)
+                               .height(50.dp)
+                               .shadow(4.dp, shape = RoundedCornerShape(24.dp), ambientColor = Color(0x33000000))
+                       ) {
+                           Text(
+                               text = if (editEvent == null) "Add" else "Edit",
+                               fontFamily = ubuntuFontFamily,
+                               fontWeight = FontWeight.Bold,
+                               fontSize = 24.sp,
+                               color = Color(0xFFFFFFFF)
+                           )
+                       }
                    }
                }
            }
