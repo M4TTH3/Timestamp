@@ -111,7 +111,8 @@ fun openGoogleMaps(context: Context, location: LatLng) {
 fun EventBox(
     data: EventDTO,
     viewModel: EventViewModel = viewModel(),
-    currentUser: FirebaseUser?
+    currentUser: FirebaseUser?,
+    today: Boolean
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
@@ -194,13 +195,14 @@ fun EventBox(
                 modifier = Modifier
                     .size(24.dp)
                     .offset(y = 8.dp)
-                ) {
+            ) {
                 Icon(
                     painter = painterResource(id = if (multUsers) R.drawable.users_icon else R.drawable.user_icon),
                     contentDescription = "user icon",
                     tint = Color.Unspecified,
                     modifier = Modifier
-                        .size(24.dp))
+                        .size(24.dp)
+                )
             }
             IconButton(
                 onClick = {
@@ -384,91 +386,102 @@ fun EventBox(
 
         // Conditionally show extra content when expanded
         if (isExpanded) {
-            EventMap(locationName = data.description, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude), context = context, isClickable = true)
-            Row(
+            EventMap(
+                locationName = data.description,
+                eventName = data.name,
+                eventLocation = LatLng(data.latitude, data.longitude),
+                context = context,
+                isClickable = true
+            )
+            if (today) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.location_icon),
+                        contentDescription = "location icon",
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(2.dp))
+
+                    var distance: Double = 0.0
+                    for (user in data.users) {
+                        if (user.id == data.creator) {
+                            if (user.distance != null) {
+                                distance = user.distance!!
+                                break
+                            } else {
+                                distance = 0.0
+                                break
+                            }
+                        }
+                    }
+                    var unitKm = false
+                    if (distance >= 1000) {
+                        unitKm = true
+                        distance /= 1000
+                    }
+                    val userDistance: String = if (unitKm) {
+                        String.format(locale = Locale.getDefault(), "%.1f", distance) + "km"
+                    } else {
+                        distance.toInt().toString() + "m"
+                    }
+                    Text(
+                        text = userDistance,
+                        color = MaterialTheme.colors.secondary,
+                        fontFamily = ubuntuFontFamily,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        painter = painterResource(id = R.drawable.car_icon),
+                        contentDescription = "transportation icon",
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    var time = 0
+                    for (user in data.users) {
+                        if (user.id == data.creator) {
+                            if (user.timeEst != null) {
+                                time = ((user.timeEst!! / 1000) / 60).toInt()
+                                break
+                            } else {
+                                time = 0
+                                break
+                            }
+                        }
+                    }
+                    Text(
+                        text = time.toString() + "min",
+                        color = MaterialTheme.colors.secondary,
+                        fontFamily = ubuntuFontFamily,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+
+            Divider(
+                color = Color.LightGray,
+                thickness = 1.5.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                Icon(painter = painterResource(id = R.drawable.location_icon),
-                    contentDescription = "location icon",
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .size(18.dp))
-                Spacer(modifier = Modifier.width(2.dp))
+                    .padding(top = 2.dp)
+            )
 
-                var distance : Double = 0.0
-                for (user in data.users) {
-                    if (user.id == data.creator) {
-                        if (user.distance != null) {
-                            distance = user.distance!!
-                            break
-                        } else {
-                            distance = 0.0
-                            break
-                        }
-                    }
-                }
-                var unitKm = false
-                if (distance >= 1000) {
-                    unitKm = true
-                    distance /= 1000
-                }
-                val userDistance : String = if (unitKm) {
-                    String.format(locale = Locale.getDefault(), "%.1f", distance) + "km"
-                } else {
-                    distance.toInt().toString() + "m"
-                }
-                Text(
-                    text = userDistance,
-                    color = MaterialTheme.colors.secondary,
-                    fontFamily = ubuntuFontFamily,
-                    fontSize = 14.sp
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(painter = painterResource(id = R.drawable.car_icon),
-                    contentDescription = "transportation icon",
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                var time = 0
-                for (user in data.users) {
-                    if (user.id == data.creator) {
-                        if (user.timeEst != null) {
-                            time = ((user.timeEst!! / 1000) / 60).toInt()
-                            break
-                        } else {
-                            time = 0
-                            break
-                        }
-                    }
-                }
-                Text(
-                    text = time.toString() + "min",
-                    color = MaterialTheme.colors.secondary,
-                    fontFamily = ubuntuFontFamily,
-                    fontSize = 14.sp
-                )
-            }
+            Icon(
+                painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",
+                tint = MaterialTheme.colors.secondary,
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
         }
-
-        Divider(
-            color = Color.LightGray,
-            thickness = 1.5.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 2.dp)
-        )
-
-        Icon(
-            painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
-            contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",
-            tint = MaterialTheme.colors.secondary,
-            modifier = Modifier
-                .size(24.dp)
-                .align(Alignment.CenterHorizontally)
-        )
     }
 }
