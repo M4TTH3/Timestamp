@@ -52,6 +52,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseUser
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
@@ -65,7 +66,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun EventMap(locationName: String, eventName: String, eventLocation: LatLng, context: Context) {
+fun EventMap(locationName: String, eventName: String, eventLocation: LatLng, context: Context, isClickable: Boolean) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(eventLocation, 15f)
     }
@@ -90,7 +91,9 @@ fun EventMap(locationName: String, eventName: String, eventLocation: LatLng, con
             modifier = Modifier
                 .matchParentSize()
                 .clickable {
-                    openGoogleMaps(context, eventLocation)
+                    if (isClickable) {
+                        openGoogleMaps(context, eventLocation)
+                    }
                 }
         )
     }
@@ -381,7 +384,7 @@ fun EventBox(
 
         // Conditionally show extra content when expanded
         if (isExpanded) {
-            EventMap(locationName = data.description, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude), context = context)
+            EventMap(locationName = data.description, eventName = data.name, eventLocation = LatLng(data.latitude, data.longitude), context = context, isClickable = true)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
