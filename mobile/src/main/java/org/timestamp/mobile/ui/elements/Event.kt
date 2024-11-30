@@ -346,20 +346,22 @@ fun EventBox(
                 .background(color = MaterialTheme.colors.primary),
             offset = DpOffset(x = 220.dp, y = (-130).dp)
         ) {
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        text = "Edit",
-                        color = MaterialTheme.colors.secondary,
-                        fontFamily = ubuntuFontFamily,
-                        fontSize = 16.sp
-                    )
-                },
-                onClick = {
-                    isEditingEvent = true
-                    isDropdownExpanded = false
-                }
-            )
+            if (currentUser?.uid == data.creator) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "Edit",
+                            color = MaterialTheme.colors.secondary,
+                            fontFamily = ubuntuFontFamily,
+                            fontSize = 16.sp
+                        )
+                    },
+                    onClick = {
+                        isEditingEvent = true
+                        isDropdownExpanded = false
+                    }
+                )
+            }
             DropdownMenuItem(
                 text = {
                     Text(

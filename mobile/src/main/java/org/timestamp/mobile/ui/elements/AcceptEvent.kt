@@ -109,6 +109,19 @@ fun AcceptEvent(
                     context,
                     false
                 )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Sent from:\n${event.users.first().email}",
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp
+                    ),
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .padding(start = 10.dp)
+                )
+                Spacer(modifier = Modifier.height(5.dp))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

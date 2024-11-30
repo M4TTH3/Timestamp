@@ -137,42 +137,44 @@ fun ViewUsers(
                     thickness = 2.dp,
                     color = Color.LightGray
                 )
-                Row {
-                    Text(
-                        text = "Invite Link",
-                        fontFamily = ubuntuFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colors.secondary,
-                        modifier = Modifier
-                            .padding(12.dp)
-                    )
-                    IconButton(
-                        onClick = {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                val link = viewModel.getEventLink(event.id!!) ?: "Error"
-//                                clipBoardManager.setText(AnnotatedString(link))
-                                val sendIntent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    putExtra(Intent.EXTRA_TEXT, link)
-                                    type = "text/plain"
-                                }
-                                val shareIntent = Intent.createChooser(sendIntent, null)
-                                context.startActivity(shareIntent)
-//                                linkCopiedDialog.value = true
-                            }
-                        },
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .size(24.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.link_icon),
-                            contentDescription = "link icon",
-                            tint = Colors.Bittersweet,
+                if (event.creator == currentUser.uid) {
+                    Row {
+                        Text(
+                            text = "Invite Link",
+                            fontFamily = ubuntuFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colors.secondary,
                             modifier = Modifier
-                                .size(24.dp)
+                                .padding(12.dp)
                         )
+                        IconButton(
+                            onClick = {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    val link = viewModel.getEventLink(event.id!!) ?: "Error"
+//                                clipBoardManager.setText(AnnotatedString(link))
+                                    val sendIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, link)
+                                        type = "text/plain"
+                                    }
+                                    val shareIntent = Intent.createChooser(sendIntent, null)
+                                    context.startActivity(shareIntent)
+//                                linkCopiedDialog.value = true
+                                }
+                            },
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .size(24.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.link_icon),
+                                contentDescription = "link icon",
+                                tint = Colors.Bittersweet,
+                                modifier = Modifier
+                                    .size(24.dp)
+                            )
+                        }
                     }
                 }
 
