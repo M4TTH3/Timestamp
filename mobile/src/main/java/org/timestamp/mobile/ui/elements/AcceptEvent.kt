@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import com.google.android.gms.maps.model.LatLng
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.models.EventViewModel
@@ -43,18 +44,12 @@ fun AcceptEvent(
 
     val dateTimeFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy h:mma")
     val context = LocalContext.current
-    val textStyle = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.Medium,
-        fontSize = 18.sp
-    )
     Dialog(
         onDismissRequest = {  }
     ) {
         Card (
             modifier = Modifier
                 .fillMaxWidth(0.92f)
-                .height(400.dp)
                 .shadow(6.dp, shape = RoundedCornerShape(32.dp))
                 .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(32.dp)),
             shape = RoundedCornerShape(32.dp)
@@ -87,15 +82,26 @@ fun AcceptEvent(
                             ambientColor = Color(0x33000000)
                         )
                         .border(1.dp, MaterialTheme.colors.background, shape = RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(16.dp)),
+                        .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(16.dp))
+                        .padding(vertical = 5.dp),
                     textAlign = TextAlign.Center,
                     text = event.name,
-                    style = textStyle
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
                 )
+                Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = event.arrival.toLocalDateTime().format(dateTimeFormatter),
-                    style = textStyle
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp
+                    )
                 )
+                Spacer(modifier = Modifier.height(10.dp))
                 EventMap(
                     event.address,
                     event.name,
@@ -103,6 +109,19 @@ fun AcceptEvent(
                     context,
                     false
                 )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Sent from:\n${event.users.first().email}",
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp
+                    ),
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .padding(start = 10.dp)
+                )
+                Spacer(modifier = Modifier.height(5.dp))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

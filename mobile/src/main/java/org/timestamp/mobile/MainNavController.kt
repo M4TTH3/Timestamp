@@ -206,7 +206,7 @@ class MainNavController(
                     NavBar(navController = navController, currentScreen = "Events")
                 }
                 composable(Screen.Calendar.name) {
-                    CalendarScreen()
+                    CalendarScreen(currentUser = auth.currentUser)
                     NavBar(navController = navController, currentScreen = "Calendar")
                 }
                 composable(Screen.Settings.name) {

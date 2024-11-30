@@ -36,8 +36,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.models.EventViewModel
+import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.elements.DynamicCalendar
 import java.time.LocalDate
@@ -49,7 +51,8 @@ val ubuntuFontFamily = FontFamily(
 
 @Composable
 fun CalendarScreen(
-    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity)
+    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
+    currentUser: FirebaseUser?
 ) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
@@ -59,12 +62,13 @@ fun CalendarScreen(
         eventList.filter { it.arrival.toLocalDate() == selectedDate }
     }
 
+    var editingEvent by remember { mutableStateOf<EventDTO?>(null) }
+
     val calendarTypography = Typography(
         body1 = TextStyle(
             color = MaterialTheme.colors.secondary,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Medium,
-            fontSize = 18.sp
         ),
         h1 = TextStyle(
             color = MaterialTheme.colors.secondary,
@@ -132,7 +136,8 @@ fun CalendarScreen(
                                         ),
                                         modifier = Modifier
                                             .padding(vertical = 4.dp)
-                                            .width(375.dp)
+                                            .width(375.dp),
+                                        onClick = { editingEvent = event }
                                     ) {
                                         Row(
                                             modifier = Modifier
@@ -166,6 +171,18 @@ fun CalendarScreen(
                         }
                     }
                 }
+            }
+            editingEvent?.let { event ->
+                CreateEvent(
+                    onDismissRequest = { editingEvent = null },
+                    onConfirmation = { updatedEvent ->
+                        viewModel.postEvent(updatedEvent)
+                        editingEvent = null
+                    },
+                    isMock = false,
+                    editEvent = event,
+                    currentUser = currentUser
+                )
             }
         }
     }
