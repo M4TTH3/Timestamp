@@ -163,7 +163,7 @@ fun EventsScreen(
                         )
                     }
                     if (next24HourEvents.isNotEmpty()) {
-                        next24HourEvents.forEach { item { EventBox(it, viewModel, currentUser) }}
+                        next24HourEvents.forEach { item { EventBox(it, viewModel, currentUser, true) }}
                     } else {
                         item {
                             Text(
@@ -195,7 +195,7 @@ fun EventsScreen(
                         )
                     }
                     if (otherEvents.isNotEmpty()) {
-                        otherEvents.forEach { item { EventBox(it, viewModel, currentUser) }}
+                        otherEvents.forEach { item { EventBox(it, viewModel, currentUser, false) }}
                     } else {
                         item {
                             Text(
