@@ -8,11 +8,10 @@ import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
 import org.timestamp.backend.model.toDTO
 import org.timestamp.backend.service.EventService
-import org.timestamp.backend.service.GraphHopperService
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventLinkDTO
 import java.net.URI
-import java.util.UUID
+import java.util.*
 
 @RestController
 @RequestMapping("/events")
@@ -99,5 +98,4 @@ class EventController(
         val success = eventService.deleteEvent(id, firebaseUser)
         return if (success) ResponseEntity.noContent().build() else ResponseEntity.notFound().build()
     }
-
 }

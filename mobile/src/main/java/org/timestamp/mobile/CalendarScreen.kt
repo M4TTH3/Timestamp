@@ -29,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -36,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.timestamp.lib.dto.EventDTO
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.elements.DynamicCalendar
@@ -48,7 +49,9 @@ val ubuntuFontFamily = FontFamily(
 )
 
 @Composable
-fun CalendarScreen(viewModel: AppViewModel = viewModel()) {
+fun CalendarScreen(
+    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity)
+) {
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
     var selectedDate by remember { mutableStateOf<LocalDate?>(null)}

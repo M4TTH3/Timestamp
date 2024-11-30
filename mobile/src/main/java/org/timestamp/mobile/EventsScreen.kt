@@ -22,10 +22,10 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -34,20 +34,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.elements.AcceptEvent
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
-import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
 @Composable
 fun EventsScreen(
-    viewModel: AppViewModel = viewModel(),
+    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
     isMock: Boolean = false,
     currentUser: FirebaseUser?
 ) {
@@ -166,7 +163,7 @@ fun EventsScreen(
                         )
                     }
                     if (next24HourEvents.isNotEmpty()) {
-                        next24HourEvents.forEach { item { EventBox(it, viewModel, currentUser) }}
+                        next24HourEvents.forEach { item { EventBox(it, viewModel, currentUser, true) }}
                     } else {
                         item {
                             Text(
@@ -198,7 +195,7 @@ fun EventsScreen(
                         )
                     }
                     if (otherEvents.isNotEmpty()) {
-                        otherEvents.forEach { item { EventBox(it, viewModel, currentUser) }}
+                        otherEvents.forEach { item { EventBox(it, viewModel, currentUser, false) }}
                     } else {
                         item {
                             Text(

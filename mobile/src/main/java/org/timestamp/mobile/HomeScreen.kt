@@ -17,32 +17,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.auth.FirebaseUser
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import org.timestamp.mobile.models.AppViewModel
+import org.timestamp.mobile.models.EventViewModel
 
 @Composable
 fun HomeScreen(
-    viewModel: AppViewModel = viewModel(),
+    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
     modifier: Modifier = Modifier,
-    currentUser: FirebaseUser?,
     onSignOutClick: () -> Unit,
-    onContinueClick: () -> Unit
+    onContinueClick: () -> Unit,
+
+    // When we don't have all the permissions
+    // We want to show a rationale dialog
+    continueText: String = "Continue",
+    warningText: String? = null
 ) {
     LaunchedEffect(Unit) {
         // Prefetch events to make it look quicker
         viewModel.startGetEventsPolling()
-        viewModel.startTrackingLocation()
         viewModel.setPendingEvent()
     }
 
@@ -64,7 +66,7 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            currentUser?.let { user ->
+            viewModel.auth.currentUser?.let { user ->
                 user.photoUrl?.let {
                     AsyncImage(
                         modifier = Modifier
@@ -95,7 +97,7 @@ fun HomeScreen(
                         containerColor = Color(0xFF2A2B2E)
                     )) {
                     Text(
-                        text = "Continue",
+                        text = continueText,
                         style = textStyle.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
@@ -114,6 +116,17 @@ fun HomeScreen(
                             fontWeight = FontWeight.SemiBold
                         ),
                         color = Color(0xFFFFFFFF)
+                    )
+                }
+                Spacer(modifier = Modifier.size(16.dp))
+                warningText?.let {
+                    Text(
+                        text = it,
+                        style = textStyle.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFD32F2F)
+                        ),
+                        color = Color(0xFFD32F2F)
                     )
                 }
             }

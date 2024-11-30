@@ -29,10 +29,10 @@ class GraphHopperService(
         val user = userEvent.user!!
         val event = userEvent.event!!
         val res = graphHopper.route(
-            event.latitude,
-            event.longitude,
             user.latitude,
             user.longitude,
+            event.latitude,
+            event.longitude,
             user.travelMode
         )
 
@@ -64,6 +64,43 @@ class GraphHopperService(
         )
     }
 
+    /**
+     * Get the route info between the user and the event.
+     */
+    fun getNotificationDto(userEvent: UserEvent): NotificationDTO {
+        val user = userEvent.user!!
+        val event = userEvent.event!!
+        val travelMode = user.travelMode
+
+        // There should already be a pre-calculated route info.
+        // for the current travel mode.
+        val routeInfos = mutableListOf<RouteInfoDTO>(
+            RouteInfoDTO(
+                distance = userEvent.distance,
+                timeEst = userEvent.timeEst,
+                travelMode = travelMode
+            )
+        )
+
+        // Get the route info for the other two travel modes.
+        for (mode in TravelMode.entries) {
+            if (mode == travelMode) continue
+
+            val res = graphHopper.route(user.latitude, user.longitude, event.latitude, event.longitude, mode)
+            routeInfos.add(
+                RouteInfoDTO(
+                    distance = res?.distance,
+                    timeEst = res?.time,
+                    travelMode = mode
+                )
+            )
+        }
+
+        return NotificationDTO(
+            event = event.toDTO(),
+            routeInfos = routeInfos
+        )
+    }
 }
 
 fun GraphHopper.route(
