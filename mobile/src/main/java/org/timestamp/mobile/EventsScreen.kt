@@ -132,15 +132,15 @@ fun EventsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    eventList.sortBy { it.arrival }
                     val now = OffsetDateTime.now(ZoneId.systemDefault())
+                    eventList.sortBy { it.arrival }
                     val next24Hours = now.plusHours(24)
 
                     val next24HourEvents = mutableListOf<EventDTO>()
                     val otherEvents = mutableListOf<EventDTO>()
 
                     for (event in eventList) {
-                        if (event.arrival.isAfter(now) && event.arrival.isBefore(next24Hours)) {
+                        if (event.arrival.isBefore(next24Hours)) {
                             next24HourEvents.add(event)
                         } else {
                             otherEvents.add(event)
