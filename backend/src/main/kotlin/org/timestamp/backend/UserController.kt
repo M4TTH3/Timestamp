@@ -1,14 +1,17 @@
 package org.timestamp.backend
 
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.User
+import org.timestamp.backend.model.toDTO
 import org.timestamp.backend.service.EventService
 import org.timestamp.backend.service.UserService
 import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.lib.dto.NotificationDTO
+import org.timestamp.lib.dto.UserDTO
 
 @RestController
 @RequestMapping("/users")
@@ -24,7 +27,7 @@ class UserController(
     @RequestMapping("/me", method = [RequestMethod.GET, RequestMethod.POST])
     fun getUserAndCreateIfNotExist(
         @AuthenticationPrincipal firebaseUser: FirebaseUser
-    ): ResponseEntity<User> {
+    ): ResponseEntity<UserDTO> {
         val user = userService.createUser(firebaseUser)
         return ResponseEntity.ok(user)
     }
@@ -33,7 +36,7 @@ class UserController(
     fun updateLocation(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @RequestBody location: LocationDTO
-    ): ResponseEntity<User> {
+    ): ResponseEntity<UserDTO> {
         val user = userService.updateLocation(
             firebaseUser,
             location.latitude,
@@ -51,7 +54,7 @@ class UserController(
     suspend fun getNotifications(
         @AuthenticationPrincipal firebaseUser: FirebaseUser
     ): ResponseEntity<NotificationDTO> {
-        val notification = eventService.getNotifications(firebaseUser) ?: return ResponseEntity.notFound().build()
+        val notification = eventService.getNotifications(firebaseUser)
         return ResponseEntity.ok(notification)
     }
 }

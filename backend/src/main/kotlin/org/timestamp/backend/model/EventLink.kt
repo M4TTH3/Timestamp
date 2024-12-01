@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.JoinColumn
+import org.timestamp.lib.dto.EventLinkDTO
 import java.util.UUID
 
 /**
@@ -25,3 +26,4 @@ class EventLink (
     val event: Event? = null
 ): Base()
 
+fun EventLink.toDTO(): EventLinkDTO = EventLinkDTO(this.id!!)
