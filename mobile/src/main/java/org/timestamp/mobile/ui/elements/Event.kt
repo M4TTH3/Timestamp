@@ -473,23 +473,23 @@ fun EventBox(
                     )
                 }
             }
-
-            Divider(
-                color = Color.LightGray,
-                thickness = 1.5.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 2.dp)
-            )
-
-            Icon(
-                painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
-                contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",
-                tint = MaterialTheme.colors.secondary,
-                modifier = Modifier
-                    .size(24.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
         }
+
+        Divider(
+            color = Color.LightGray,
+            thickness = 1.5.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 2.dp)
+        )
+
+        Icon(
+            painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+            contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",
+            tint = MaterialTheme.colors.secondary,
+            modifier = Modifier
+                .size(24.dp)
+                .align(Alignment.CenterHorizontally)
+        )
     }
 }
