@@ -62,6 +62,8 @@ import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -123,7 +125,9 @@ fun EventBox(
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var isUsersOpen by remember { mutableStateOf(false) }
     var isEditingEvent by remember { mutableStateOf(false) }
-    val isToday = data.arrival.toLocalDate() == LocalDate.now()
+    val now = OffsetDateTime.now(ZoneId.systemDefault())
+    val next24Hours = now.plusHours(24)
+    val isToday = data.arrival.isBefore(next24Hours)
     val context = LocalContext.current
 
     if (isUsersOpen) {
