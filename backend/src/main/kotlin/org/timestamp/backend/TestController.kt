@@ -13,6 +13,8 @@ import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
 import org.timestamp.backend.service.EventService
 import org.timestamp.backend.service.UserService
+import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.UserDTO
 import java.net.URI
 
 @RestController
@@ -28,7 +30,7 @@ class TestController(
     }
 
     @PostMapping("/user")
-    fun createUser(@RequestBody user: User): ResponseEntity<User> {
+    fun createUser(@RequestBody user: User): ResponseEntity<UserDTO> {
         val u = userService.createUser(user)
         return ResponseEntity.created(URI("/test/user/${u.id}")).body(u)
     }
@@ -46,7 +48,7 @@ class TestController(
     }
 
     @PostMapping("/events")
-    fun createEvent(@RequestBody event: Event): ResponseEntity<Event> {
+    fun createEvent(@RequestBody event: Event): ResponseEntity<EventDTO> {
         val e = eventService.createEvent(event.creator, event) ?: return ResponseEntity.badRequest().build()
         return ResponseEntity.created(URI("/test/events/${e.id}")).body(e)
     }

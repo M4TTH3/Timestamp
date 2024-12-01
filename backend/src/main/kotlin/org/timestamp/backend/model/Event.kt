@@ -59,3 +59,34 @@ fun Event.toDTO(): EventDTO {
         users = users,
     )
 }
+
+/**
+ * Return an EventDTO with many fields hidden. The owner of the event will
+ * be the only user in the list. Location information will be hidden.
+ */
+fun Event.toHiddenDTO(): EventDTO {
+    // We will add only the owner into the user list.
+    val ownerUser = this.userEvents.single { this.creator == it.user!!.id }.user!!
+    val users: List<EventUserDTO> = listOf(
+        EventUserDTO(
+            id = ownerUser.id,
+            name = ownerUser.name,
+            email = ownerUser.email,
+            pfp = ownerUser.pfp,
+            timeEst = null,
+            distance = null,
+            arrived = false,
+            arrivedTime = null
+        )
+    )
+
+    return EventDTO(
+        name = this.name,
+        description = this.description,
+        latitude = this.latitude,
+        longitude = this.longitude,
+        address = this.address,
+        arrival = this.arrival,
+        users = users
+    )
+}

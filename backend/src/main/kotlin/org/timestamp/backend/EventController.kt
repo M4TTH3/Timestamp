@@ -7,6 +7,7 @@ import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
 import org.timestamp.backend.model.toDTO
+import org.timestamp.backend.model.toHiddenDTO
 import org.timestamp.backend.service.EventService
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventLinkDTO
@@ -20,41 +21,10 @@ class EventController(
     private val eventService: EventService
 ) {
 
-    /**
-     * Return an EventDTO with many fields hidden. The owner of the event will
-     * be the only user in the list. Location information will be hidden.
-     */
-    fun Event.toHiddenDTO(): EventDTO {
-        // We will add only the owner into the user list.
-        val ownerUser = this.userEvents.single { this.creator == it.user!!.id }.user!!
-        val users: List<EventUserDTO> = listOf(
-            EventUserDTO(
-                id = ownerUser.id,
-                name = ownerUser.name,
-                email = ownerUser.email,
-                pfp = ownerUser.pfp,
-                timeEst = null,
-                distance = null,
-                arrived = false,
-                arrivedTime = null
-            )
-        )
-
-        return EventDTO(
-            name = this.name,
-            description = this.description,
-            latitude = this.latitude,
-            longitude = this.longitude,
-            address = this.address,
-            arrival = this.arrival,
-            users = users
-        )
-    }
-
     @GetMapping
     suspend fun getEvents(@AuthenticationPrincipal firebaseUser: FirebaseUser): ResponseEntity<List<EventDTO>> {
         val events = eventService.getEvents(firebaseUser)
-        return ResponseEntity.ok(events.map { it.toDTO() })
+        return ResponseEntity.ok(events)
     }
 
     @PostMapping
@@ -62,9 +32,8 @@ class EventController(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @RequestBody event: Event
     ): ResponseEntity<EventDTO> {
-        val e = eventService.createEvent(User(firebaseUser), event) ?: return ResponseEntity.badRequest().build()
-        return ResponseEntity.created(URI("/events/${e.id}")).body(e.toDTO())
-
+        val e = eventService.createEvent(User(firebaseUser), event)
+        return ResponseEntity.created(URI("/events/${e.id}")).body(e)
     }
 
     @GetMapping("/{id}")
@@ -72,8 +41,8 @@ class EventController(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @PathVariable id: UUID
     ): ResponseEntity<EventDTO> {
-        val e = eventService.getEventByLinkId(firebaseUser, id) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(e.toHiddenDTO())
+        val e = eventService.getEventByLinkId(firebaseUser, id)
+        return ResponseEntity.ok(e)
     }
 
     @PostMapping("/join/{eventLinkId}")
@@ -81,8 +50,8 @@ class EventController(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @PathVariable eventLinkId: UUID
     ): ResponseEntity<EventDTO> {
-        val e = eventService.joinEvent(firebaseUser, eventLinkId) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(e.toDTO())
+        val e = eventService.joinEvent(firebaseUser, eventLinkId)
+        return ResponseEntity.ok(e)
     }
 
     @GetMapping("/link/{eventId}")
@@ -90,9 +59,8 @@ class EventController(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @PathVariable eventId: Long
     ): ResponseEntity<EventLinkDTO> {
-        val e = eventService.getEventLink(firebaseUser, eventId) ?: return ResponseEntity.notFound().build()
-        val eventDTO = EventLinkDTO(e.id!!)
-        return ResponseEntity.ok(eventDTO)
+        val eventLinkDTO = eventService.getEventLink(firebaseUser, eventId)
+        return ResponseEntity.ok(eventLinkDTO)
     }
 
     @PatchMapping
@@ -100,8 +68,8 @@ class EventController(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @RequestBody event: Event
     ): ResponseEntity<EventDTO> {
-        val e = eventService.updateEvent(firebaseUser, event) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(e.toDTO())
+        val e = eventService.updateEvent(firebaseUser, event)
+        return ResponseEntity.ok(e)
     }
 
     /**
