@@ -33,7 +33,7 @@ class TimestampActivity : ComponentActivity() {
 
         // Setup variables
         googleAPI = GoogleAPI(this)
-        mainNavController = MainNavController(this.applicationContext, eventViewModel, themeViewModel)
+        mainNavController = MainNavController(this.applicationContext, eventViewModel, themeViewModel, locationViewModel)
 
         // Setup Places API
         val apiKey = packageManager

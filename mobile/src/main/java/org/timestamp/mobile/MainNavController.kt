@@ -53,6 +53,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import org.timestamp.mobile.models.EventViewModel
+import org.timestamp.mobile.models.LocationViewModel
 import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.elements.BackgroundLocationDialog
 import org.timestamp.mobile.ui.theme.TimestampTheme
@@ -69,7 +70,8 @@ enum class Screen {
 class MainNavController(
     private val context: Context,
     private val eventViewModel: EventViewModel,
-    private val themeViewModel: ThemeViewModel
+    private val themeViewModel: ThemeViewModel,
+    private val locationViewModel: LocationViewModel
 ) {
     private val auth = eventViewModel.auth
     private val credentialManager: CredentialManager = CredentialManager.create(context)
