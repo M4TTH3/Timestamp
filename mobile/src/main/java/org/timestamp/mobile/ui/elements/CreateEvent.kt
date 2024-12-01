@@ -28,7 +28,6 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,11 +73,6 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.MaterialTheme
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.firebase.auth.FirebaseUser
-import com.vsnappy1.datepicker.DatePicker
-import com.vsnappy1.datepicker.data.DefaultDatePickerConfig
-import com.vsnappy1.datepicker.data.model.DatePickerDate
-import com.vsnappy1.datepicker.data.model.SelectionLimiter
-import com.vsnappy1.datepicker.ui.model.DatePickerConfiguration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,11 +82,6 @@ import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.toOffset
 import org.timestamp.mobile.ui.theme.Colors
 import java.net.URL
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -208,17 +197,17 @@ fun CreateEvent(
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(false) }
     var eventTime by remember { mutableStateOf(false) }
+    val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+    val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
     var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
     var locationName by remember { mutableStateOf("") }
     var locationAddress by remember { mutableStateOf("") }
     var isLoadingLocation by remember { mutableStateOf(false) }
-    val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-    val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
     val context = LocalContext.current
 
-    var cameraPositionState = rememberCameraPositionState {
+    val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
             editEvent?.let { LatLng(it.latitude, it.longitude) } ?: LatLng(37.7749, -122.4194),
             if (editEvent != null) 15f else 10f
@@ -226,26 +215,28 @@ fun CreateEvent(
     }
 
     if (editEvent != null) {
-        eventName = editEvent.name
-        val date = Date.from(editEvent.arrival.toInstant())
-        selectedDate = dateFormatter.format(date)
-        selectedTime = timeFormatter.format(date)
-        selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)
-        fetchLocationDetails(
-            context = context,
-            latLng = LatLng(editEvent.latitude, editEvent.longitude),
-            onResult = { name, address ->
-                locationName = name
-                locationAddress = address
-            },
-            onError = { error ->
-                // Handle any errors during location detail retrieval
-                locationName = "Unknown Location"
-                locationAddress = "Failed to fetch address"
-                error.printStackTrace()
-            }
-        )
-        cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
+        LaunchedEffect(editEvent) {
+            eventName = editEvent.name
+            val date = Date.from(editEvent.arrival.toInstant())
+            selectedDate = dateFormatter.format(date)
+            selectedTime = timeFormatter.format(date)
+            selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)
+            fetchLocationDetails(
+                context = context,
+                latLng = LatLng(editEvent.latitude, editEvent.longitude),
+                onResult = { name, address ->
+                    locationName = name
+                    locationAddress = address
+                },
+                onError = { error ->
+                    // Handle any errors during location detail retrieval
+                    locationName = "Unknown Location"
+                    locationAddress = "Failed to fetch address"
+                    error.printStackTrace()
+                }
+            )
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
+        }
     }
     val defaultMockLocation = LatLng(37.7749, -122.4194)
     if (isMock) {
@@ -270,7 +261,6 @@ fun CreateEvent(
         )
     }
     if (eventTime) {
-        val isToday = selectedDate == dateFormatter.format(Date())
         TimePickerDialog(
             onConfirm = { hour, minute ->
                 selectedTime = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)

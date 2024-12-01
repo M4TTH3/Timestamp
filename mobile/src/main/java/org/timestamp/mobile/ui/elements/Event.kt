@@ -62,6 +62,8 @@ import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -123,7 +125,9 @@ fun EventBox(
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var isUsersOpen by remember { mutableStateOf(false) }
     var isEditingEvent by remember { mutableStateOf(false) }
-    val isToday = data.arrival.toLocalDate() == LocalDate.now()
+    val now = OffsetDateTime.now(ZoneId.systemDefault())
+    val next24Hours = now.plusHours(24)
+    val isToday = data.arrival.isBefore(next24Hours)
     val context = LocalContext.current
 
     if (isUsersOpen) {
@@ -473,23 +477,23 @@ fun EventBox(
                     )
                 }
             }
-
-            Divider(
-                color = Color.LightGray,
-                thickness = 1.5.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 2.dp)
-            )
-
-            Icon(
-                painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
-                contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",
-                tint = MaterialTheme.colors.secondary,
-                modifier = Modifier
-                    .size(24.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
         }
+
+        Divider(
+            color = Color.LightGray,
+            thickness = 1.5.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 2.dp)
+        )
+
+        Icon(
+            painter = painterResource(id = if (isExpanded) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+            contentDescription = if (isExpanded) "arrow drop up icon" else "arrow drop down icon",
+            tint = MaterialTheme.colors.secondary,
+            modifier = Modifier
+                .size(24.dp)
+                .align(Alignment.CenterHorizontally)
+        )
     }
 }
