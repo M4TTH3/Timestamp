@@ -1,5 +1,6 @@
 package org.timestamp.mobile
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,9 +59,12 @@ fun CalendarScreen(
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
     var selectedDate by remember { mutableStateOf<LocalDate?>(null)}
+    var refreshTrigger by remember { mutableStateOf(0) }
 
-    val eventsOnSelectedDate = remember(selectedDate) {
-        eventList.filter { it.arrival.toLocalDate() == selectedDate }
+    val eventsOnSelectedDate by remember(selectedDate, eventList, refreshTrigger) {
+        derivedStateOf {
+            eventList.filter { it.arrival.toLocalDate() == selectedDate }
+        }
     }
 
     var editingEvent by remember { mutableStateOf<EventDTO?>(null) }
@@ -176,8 +181,10 @@ fun CalendarScreen(
                 CreateEvent(
                     onDismissRequest = { editingEvent = null },
                     onConfirmation = { updatedEvent ->
-                        viewModel.postEvent(updatedEvent)
+                        Log.d("UPDATE EVENT", updatedEvent.id.toString())
+                        viewModel.updateEvent(updatedEvent)
                         editingEvent = null
+                        refreshTrigger++
                     },
                     isMock = false,
                     editEvent = event,
