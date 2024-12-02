@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,12 +38,14 @@ class LocationViewModel (
 
     private object LocationReceiver: BroadcastReceiver() {
         // We will inject the location update function into here
-        var onLocationUpdate: ((LocationDTO) -> Unit)? = null
+        lateinit var onLocationUpdate: ((LocationDTO) -> Unit)
 
         override fun onReceive(context: Context?, intent: Intent?) {
             val content = intent?.getStringExtra(INTENT_EXTRA_LOCATION) ?: return
             try {
                 val locationDTO = Json.decodeFromString<LocationDTO>(content)
+                onLocationUpdate(locationDTO)
+
                 Log.d("LocationReceiver", "Received location update: $locationDTO")
             } catch (e: Exception) {
                 Log.e("LocationReceiver", "Failed to parse location update: $content")

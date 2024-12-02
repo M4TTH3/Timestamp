@@ -35,9 +35,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.models.EventViewModel
+import org.timestamp.mobile.models.LocationViewModel
 import org.timestamp.mobile.ui.elements.AcceptEvent
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
+import org.timestamp.mobile.ui.elements.MapView
+import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -59,6 +62,7 @@ fun EventsScreen(
 
     val createEvents = remember { mutableStateOf(false) }
     val hasEvents = remember { mutableStateOf(false) }
+    val showMapView = remember { mutableStateOf(false) }
     if (createEvents.value) {
         CreateEvent(
             onDismissRequest = { createEvents.value = false },
@@ -79,20 +83,6 @@ fun EventsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colors.primary)
     ) {
-        IconButton(onClick = {
-            //todo
-        },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(8.dp)
-                .offset(y=24.dp)
-                .size(48.dp)
-        ) {
-            Icon(painter = painterResource(id = R.drawable.notification_bell),
-                contentDescription = "Notification Bell",
-                modifier = Modifier.size(32.dp),
-                tint = Color.Unspecified)
-        }
         Column(
             modifier = Modifier
                 .fillMaxSize(),
@@ -229,6 +219,31 @@ fun EventsScreen(
                 contentDescription = "Add Event Button",
                 modifier = Modifier.size(54.dp),
                 tint = Color.Unspecified)
+        }
+    }
+    if (showMapView.value) {
+        MapView(
+            currentUser = currentUser
+        )
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        IconButton(onClick = {
+            showMapView.value = !showMapView.value
+        },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+                .offset(y=24.dp)
+                .size(48.dp)
+        ) {
+            Icon(painter = painterResource(id = R.drawable.earth_icon),
+                contentDescription = "Earth Icon",
+                modifier = Modifier.size(48.dp),
+                tint = if (!showMapView.value) Colors.TeaRose else Colors.Bittersweet
+            )
         }
     }
 }
