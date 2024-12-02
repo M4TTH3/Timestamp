@@ -10,24 +10,24 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.IBinder
 import android.util.Log
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.lib.dto.NotificationDTO
+import org.timestamp.lib.dto.TravelMode
 import org.timestamp.mobile.utility.ActivityRecognitionProvider
 import org.timestamp.mobile.utility.KtorClient
 import org.timestamp.mobile.utility.KtorClient.handler
@@ -37,11 +37,14 @@ import org.timestamp.mobile.utility.PermissionProvider
 import java.time.format.DateTimeFormatter
 
 const val NOTIFICATION_ID = 1
+const val EVENT_NOTIFICATION_ID = 2
 const val CHANNEL_ID = "location"
 const val CHANNEL_NAME = "Timestamp Service"
 const val ACTION_LOCATION_UPDATE = "org.timestamp.mobile.LOCATION_UPDATE"
 const val ACTION_DETECTED_ACTIVITY = "org.timestamp.mobile.DETECTED_ACTIVITY"
 const val INTENT_EXTRA_LOCATION = "location"
+const val FIVE_MINUTES = 300000L
+const val THIRTY_SECONDS = 30000L
 
 /**
  * A foreground service used to send the backend updates on the users'
@@ -75,6 +78,7 @@ class TimestampService: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        pollingNotification = false
         arp.cleanup()
     }
 
@@ -87,17 +91,23 @@ class TimestampService: Service() {
         }
 
         try {
-            startForeground(NOTIFICATION_ID, createNotification())
-            getTimestampNotification()
+            startForeground(NOTIFICATION_ID, createBasicNotification())
+            getTimestampNotification(FIVE_MINUTES)
             arp.startActivityRecognition { travelMode ->
                 lp.travelMode = travelMode
             }
-            lp.startLocationUpdates(30000) {
+            lp.startLocationUpdates(THIRTY_SECONDS) {
                 broadcastLocation(it)
                 updateLocation(it)
             }
         } catch (e: SecurityException) {
             Log.d("LocationService", "Permissions not granted")
+            arp.stopActivityRecognition()
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+            return START_NOT_STICKY
+        } catch (e: Exception) {
+            Log.e("LocationService", "Error starting location updates", e)
             arp.stopActivityRecognition()
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
@@ -113,22 +123,28 @@ class TimestampService: Service() {
             CHANNEL_NAME,
             NotificationManager.IMPORTANCE_HIGH
         )
-
+        serviceChannel.setSound(null, null)
+        serviceChannel.setShowBadge(true)
         notificationManager.createNotificationChannel(serviceChannel)
     }
 
     private fun replaceNotification(title: String, text: String) {
-        val notification = createNotification(title, text)
+        val notification = createBasicNotification(title, text)
         notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
+    private fun replaceNotification(notification: NotificationDTO) {
+        notificationManager.notify(EVENT_NOTIFICATION_ID, createEventNotification(notification))
     }
 
     /**
      * Create a notification to show the user that the service is running
      * and tracking their location.
      */
-    private fun createNotification(
+    private fun createBasicNotification(
         title: String = "Timestamp",
-        text: String = "Timestamp is tracking your location..."
+        text: String = "Timestamp is tracking your location...",
+
     ): Notification {
         // Open timestamp when the notification is clicked
         val pendingIntent = PendingIntent.getActivity(
@@ -145,6 +161,55 @@ class TimestampService: Service() {
             .setContentIntent(pendingIntent)
             .setSmallIcon(R.drawable.cs346logoteefsmaller)
             .setLargeIcon(largeIcon)
+
+        return notificationBuilder.build()
+    }
+
+    /**
+     * Create a custom notification to show the next upcoming event
+     * and the estimated time to get there.
+     */
+    private fun createEventNotification(
+        notification: NotificationDTO
+    ): Notification {
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, TimestampActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val dateTimeFormatter = DateTimeFormatter.ofPattern("H:mm a")
+        val layout = RemoteViews(this.packageName, R.layout.notification)
+        val layoutCollapsed = RemoteViews(this.packageName, R.layout.notification_collapsed)
+        val eventName = notification.event.name
+        val eventTime = notification.event.arrival.format(dateTimeFormatter)
+        layoutCollapsed.setTextViewText(R.id.notification_title, eventName)
+        layoutCollapsed.setTextViewText(R.id.notification_event_time, eventTime)
+        layout.setTextViewText(R.id.notification_title, eventName)
+        layout.setTextViewText(R.id.notification_event_time, eventTime)
+
+        for (routeInfo in notification.routeInfos) {
+            val timeEst = routeInfo.timeEst
+            val time = if (timeEst == null) "Not Calculated" else formatDuration(timeEst)
+            val viewId = when (routeInfo.travelMode) {
+                TravelMode.Car -> R.id.notification_car_time
+                TravelMode.Bike -> R.id.notification_bike_time
+                else -> R.id.notification_walk_time
+            }
+
+            layout.setTextViewText(viewId, "${routeInfo.travelMode!!.name}: $time")
+        }
+
+        val notificationBuilder = NotificationCompat
+            .Builder(this, CHANNEL_ID)
+            .setCustomContentView(layoutCollapsed)
+            .setCustomBigContentView(layout)
+            .setContentIntent(pendingIntent)
+            .setSmallIcon(R.drawable.cs346logoteefsmaller)
+            .setLargeIcon(largeIcon)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
 
         return notificationBuilder.build()
     }
@@ -188,7 +253,6 @@ class TimestampService: Service() {
 
         val base = getString(R.string.backend_url)
         val tag = "Get Notification"
-        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm a")
 
         while(pollingNotification) {
             handler(tag) {
@@ -201,17 +265,8 @@ class TimestampService: Service() {
                 if (tmp == notification) return@handler
 
                 notification = tmp
-                val notification = notification!!
-                val event = notification.event
-                val title = "${event.name} @ ${event.arrival.format(timeFormatter)}"
-
-                var text = "${event.address}\n\n"
-                for (routeInfo in notification.routeInfos) {
-                    if (routeInfo.timeEst == null || routeInfo.distance == null) continue
-                    text += "${routeInfo.travelMode}: ${formatDuration(routeInfo.timeEst!!)}\n"
-                }
-                Log.d(tag, text)
-                replaceNotification(title, text)
+                replaceNotification(notification!!)
+                Log.d(tag, notification.toString())
             }
 
             delay(interval)
