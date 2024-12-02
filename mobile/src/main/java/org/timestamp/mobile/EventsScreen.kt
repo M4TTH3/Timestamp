@@ -126,15 +126,11 @@ fun EventsScreen(
                     eventList.sortBy { it.arrival }
                     val next24Hours = now.plusHours(24)
 
-                    val next24HourEvents = mutableListOf<EventDTO>()
-                    val otherEvents = mutableListOf<EventDTO>()
-
-                    for (event in eventList) {
-                        if (event.arrival.isBefore(next24Hours)) {
-                            next24HourEvents.add(event)
-                        } else {
-                            otherEvents.add(event)
-                        }
+                    val next24HourEvents = eventListState.value.filter { event ->
+                        event.arrival.isBefore(next24Hours)
+                    }
+                    val otherEvents = eventListState.value.filter { event ->
+                        event.arrival.isAfter(next24Hours)
                     }
                     item {
                         Text(
