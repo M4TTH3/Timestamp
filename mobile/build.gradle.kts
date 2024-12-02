@@ -93,6 +93,7 @@ dependencies {
     implementation("com.github.vsnappy1:ComposeDatePicker:2.2.0") {
         exclude(group = "androidx.compose.material3", module = "material3")
     }
+    implementation(libs.androidx.compose.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.ui.test.junit4.android)
     androidTestImplementation(libs.androidx.junit)

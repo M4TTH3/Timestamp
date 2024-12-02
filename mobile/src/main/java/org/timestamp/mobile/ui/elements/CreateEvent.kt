@@ -21,7 +21,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -82,11 +81,29 @@ import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.toOffset
 import org.timestamp.mobile.ui.theme.Colors
 import java.net.URL
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.TextField
+import androidx.compose.material.Text
+import androidx.compose.material.Surface
+import androidx.compose.runtime.*
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import androidx.compose.material.icons.Icons
+import androidx.compose.ui.text.TextStyle
+import androidx.wear.compose.material.ContentAlpha
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun RequestLocationPermission() {
-    val permissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
     SideEffect {
         permissionState.launchPermissionRequest()
     }
@@ -206,6 +223,10 @@ fun CreateEvent(
     var locationAddress by remember { mutableStateOf("") }
     var isLoadingLocation by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val placesClient = remember { Places.createClient(context) }
+    var isSearchActive by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    var predictions by remember { mutableStateOf<List<AutocompletePrediction>>(emptyList()) }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
@@ -236,6 +257,12 @@ fun CreateEvent(
                 }
             )
             cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
+            query = locationName
+        }
+    }
+    LaunchedEffect(locationName) {
+        if (!isSearchActive) {
+            query = locationName
         }
     }
     val defaultMockLocation = LatLng(37.7749, -122.4194)
@@ -268,6 +295,23 @@ fun CreateEvent(
             },
             onDismiss = { eventTime = false },
         )
+    }
+
+    LaunchedEffect(query) {
+        if (isSearchActive && query.isNotEmpty()) {
+            val request = FindAutocompletePredictionsRequest.builder()
+                .setQuery(query)
+                .build()
+            placesClient.findAutocompletePredictions(request)
+                .addOnSuccessListener { response ->
+                    predictions = response.autocompletePredictions
+                }
+                .addOnFailureListener {
+                    predictions = emptyList()
+                }
+        } else {
+            predictions = emptyList()
+        }
     }
 
    Dialog(
@@ -384,15 +428,129 @@ fun CreateEvent(
                        )
                    )
                }
-               Spacer(modifier = Modifier.height(8.dp))
-               Text(
-                   text = if (isLoadingLocation) "Fetching location name..." else locationName,
-                   fontFamily = ubuntuFontFamily,
-                   fontWeight = FontWeight.Normal,
-                   fontSize = 16.sp,
-                   color = if (isLoadingLocation) Color.Gray else MaterialTheme.colors.secondary,
-                   modifier = Modifier.padding(8.dp)
-               )
+               Spacer(modifier = Modifier.height(12.dp))
+               if (isSearchActive) {
+                   TextField(
+                       value = query,
+                       onValueChange = { text -> query = text },
+                       placeholder = {
+                           Text(
+                               text = "Type to search...",
+                               fontFamily = ubuntuFontFamily,
+                               fontWeight = FontWeight.Bold,
+                               fontSize = 16.sp,
+                               color = MaterialTheme.colors.secondary.copy(alpha = ContentAlpha.medium)
+                           )
+                       },
+                       textStyle = TextStyle(
+                           fontFamily = ubuntuFontFamily,
+                           fontWeight = FontWeight.Bold,
+                           fontSize = 16.sp,
+                           color = MaterialTheme.colors.secondary
+                       ),
+                       singleLine = true,
+                       modifier = Modifier
+                           .fillMaxWidth(0.9f)
+                           .height(56.dp)
+                           .shadow(
+                               4.dp,
+                               shape = RoundedCornerShape(16.dp),
+                               ambientColor = Color(0x33000000)
+                           )
+                           .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
+                           .background(
+                               MaterialTheme.colors.primary,
+                               shape = RoundedCornerShape(16.dp)
+                           ),
+                       colors = TextFieldDefaults.textFieldColors(
+                           backgroundColor = Color.Transparent,
+                           textColor = MaterialTheme.colors.secondary,
+                           cursorColor = MaterialTheme.colors.secondary,
+                           focusedIndicatorColor = Color.Transparent,
+                           unfocusedIndicatorColor = Color.Transparent,
+                           placeholderColor = MaterialTheme.colors.secondary.copy(alpha = ContentAlpha.medium)
+                       )
+                   )
+                   if (predictions.isNotEmpty()) {
+                       LazyColumn(
+                           modifier = Modifier
+                               .fillMaxWidth(0.9f)
+                               .heightIn(max = 200.dp)
+                       ) {
+                           items(predictions) { prediction ->
+                               Text(
+                                   text = prediction.getFullText(null).toString(),
+                                   modifier = Modifier
+                                       .fillMaxWidth()
+                                       .clickable {
+                                           val placeFields = listOf(
+                                               Place.Field.ID,
+                                               Place.Field.NAME,
+                                               Place.Field.ADDRESS,
+                                               Place.Field.LAT_LNG
+                                           )
+                                           val request = FetchPlaceRequest.builder(
+                                               prediction.placeId,
+                                               placeFields
+                                           ).build()
+                                           placesClient.fetchPlace(request)
+                                               .addOnSuccessListener { response ->
+                                                   val place = response.place
+                                                   selectedLocation = place.latLng
+                                                   locationName = place.name ?: ""
+                                                   locationAddress = place.address ?: ""
+                                                   cameraPositionState.position =
+                                                       CameraPosition.fromLatLngZoom(
+                                                           place.latLng!!,
+                                                           15f
+                                                       )
+                                                   isSearchActive = false
+                                                   query = locationName
+                                               }
+                                               .addOnFailureListener { exception ->
+                                                   Log.e(
+                                                       "Places API",
+                                                       "Place not found: ${exception.message}"
+                                                   )
+                                               }
+                                       }
+                                       .padding(16.dp)
+                               )
+                           }
+                       }
+                   }
+               } else {
+                   Box(
+                       modifier = Modifier
+                           .fillMaxWidth(0.9f)
+                           .height(56.dp)
+                           .shadow(
+                               4.dp,
+                               shape = RoundedCornerShape(16.dp),
+                               ambientColor = Color(0x33000000)
+                           )
+                           .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
+                           .background(
+                               MaterialTheme.colors.primary,
+                               shape = RoundedCornerShape(16.dp)
+                           )
+                           .clickable {
+                               isSearchActive = true
+                           },
+                       contentAlignment = Alignment.CenterStart
+                   ) {
+                       Text(
+                           text = if (locationName.isNotEmpty()) locationName else "Event Location",
+                           modifier = Modifier
+                               .fillMaxWidth()
+                               .padding(horizontal = 16.dp, vertical = 12.dp),
+                           color = if (locationName.isNotEmpty()) MaterialTheme.colors.secondary else MaterialTheme.colors.secondary.copy(alpha = ContentAlpha.medium),
+                           fontFamily = ubuntuFontFamily,
+                           fontWeight = FontWeight.Bold,
+                           fontSize = 16.sp
+                       )
+                   }
+               }
                Spacer(modifier = Modifier.height(16.dp))
                    GoogleMap(
                        modifier = Modifier
@@ -410,6 +568,8 @@ fun CreateEvent(
                                    locationName = name
                                    locationAddress = address
                                    isLoadingLocation = false
+                                   isSearchActive = false
+                                   query = locationName
                                },
                                onError = { error ->
                                    Log.e("CreateEvent", "Error fetching location: ${error.message}")
@@ -427,7 +587,7 @@ fun CreateEvent(
                            )
                        }
                    }
-               Spacer(modifier = Modifier.height(16.dp))
+               Spacer(modifier = Modifier.height(12.dp))
                Row(
                    modifier = Modifier
                        .fillMaxWidth(),
