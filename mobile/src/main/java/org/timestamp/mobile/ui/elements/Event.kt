@@ -61,6 +61,7 @@ import org.timestamp.mobile.R
 import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
+import java.time.Duration
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -129,6 +130,7 @@ fun EventBox(
     val next24Hours = now.plusHours(24)
     val isToday = data.arrival.isBefore(next24Hours)
     val context = LocalContext.current
+    val user = data.users.find { it.id == currentUser?.uid }
 
     if (isUsersOpen) {
         if (currentUser != null) {
@@ -273,15 +275,37 @@ fun EventBox(
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
                 )
-                Text(
-                    text = "On time",
-                    color = Color.Green,
-                    fontFamily = ubuntuFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                )
+                var time = 0
+                if (user != null) {
+                    time = if (user.timeEst != null) {
+                        ((user.timeEst!! / 1000) / 60).toInt()
+                    } else {
+                        0
+                    }
+                }
+                if (now.plusMinutes(time.toLong()).isBefore(data.arrival)) {
+                    Text(
+                        text = "On time",
+                        color = Color.Green,
+                        fontFamily = ubuntuFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                    )
+                } else {
+                    val timeLate = now.plusMinutes(time.toLong())
+                    val differenceInMinutes = Duration.between(data.arrival, timeLate).toMinutes()
+                    Text(
+                        text = "Late $differenceInMinutes min",
+                        color = Color.Red,
+                        fontFamily = ubuntuFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.weight(1f))
                 val formatter = DateTimeFormatter.ofPattern("h:mm a")
                 val formattedTime: String = data.arrival.format(formatter)
@@ -421,15 +445,11 @@ fun EventBox(
                     Spacer(modifier = Modifier.width(2.dp))
 
                     var distance: Double = 0.0
-                    for (user in data.users) {
-                        if (user.id == data.creator) {
-                            if (user.distance != null) {
-                                distance = user.distance!!
-                                break
-                            } else {
-                                distance = 0.0
-                                break
-                            }
+                    if (user != null) {
+                        if (user.distance != null) {
+                            distance = user.distance!!
+                        } else {
+                            distance = 0.0
                         }
                     }
                     var unitKm = false
@@ -458,15 +478,11 @@ fun EventBox(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     var time = 0
-                    for (user in data.users) {
-                        if (user.id == data.creator) {
-                            if (user.timeEst != null) {
-                                time = ((user.timeEst!! / 1000) / 60).toInt()
-                                break
-                            } else {
-                                time = 0
-                                break
-                            }
+                    if (user != null) {
+                        if (user.timeEst != null) {
+                            time = ((user.timeEst!! / 1000) / 60).toInt()
+                        } else {
+                            time = 0
                         }
                     }
                     Text(
