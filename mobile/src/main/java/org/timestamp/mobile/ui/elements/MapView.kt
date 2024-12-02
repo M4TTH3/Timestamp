@@ -2,19 +2,25 @@ package org.timestamp.mobile.ui.elements
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Paint.Align
 import android.graphics.Path
+import android.graphics.Point
 import android.graphics.Shader
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,6 +28,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -36,14 +44,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -66,13 +78,20 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseUser
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.vsnappy1.extension.toDp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.StateFlow
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.mobile.R
 import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.models.LocationViewModel
+import org.timestamp.mobile.ubuntuFontFamily
 import org.timestamp.mobile.ui.theme.Colors
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 fun Bitmap.toCircularBitmap(): Bitmap {
     // First, ensure we have a software bitmap
@@ -121,6 +140,10 @@ fun Bitmap.toCircularBitmap(): Bitmap {
     return output
 }
 
+fun Bitmap.createScaledBitmap(newWidth: Int, newHeight: Int): Bitmap {
+    return Bitmap.createScaledBitmap(this, newWidth, newHeight, false)
+}
+
 @Composable
 fun MapView(
     eventViewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
@@ -136,20 +159,20 @@ fun MapView(
     val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
 
     val locationState by locationViewModel.location.collectAsState()
-    val userLocation = locationState?.let { location ->
-        LatLng(location.latitude, location.longitude).also {
-            Log.d("MAP LOCATION STATE", "New user location: ${it.latitude}, ${it.longitude}")
-        }
-    }
+    val userLocation : LocationDTO? = locationState
+    var eventCoordinates by remember { mutableStateOf(0 to 0) }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = userLocation?.let { CameraPosition.fromLatLngZoom(it, 12f) } ?:
+        position = userLocation?.let { CameraPosition.fromLatLngZoom(LatLng(userLocation.latitude, userLocation.longitude), 12f) } ?:
         CameraPosition.fromLatLngZoom(LatLng(0.0, 0.0), 12f)
     }
+
+    val now = OffsetDateTime.now()
 
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var selectedText by remember { mutableStateOf("Event Select") }
     var dropTextFieldSize by remember { mutableStateOf(DpSize.Zero)}
+    var isEventShowing by remember { mutableStateOf<EventDTO?>(null) }
 
     var pfpMarker by remember { mutableStateOf<BitmapDescriptor?>(null) }
     val pfp = currentUser?.photoUrl
@@ -170,25 +193,14 @@ fun MapView(
         )
     }
 
-    LaunchedEffect(userLocation) {
-        userLocation?.let { location ->
-            Log.d("MAP USER LOCATION", "${location.latitude}, ${location.longitude}")
-            googleMapInstance?.let { googleMap ->
-                googleMap.animateCamera(
-                    CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 12f)
-                )
-
-                if (userMarker == null) {
-                    userMarker = googleMap.addMarker(
-                        MarkerOptions()
-                            .position(LatLng(location.latitude, location.longitude))
-                            .title("My Position")
-                            .icon(pfpMarker)
-                    )
-                } else {
-                    userMarker?.position = LatLng(location.latitude, location.longitude)
-                }
-            }
+    LaunchedEffect(locationState) {
+        locationState?.let { location ->
+            userMarker = googleMapInstance?.addMarker(
+                MarkerOptions()
+                    .position(LatLng(location.latitude, location.longitude))
+                    .icon(pfpMarker)
+                    .title("My Location")
+            )
         }
     }
 
@@ -214,29 +226,74 @@ fun MapView(
                         googleMap.uiSettings.isZoomControlsEnabled = true
                         googleMap.uiSettings.isMyLocationButtonEnabled = true
 
-
-                        userLocation?.let {
-                            MarkerOptions()
-                                .position(it)
-                                .title("My location")
-                        }?.let {
-                            googleMap.addMarker(
-                                it
-                            )
-                        }
-
-                        googleMap.addMarker(
-                            MarkerOptions()
-                                .position(LatLng(0.0, 0.0))
-                                .title("test")
-                                .icon(pfpMarker)
-                        )
-
                         for (event in eventList) {
                             googleMap.addMarker(
                                 MarkerOptions()
                                     .position(LatLng(event.latitude, event.longitude))
                                     .title(event.name)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(
+                                        BitmapFactory.decodeResource(context.resources, R.drawable.event_location)
+                                            .createScaledBitmap(100, 100)
+                                    ))
+                                    .anchor(0.5f, 1.25f)
+                            )
+                        }
+
+                        googleMap.setOnMarkerClickListener { marker ->
+                            if (marker.title != "My Location") {
+                                val event = eventList.find { marker.title == it.name }
+                                isEventShowing = null
+                                isEventShowing = event
+                                val latLng =
+                                    isEventShowing?.let { LatLng(it.latitude, it.longitude) }  // Example coordinates (replace with your own)
+
+                                if (latLng != null) {
+                                    googleMap.projection.toScreenLocation(latLng).let { screenLocation ->
+                                        // Handle screen coordinates (X, Y)
+                                        val screenX = screenLocation.x
+                                        val screenY = screenLocation.y
+                                        eventCoordinates = (
+                                                screenX
+                                                        to
+                                                        screenY
+                                                )
+                                    }
+                                }
+                            }
+                            false
+                        }
+
+                        googleMap.setOnMapClickListener {
+                            isEventShowing = null
+                        }
+
+                        googleMap.setOnCameraMoveListener {
+                            val latLng =
+                                isEventShowing?.let { LatLng(it.latitude, it.longitude) }  // Example coordinates (replace with your own)
+
+                            if (latLng != null) {
+                                googleMap.projection.toScreenLocation(latLng).let { screenLocation ->
+                                    // Handle screen coordinates (X, Y)
+                                    val screenX = screenLocation.x
+                                    val screenY = screenLocation.y
+                                    eventCoordinates = (
+                                        screenX
+                                     to
+                                        screenY
+                                    )
+                                }
+                            }
+                        }
+
+                        locationState?.let { location ->
+                            googleMapInstance?.addMarker(
+                                MarkerOptions()
+                                    .position(LatLng(location.latitude, location.longitude))
+                                    .icon(pfpMarker)
+                                    .title("My Location")
+                            )
+                            googleMapInstance?.animateCamera(
+                                CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 10f)
                             )
                         }
 
@@ -247,20 +304,130 @@ fun MapView(
                 mapView.onResume()
             }
         )
+        if (isEventShowing != null) {
+            val isToday = isEventShowing!!.arrival.isBefore(now.plusHours(24))
+            Box(modifier = Modifier
+                .width(200.dp)
+                .height(150.dp)
+                .offset {
+                    IntOffset(x = eventCoordinates.first,
+                        y = eventCoordinates.second)
+                }
+                .offset(x = (-100).dp, y = (-170).dp)
+                .shadow(5.dp, shape = RoundedCornerShape(32.dp))
+                .background(color = Colors.White, shape = RoundedCornerShape(32.dp))
+                .border(width = 3.dp, color = Colors.Black, shape = RoundedCornerShape(32.dp))
+                .height(170.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.Center)
+                ) {
+                    Text(
+                        text = isEventShowing!!.name,
+                        fontSize = 24.sp,
+                        fontFamily = ubuntuFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = isEventShowing!!.address,
+                        fontSize = 16.sp,
+                        fontFamily = ubuntuFontFamily,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Divider(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .fillMaxWidth()
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        if (isToday) {
+                            val user = isEventShowing!!.users.find { it.id == currentUser?.uid }
+                            Icon(
+                                painter = painterResource(R.drawable.car_icon),
+                                contentDescription = "distance",
+                                tint = Color.Unspecified,
+                                modifier = Modifier
+                                    .size(24.dp)
+                            )
+                            var distance: Double = 0.0
+                            if (user != null) {
+                                if (user.distance != null) {
+                                    distance = user.distance!!
+                                } else {
+                                    distance = 0.0
+                                }
+                            }
+                            var unitKm = false
+                            if (distance >= 1000) {
+                                unitKm = true
+                                distance /= 1000
+                            }
+                            val userDistance: String = if (unitKm) {
+                                String.format(locale = Locale.getDefault(), "%.1f", distance) + "km"
+                            } else {
+                                distance.toInt().toString() + "m"
+                            }
+                            Text(
+                                text = userDistance,
+                                fontFamily = ubuntuFontFamily
+                            )
+                            Icon(painter = painterResource(R.drawable.clock_icon),
+                                contentDescription = "ETA",
+                                tint = Color.Unspecified,
+                                modifier = Modifier
+                                    .size(24.dp)
+                            )
+                            var time = 0
+                            if (user != null) {
+                                if (user.timeEst != null) {
+                                    time = ((user.timeEst!! / 1000) / 60).toInt()
+                                } else {
+                                    time = 0
+                                }
+                            }
+                            Text(
+                                text = "$time" + "min"
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(R.drawable.calendar),
+                                contentDescription = "distance",
+                                tint = Colors.PowderBlue,
+                                modifier = Modifier
+                                    .size(24.dp)
+                            )
+                            val dateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy")
+                            Text(
+                                text = isEventShowing!!.arrival.format(dateFormatter)
+                            )
+                        }
+                    }
+                }
+            }
+        }
         Column(
             modifier = Modifier
-                .padding(vertical = 24.dp)
-                .offset(x = 24.dp)
-                .align(Alignment.BottomStart)
+                .padding(vertical = 64.dp)
+                .offset(x = (-24).dp)
+                .align(Alignment.TopCenter)
         ) {
             OutlinedTextField(
                 value = selectedText,
                 onValueChange = { selectedText = it },
                 readOnly = true,
                 modifier = Modifier
-                    .fillMaxWidth(0.75f)
+                    .fillMaxWidth(0.7f)
                     .height(50.dp)
-                    .background(Colors.White)
+                    .background(Colors.White, shape = RoundedCornerShape(32.dp))
                     .clickable {
                         isDropdownExpanded = !isDropdownExpanded
                     }
@@ -272,9 +439,10 @@ fun MapView(
                             )
                         }
                     },
+                shape = RoundedCornerShape(32.dp),
                 trailingIcon = {
                     Icon(
-                        painter = painterResource(id = R.drawable.arrow_drop_up),
+                        painter = painterResource(id = R.drawable.arrow_drop_down),
                         contentDescription = "dropdown arrow",
                         modifier = Modifier
                             .size(32.dp)
@@ -286,8 +454,7 @@ fun MapView(
             )
             DropdownMenu(
                 modifier = Modifier
-                    .width(Dp(dropTextFieldSize.width.value))
-                    .offset(x = 24.dp),
+                    .width(Dp(dropTextFieldSize.width.value)),
                 expanded = isDropdownExpanded,
                 onDismissRequest = {
                     isDropdownExpanded = false
@@ -296,21 +463,24 @@ fun MapView(
                 eventList.forEach { event ->
                     DropdownMenuItem(
                         modifier = Modifier
-                            .height(Dp(dropTextFieldSize.height.value)),
+                            .height(Dp(dropTextFieldSize.height.value - 12)),
                         onClick = {
                             selectedText = event.name
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(
                                 LatLng(event.latitude, event.longitude),
-                                15f
+                                12f
                             )
                             Log.d("CAMERA UPDATE", "${event.latitude}, ${event.longitude}")
                             isDropdownExpanded = false
                         },
                     ) {
-                        Text(
-                            text = event.name,
-                            color = Colors.Black
-                        )
+                        Column(
+                        ) {
+                            Text(
+                                text = event.name,
+                                color = Colors.Black
+                            )
+                        }
                     }
                 }
             }
