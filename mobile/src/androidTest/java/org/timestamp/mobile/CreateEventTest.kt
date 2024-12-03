@@ -7,15 +7,24 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import com.google.firebase.auth.FirebaseUser
+import io.mockk.mockk
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.timestamp.backend.viewModels.EventDetailed
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.ui.elements.CreateEvent
 
 class CreateEventTest {
     @JvmField @Rule
     val composeTestRule = createAndroidComposeRule<TimestampActivity>()
+
+    private lateinit var mockFirebaseUser: FirebaseUser
+
+    @Before
+    fun setup() {
+        mockFirebaseUser = mockk(relaxed = true)
+    }
 
     @Test
     fun elementsAreDisplayed() {
@@ -24,9 +33,8 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = {},
                 isMock = true,
-                properties = TODO(),
-                editEvent = TODO(),
-                currentUser = TODO(),
+                editEvent = null,
+                currentUser = mockFirebaseUser,
             )
         }
         composeTestRule.onNodeWithText("Add Event").assertIsDisplayed()
@@ -45,11 +53,11 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = { event -> confirmedEvent = event },
                 isMock = true,
-                properties = TODO(),
-                editEvent = TODO(),
-                currentUser = TODO()
+                editEvent = null,
+                currentUser = mockFirebaseUser
             )
         }
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Add").performClick()
         assert(confirmedEvent == null)
     }
@@ -61,10 +69,12 @@ class CreateEventTest {
             CreateEvent(
                 onDismissRequest = { dismissed.value = true },
                 onConfirmation = {},
-                isMock = true
+                isMock = true,
+                editEvent = null,
+                currentUser = mockFirebaseUser
             )
         }
-
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Cancel").performClick()
         assert(dismissed.value)
     }
@@ -75,7 +85,9 @@ class CreateEventTest {
             CreateEvent(
                 onDismissRequest = {},
                 onConfirmation = {},
-                isMock = true
+                isMock = true,
+                editEvent = null,
+                currentUser = mockFirebaseUser
             )
         }
         composeTestRule.onNodeWithContentDescription("select date").performClick()
@@ -88,7 +100,9 @@ class CreateEventTest {
             CreateEvent(
                 onDismissRequest = {},
                 onConfirmation = {},
-                isMock = true
+                isMock = true,
+                editEvent = null,
+                currentUser = mockFirebaseUser
             )
         }
         composeTestRule.onNodeWithText("Event Time").performClick()
