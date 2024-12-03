@@ -201,6 +201,20 @@ fun MapView(
         }
     }
 
+    LaunchedEffect(pfpMarker) {
+        if (pfpMarker != null && locationState != null) {
+            // Remove the old marker if it exists
+            userMarker?.remove()
+
+            userMarker = googleMapInstance?.addMarker(
+                MarkerOptions()
+                    .position(LatLng(locationState!!.latitude, locationState!!.longitude))
+                    .icon(pfpMarker)
+                    .title("My Location")
+            )
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
