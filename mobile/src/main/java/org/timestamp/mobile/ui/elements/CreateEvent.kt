@@ -275,6 +275,24 @@ fun CreateEvent(
         FetchLocationWrapper(context) { location ->
             selectedLocation = location
             cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
+            isLoadingLocation = true
+            fetchLocationDetails(
+                context = context,
+                latLng = location,
+                onResult = { name, address ->
+                    locationName = name
+                    locationAddress = address
+                    isLoadingLocation = false
+                    isSearchActive = false
+                    query = locationName
+                },
+                onError = { error ->
+                    Log.e("CreateEvent", "Error fetching location: ${error.message}")
+                    locationName = "Failed to fetch location"
+                    locationAddress = ""
+                    isLoadingLocation = false
+                }
+            )
         }
     }
 

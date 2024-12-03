@@ -207,7 +207,7 @@ fun MapView(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(860.dp)
+            .height(930.dp)
             .background(Colors.White)
             .pointerInput(Unit) {
                 detectTapGestures {  }
