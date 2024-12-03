@@ -78,9 +78,6 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseUser
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.vsnappy1.extension.toDp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.StateFlow
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.mobile.R
@@ -206,8 +203,8 @@ fun MapView(
 
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(930.dp)
+            .fillMaxSize()
+            .padding(bottom = 64.dp)
             .background(Colors.White)
             .pointerInput(Unit) {
                 detectTapGestures {  }
