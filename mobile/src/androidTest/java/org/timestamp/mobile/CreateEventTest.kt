@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performClick
 import org.junit.Rule
 import org.junit.Test
 import org.timestamp.backend.viewModels.EventDetailed
+import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.ui.elements.CreateEvent
 
 class CreateEventTest {
@@ -22,7 +23,10 @@ class CreateEventTest {
             CreateEvent(
                 onDismissRequest = {},
                 onConfirmation = {},
-                isMock = true
+                isMock = true,
+                properties = TODO(),
+                editEvent = TODO(),
+                currentUser = TODO(),
             )
         }
         composeTestRule.onNodeWithText("Add Event").assertIsDisplayed()
@@ -35,12 +39,15 @@ class CreateEventTest {
 
     @Test
     fun addButtonWorks() {
-        var confirmedEvent: EventDetailed? = null
+        var confirmedEvent: EventDTO? = null
         composeTestRule.activity.setContent {
             CreateEvent(
                 onDismissRequest = {},
                 onConfirmation = { event -> confirmedEvent = event },
-                isMock = true
+                isMock = true,
+                properties = TODO(),
+                editEvent = TODO(),
+                currentUser = TODO()
             )
         }
         composeTestRule.onNodeWithText("Add").performClick()
