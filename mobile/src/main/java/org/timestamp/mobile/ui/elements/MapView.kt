@@ -401,7 +401,7 @@ fun MapView(
                                 modifier = Modifier
                                     .size(24.dp)
                             )
-                            val dateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy")
+                            val dateFormatter = DateTimeFormatter.ofPattern("MMM. d, yyyy")
                             Text(
                                 text = isEventShowing!!.arrival.format(dateFormatter)
                             )
