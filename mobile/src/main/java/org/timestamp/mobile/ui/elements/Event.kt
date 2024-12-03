@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Icon
@@ -126,6 +127,8 @@ fun EventBox(
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var isUsersOpen by remember { mutableStateOf(false) }
     var isEditingEvent by remember { mutableStateOf(false) }
+    var loadingDistance by remember { mutableStateOf(false) }
+    var loadingTime by remember { mutableStateOf(false) }
     val now = OffsetDateTime.now(ZoneId.systemDefault())
     val next24Hours = now.plusHours(24)
     val isToday = data.arrival.isBefore(next24Hours)
@@ -430,6 +433,36 @@ fun EventBox(
                 isClickable = true
             )
             if (today) {
+                var distance: Double = 0.0
+                if (user != null) {
+                    if (user.distance != null) {
+                        distance = user.distance!!
+                        loadingDistance = false
+                    } else {
+                        distance = 0.0
+                        loadingDistance = true
+                    }
+                }
+                var time = 0
+                if (user != null) {
+                    if (user.timeEst != null) {
+                        time = ((user.timeEst!! / 1000) / 60).toInt()
+                        loadingDistance = false
+                    } else {
+                        time = 0
+                        loadingTime = true
+                    }
+                }
+                var unitKm = false
+                if (distance >= 1000) {
+                    unitKm = true
+                    distance /= 1000
+                }
+                val userDistance: String = if (unitKm) {
+                    String.format(locale = Locale.getDefault(), "%.1f", distance) + "km"
+                } else {
+                    distance.toInt().toString() + "m"
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -443,31 +476,22 @@ fun EventBox(
                             .size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(2.dp))
-
-                    var distance: Double = 0.0
-                    if (user != null) {
-                        if (user.distance != null) {
-                            distance = user.distance!!
-                        } else {
-                            distance = 0.0
-                        }
-                    }
-                    var unitKm = false
-                    if (distance >= 1000) {
-                        unitKm = true
-                        distance /= 1000
-                    }
-                    val userDistance: String = if (unitKm) {
-                        String.format(locale = Locale.getDefault(), "%.1f", distance) + "km"
+                    if (loadingDistance) {
+                        CircularProgressIndicator(
+                            color = Colors.Black,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(16.dp)
+                        )
                     } else {
-                        distance.toInt().toString() + "m"
+                        Text(
+                            text = userDistance,
+                            color = MaterialTheme.colors.secondary,
+                            fontFamily = ubuntuFontFamily,
+                            fontSize = 14.sp
+                        )
                     }
-                    Text(
-                        text = userDistance,
-                        color = MaterialTheme.colors.secondary,
-                        fontFamily = ubuntuFontFamily,
-                        fontSize = 14.sp
-                    )
                     Spacer(modifier = Modifier.weight(1f))
                     Icon(
                         painter = painterResource(id = R.drawable.car_icon),
@@ -477,20 +501,22 @@ fun EventBox(
                             .size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    var time = 0
-                    if (user != null) {
-                        if (user.timeEst != null) {
-                            time = ((user.timeEst!! / 1000) / 60).toInt()
-                        } else {
-                            time = 0
-                        }
+                    if (loadingTime) {
+                        CircularProgressIndicator(
+                            color = Colors.Black,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(16.dp)
+                        )
+                    } else {
+                        Text(
+                            text = time.toString() + "min",
+                            color = MaterialTheme.colors.secondary,
+                            fontFamily = ubuntuFontFamily,
+                            fontSize = 14.sp
+                        )
                     }
-                    Text(
-                        text = time.toString() + "min",
-                        color = MaterialTheme.colors.secondary,
-                        fontFamily = ubuntuFontFamily,
-                        fontSize = 14.sp
-                    )
                 }
             }
         }
