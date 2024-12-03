@@ -13,6 +13,7 @@ import android.graphics.Shader
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -200,6 +201,20 @@ fun MapView(
         }
     }
 
+    LaunchedEffect(pfpMarker) {
+        if (pfpMarker != null && locationState != null) {
+            // Remove the old marker if it exists
+            userMarker?.remove()
+
+            userMarker = googleMapInstance?.addMarker(
+                MarkerOptions()
+                    .position(LatLng(locationState!!.latitude, locationState!!.longitude))
+                    .icon(pfpMarker)
+                    .title("My Location")
+            )
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -223,21 +238,21 @@ fun MapView(
                         googleMap.uiSettings.isMyLocationButtonEnabled = true
 
                         for (event in eventList) {
-                            googleMap.addMarker(
+                            val marker = googleMap.addMarker(
                                 MarkerOptions()
                                     .position(LatLng(event.latitude, event.longitude))
-                                    .title(event.name)
                                     .icon(BitmapDescriptorFactory.fromBitmap(
                                         BitmapFactory.decodeResource(context.resources, R.drawable.event_location)
                                             .createScaledBitmap(100, 100)
                                     ))
                                     .anchor(0.5f, 1.25f)
                             )
+                            marker?.tag = event.id
                         }
 
                         googleMap.setOnMarkerClickListener { marker ->
                             if (marker.id != userMarker?.id) {
-                                val event = eventList.find { marker.title == it.name }
+                                val event = eventList.find { marker.tag == it.id }
                                 isEventShowing = null
                                 isEventShowing = event
                                 val latLng =
@@ -248,11 +263,7 @@ fun MapView(
                                         // Handle screen coordinates (X, Y)
                                         val screenX = screenLocation.x
                                         val screenY = screenLocation.y
-                                        eventCoordinates = (
-                                                screenX
-                                                        to
-                                                        screenY
-                                                )
+                                        eventCoordinates = (screenX to screenY)
                                     }
                                 }
                             }
@@ -401,7 +412,7 @@ fun MapView(
                                 modifier = Modifier
                                     .size(24.dp)
                             )
-                            val dateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy")
+                            val dateFormatter = DateTimeFormatter.ofPattern("MMM. d, yyyy")
                             Text(
                                 text = isEventShowing!!.arrival.format(dateFormatter)
                             )

@@ -53,6 +53,7 @@ import org.timestamp.mobile.R
 import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import java.util.Locale
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 @Composable
@@ -210,7 +211,10 @@ fun ViewUsers(
                                         .size(28.dp)
                                         .clip(CircleShape)
                                 )
-                                Column {
+                                Column(
+                                    modifier = Modifier
+                                        .width(230.dp)
+                                ) {
                                     Row(
                                         modifier = Modifier
                                             .background(MaterialTheme.colors.primary)
@@ -230,22 +234,28 @@ fun ViewUsers(
                                             color = MaterialTheme.colors.secondary,
                                             overflow = TextOverflow.Ellipsis,
                                             modifier = Modifier
-                                                .width(150.dp)
                                                 .padding(vertical = 3.dp)
+                                                .weight(1f, fill = false)
                                         )
-                                        Text(
-                                            text = suffix,
-                                            fontFamily = ubuntuFontFamily,
-                                            fontSize = 14.sp,
-                                            color = MaterialTheme.colors.secondary,
-                                            modifier = Modifier
-                                        )
+                                        if (suffix.isNotEmpty()) {
+                                            Text(
+                                                text = suffix,
+                                                fontFamily = ubuntuFontFamily,
+                                                fontSize = 14.sp,
+                                                color = MaterialTheme.colors.secondary,
+                                                modifier = Modifier
+                                                    .padding(start = 4.dp)
+                                                    .padding(vertical = 3.dp)
+                                            )
+                                        }
                                     }
                                     Text(
                                         text = user.email,
                                         fontFamily = ubuntuFontFamily,
                                         fontSize = 14.sp,
-                                        color = MaterialTheme.colors.secondary
+                                        color = MaterialTheme.colors.secondary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                                 Spacer(modifier = Modifier.weight(1f))
