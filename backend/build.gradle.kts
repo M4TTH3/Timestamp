@@ -29,8 +29,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.graphhopper.core)
-    implementation("com.google.android.libraries.places:places:2.6.0")
-    implementation("androidx.compose.foundation:foundation:1.5.0")
     implementation(project(":lib"))
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit5)

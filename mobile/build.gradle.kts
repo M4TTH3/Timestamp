@@ -95,6 +95,7 @@ dependencies {
     }
     implementation(libs.androidx.compose.material)
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
     androidTestImplementation(libs.androidx.ui.test.junit4.android)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
