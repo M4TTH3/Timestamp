@@ -25,7 +25,11 @@ class EventsScreenTest {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Screen.Events.name) {
                 composable(Screen.Events.name) {
-                    EventsScreen(isMock = true)
+                    EventsScreen(
+                        isMock = true,
+                        viewModel = TODO(),
+                        currentUser = TODO()
+                    )
                 }
             }
         }
@@ -43,7 +47,11 @@ class EventsScreenTest {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Screen.Events.name) {
                 composable(Screen.Events.name) {
-                    EventsScreen(isMock = true)
+                    EventsScreen(
+                        isMock = true,
+                        viewModel = TODO(),
+                        currentUser = TODO()
+                    )
                 }
             }
         }
@@ -60,7 +68,11 @@ class EventsScreenTest {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Screen.Events.name) {
                 composable(Screen.Events.name) {
-                    EventsScreen(isMock = true)
+                    EventsScreen(
+                        isMock = true,
+                        viewModel = TODO(),
+                        currentUser = TODO()
+                    )
                 }
             }
         }

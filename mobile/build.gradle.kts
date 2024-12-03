@@ -95,6 +95,8 @@ dependencies {
     }
     implementation(libs.androidx.compose.material)
     testImplementation(libs.junit)
+    testImplementation("io.mockk:mockk:1.13.13")
+    androidTestImplementation("io.mockk:mockk-android:1.13.13")
     androidTestImplementation(libs.androidx.ui.test.junit4.android)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

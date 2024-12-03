@@ -39,6 +39,7 @@ junitKtx = "1.2.1"
 playServicesLocation = "21.3.0"
 graphhopper = "10.0"
 composeMaterial = "1.4.0"
+mockito = "5.14.2"
 
 [libraries]
 androidx-activity-compose-v161 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
@@ -98,6 +99,7 @@ androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 graphhopper-core = { group = "com.graphhopper", name = "graphhopper-core", version.ref = "graphhopper" }
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito"}
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }

@@ -170,7 +170,6 @@ fun MapView(
     var selectedText by remember { mutableStateOf("Event Select") }
     var dropTextFieldSize by remember { mutableStateOf(DpSize.Zero)}
     var isEventShowing by remember { mutableStateOf<EventDTO?>(null) }
-
     var pfpMarker by remember { mutableStateOf<BitmapDescriptor?>(null) }
     val pfp = currentUser?.photoUrl
     val loader = ImageLoader(context = LocalContext.current)
@@ -237,12 +236,12 @@ fun MapView(
                         }
 
                         googleMap.setOnMarkerClickListener { marker ->
-                            if (marker.title != "My Location") {
+                            if (marker.id != userMarker?.id) {
                                 val event = eventList.find { marker.title == it.name }
                                 isEventShowing = null
                                 isEventShowing = event
                                 val latLng =
-                                    isEventShowing?.let { LatLng(it.latitude, it.longitude) }  // Example coordinates (replace with your own)
+                                    isEventShowing?.let { LatLng(it.latitude, it.longitude) }
 
                                 if (latLng != null) {
                                     googleMap.projection.toScreenLocation(latLng).let { screenLocation ->
