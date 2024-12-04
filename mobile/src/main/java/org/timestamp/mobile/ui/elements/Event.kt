@@ -286,7 +286,17 @@ fun EventBox(
                         0
                     }
                 }
-                if (now.plusMinutes(time.toLong()).isBefore(data.arrival)) {
+                if (user?.arrived == true) {
+                    Text(
+                        text = "Arrived",
+                        color = Color.Green,
+                        fontFamily = ubuntuFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                    )
+                } else if (now.plusMinutes(time.toLong()).isBefore(data.arrival)) {
                     Text(
                         text = "On time",
                         color = Color.Green,
