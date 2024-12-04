@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.junit.ktx)
     implementation(libs.play.services.location)
+    testImplementation("io.mockk:mockk:1.13.7")
     implementation(project(":lib"))
     implementation("com.github.vsnappy1:ComposeDatePicker:2.2.0") {
         exclude(group = "androidx.compose.material3", module = "material3")
