@@ -6,6 +6,8 @@ import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.Shader
 import android.os.Bundle
 import android.util.Log
@@ -29,8 +31,11 @@ import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldColors
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,6 +73,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseUser
@@ -78,8 +84,10 @@ import org.timestamp.mobile.R
 import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.models.LocationViewModel
+import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.screens.ubuntuFontFamily
 import org.timestamp.mobile.ui.theme.Colors
+import java.sql.Time
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -131,6 +139,18 @@ fun Bitmap.toCircularBitmap(): Bitmap {
     return output
 }
 
+fun Bitmap.toWhiteBitmap(): Bitmap {
+    val mutableBitmap = copy(Bitmap.Config.ARGB_8888, true)
+    // Create a canvas to draw on the mutable bitmap
+    val canvas = Canvas(mutableBitmap)
+    val paint = Paint().apply {
+        colorFilter = PorterDuffColorFilter(android.graphics.Color.WHITE, PorterDuff.Mode.SRC_IN)
+    }
+    // Draw the original bitmap onto the canvas using the paint
+    canvas.drawBitmap(this, 0f, 0f, paint)
+    return mutableBitmap
+}
+
 fun Bitmap.createScaledBitmap(newWidth: Int, newHeight: Int): Bitmap {
     return Bitmap.createScaledBitmap(this, newWidth, newHeight, false)
 }
@@ -141,6 +161,8 @@ fun MapView(
     locationViewModel: LocationViewModel = viewModel(LocalContext.current as TimestampActivity),
     currentUser: FirebaseUser?
 ) {
+    val themeViewModel: ThemeViewModel = viewModel(LocalContext.current as TimestampActivity)
+
     var googleMapInstance: GoogleMap? by remember { mutableStateOf(null) }
     var userMarker: Marker? by remember { mutableStateOf(null) }
 
@@ -152,6 +174,8 @@ fun MapView(
     val locationState by locationViewModel.location.collectAsState()
     val userLocation : LocationDTO? = locationState
     var eventCoordinates by remember { mutableStateOf(0 to 0) }
+
+    val darkThemeState by themeViewModel.isDarkTheme.collectAsState()
 
     val cameraPositionState = rememberCameraPositionState {
         position = userLocation?.let { CameraPosition.fromLatLngZoom(LatLng(userLocation.latitude, userLocation.longitude), 12f) } ?:
@@ -212,7 +236,7 @@ fun MapView(
         modifier = Modifier
             .fillMaxSize()
             .padding(bottom = 64.dp)
-            .background(Colors.White)
+            .background(MaterialTheme.colors.primary)
             .pointerInput(Unit) {
                 detectTapGestures {  }
             }
@@ -226,18 +250,22 @@ fun MapView(
                     onResume()
                     getMapAsync(OnMapReadyCallback { googleMap ->
                         googleMapInstance = googleMap
-
+                        googleMap.setMapStyle(
+                            MapStyleOptions.loadRawResourceStyle(
+                                context, if (darkThemeState) R.raw.darkmap else R.raw.lightmap
+                            )
+                        )
                         googleMap.uiSettings.isZoomControlsEnabled = true
                         googleMap.uiSettings.isMyLocationButtonEnabled = true
 
                         for (event in eventList) {
+                            var bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.event_location)
+                            if (darkThemeState) bitmap = bitmap.toWhiteBitmap()
+                            bitmap = bitmap.createScaledBitmap(100, 100)
                             val marker = googleMap.addMarker(
                                 MarkerOptions()
                                     .position(LatLng(event.latitude, event.longitude))
-                                    .icon(BitmapDescriptorFactory.fromBitmap(
-                                        BitmapFactory.decodeResource(context.resources, R.drawable.event_location)
-                                            .createScaledBitmap(100, 100)
-                                    ))
+                                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
                                     .anchor(0.5f, 1.25f)
                             )
                             marker?.tag = event.id
@@ -315,8 +343,8 @@ fun MapView(
                 }
                 .offset(x = (-100).dp, y = (-170).dp)
                 .shadow(5.dp, shape = RoundedCornerShape(32.dp))
-                .background(color = Colors.White, shape = RoundedCornerShape(32.dp))
-                .border(width = 3.dp, color = Colors.Black, shape = RoundedCornerShape(32.dp))
+                .background(color = MaterialTheme.colors.primary, shape = RoundedCornerShape(32.dp))
+                .border(width = 3.dp, color = MaterialTheme.colors.secondary, shape = RoundedCornerShape(32.dp))
                 .height(170.dp)
             ) {
                 Column(
@@ -330,14 +358,16 @@ fun MapView(
                         fontFamily = ubuntuFontFamily,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colors.secondary
                     )
                     Text(
                         text = isEventShowing!!.address,
                         fontSize = 16.sp,
                         fontFamily = ubuntuFontFamily,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colors.secondary
                     )
                     Divider(
                         modifier = Modifier
@@ -378,7 +408,8 @@ fun MapView(
                             }
                             Text(
                                 text = userDistance,
-                                fontFamily = ubuntuFontFamily
+                                fontFamily = ubuntuFontFamily,
+                                color = MaterialTheme.colors.secondary
                             )
                             Icon(painter = painterResource(R.drawable.clock_icon),
                                 contentDescription = "ETA",
@@ -395,7 +426,8 @@ fun MapView(
                                 }
                             }
                             Text(
-                                text = "$time" + "min"
+                                text = "$time" + "min",
+                                color = MaterialTheme.colors.secondary
                             )
                         } else {
                             Icon(
@@ -407,7 +439,8 @@ fun MapView(
                             )
                             val dateFormatter = DateTimeFormatter.ofPattern("MMM. d, yyyy")
                             Text(
-                                text = isEventShowing!!.arrival.format(dateFormatter)
+                                text = isEventShowing!!.arrival.format(dateFormatter),
+                                color = MaterialTheme.colors.secondary
                             )
                         }
                     }
@@ -427,7 +460,7 @@ fun MapView(
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
                     .height(50.dp)
-                    .background(Colors.White, shape = RoundedCornerShape(32.dp))
+                    .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(32.dp))
                     .clickable {
                         isDropdownExpanded = !isDropdownExpanded
                     }
@@ -440,6 +473,10 @@ fun MapView(
                         }
                     },
                 shape = RoundedCornerShape(32.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    unfocusedBorderColor = MaterialTheme.colors.background,
+                    textColor = MaterialTheme.colors.secondary
+                ),
                 trailingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.arrow_drop_down),
@@ -479,7 +516,7 @@ fun MapView(
                         ) {
                             Text(
                                 text = event.name,
-                                color = Colors.Black
+                                color = MaterialTheme.colors.secondary
                             )
                         }
                     }

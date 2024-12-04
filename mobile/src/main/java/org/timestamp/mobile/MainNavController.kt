@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
@@ -248,7 +249,7 @@ class MainNavController(
                     modifier = Modifier
                         .height(3.dp)
                         .fillMaxWidth()
-                        .background(Color.Black)
+                        .background(MaterialTheme.colors.secondary)
                         .align(Alignment.TopCenter)
                 )
                 Row(
