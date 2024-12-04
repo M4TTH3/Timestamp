@@ -260,6 +260,28 @@ fun CreateEvent(
                 cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
                 query = locationName
             }
+        } else {
+            eventName = editEvent.name
+            val date = Date.from(editEvent.arrival.toInstant())
+            selectedDate = dateFormatter.format(date)
+            selectedTime = timeFormatter.format(date)
+            selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)
+            fetchLocationDetails(
+                context = context,
+                latLng = LatLng(editEvent.latitude, editEvent.longitude),
+                onResult = { name, address ->
+                    locationName = name
+                    locationAddress = address
+                },
+                onError = { error ->
+                    // Handle any errors during location detail retrieval
+                    locationName = "Unknown Location"
+                    locationAddress = "Failed to fetch address"
+                    error.printStackTrace()
+                }
+            )
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
+            query = locationName
         }
     }
     LaunchedEffect(locationName) {
@@ -385,10 +407,11 @@ fun CreateEvent(
                        fontFamily = ubuntuFontFamily,
                        fontWeight = FontWeight.Bold) },
                    singleLine = true,
+                   enabled = if (currentUser?.uid == editEvent?.creator) true else false,
                    colors = TextFieldDefaults.textFieldColors(
                        backgroundColor = Color.Transparent,
                        textColor = MaterialTheme.colors.secondary
-                   )
+                   ),
                )
                Spacer(modifier = Modifier.height(12.dp))
                Row(
@@ -413,7 +436,11 @@ fun CreateEvent(
                            )
                        },
                        trailingIcon = {
-                           IconButton(onClick = {eventDate = !eventDate}) {
+                           IconButton(onClick = {
+                               if (currentUser?.uid == editEvent?.creator) {
+                                   eventDate = !eventDate
+                               }
+                           }) {
                                Icon(
                                    imageVector = Icons.Default.DateRange,
                                    contentDescription = "select date"
@@ -432,7 +459,11 @@ fun CreateEvent(
                            .shadow(4.dp, shape = RoundedCornerShape(16.dp), ambientColor = Color(0x33000000))
                            .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
                            .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(16.dp))
-                           .clickable { eventTime = !eventTime },
+                           .clickable {
+                               if (currentUser?.uid == editEvent?.creator) {
+                                   eventTime = !eventTime
+                               }
+                                      },
                        enabled = false,
                        value = selectedTime,
                        onValueChange = {selectedTime = it},
@@ -489,7 +520,8 @@ fun CreateEvent(
                            focusedIndicatorColor = Color.Transparent,
                            unfocusedIndicatorColor = Color.Transparent,
                            placeholderColor = MaterialTheme.colors.secondary.copy(alpha = ContentAlpha.medium)
-                       )
+                       ),
+                       enabled = currentUser?.uid == editEvent?.creator
                    )
                    if (predictions.isNotEmpty()) {
                        LazyColumn(
@@ -581,23 +613,25 @@ fun CreateEvent(
                        onMapClick = { latLng ->
                            selectedLocation = latLng
                            isLoadingLocation = true
-                           fetchLocationDetails(
-                               context = context,
-                               latLng = latLng,
-                               onResult = { name, address ->
-                                   locationName = name
-                                   locationAddress = address
-                                   isLoadingLocation = false
-                                   isSearchActive = false
-                                   query = locationName
-                               },
-                               onError = { error ->
-                                   Log.e("CreateEvent", "Error fetching location: ${error.message}")
-                                   locationName = "Failed to fetch location"
-                                   locationAddress = ""
-                                   isLoadingLocation = false
-                               }
-                           )
+                           if (currentUser?.uid == editEvent?.creator) {
+                               fetchLocationDetails(
+                                   context = context,
+                                   latLng = latLng,
+                                   onResult = { name, address ->
+                                       locationName = name
+                                       locationAddress = address
+                                       isLoadingLocation = false
+                                       isSearchActive = false
+                                       query = locationName
+                                   },
+                                   onError = { error ->
+                                       Log.e("CreateEvent", "Error fetching location: ${error.message}")
+                                       locationName = "Failed to fetch location"
+                                       locationAddress = ""
+                                       isLoadingLocation = false
+                                   }
+                               )
+                           }
                        }
                    ) {
                        selectedLocation?.let {
