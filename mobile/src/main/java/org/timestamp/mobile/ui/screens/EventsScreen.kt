@@ -23,8 +23,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +57,7 @@ fun EventsScreen(
 ) {
 
     val eventListState = viewModel.events.collectAsState()
-    val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
+    val eventList: List<EventDTO> = eventListState.value
 
     val pendingEventState = viewModel.pendingEvent.collectAsState()
     val pendingEvent: EventDTO? = pendingEventState.value
@@ -124,18 +127,18 @@ fun EventsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     val now = OffsetDateTime.now(ZoneId.systemDefault())
-                    eventList.sortBy { it.arrival }
+                    val newEventList = eventList.sortedBy { it.arrival }
                     val next24Hours = now.plusHours(24)
 
-                    val next24HourEvents = eventListState.value.filter { event ->
+                    val next24HourEvents = newEventList.filter { event ->
                         event.arrival.isBefore(next24Hours)
                     }
-                    val otherEvents = eventListState.value.filter { event ->
+                    val otherEvents = newEventList.filter { event ->
                         event.arrival.isAfter(next24Hours)
                     }
                     item {
                         Text(
-                            text = "Events Today",
+                            text = "Events Soon",
                             fontFamily = ubuntuFontFamily,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colors.secondary,
@@ -155,7 +158,7 @@ fun EventsScreen(
                     } else {
                         item {
                             Text(
-                                text = "No Events Today!",
+                                text = "No Events Soon!",
                                 fontFamily = ubuntuFontFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 36.sp,

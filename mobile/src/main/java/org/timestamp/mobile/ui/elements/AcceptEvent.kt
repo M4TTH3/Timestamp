@@ -55,7 +55,9 @@ fun AcceptEvent(
             shape = RoundedCornerShape(32.dp)
         ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .background(MaterialTheme.colors.primary)
             ) {
                 Text(
                     modifier = Modifier
