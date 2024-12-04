@@ -407,7 +407,7 @@ fun CreateEvent(
                        fontFamily = ubuntuFontFamily,
                        fontWeight = FontWeight.Bold) },
                    singleLine = true,
-                   enabled = if (currentUser?.uid == editEvent?.creator) true else false,
+                   enabled = if (currentUser?.uid == editEvent?.creator || editEvent == null) true else false,
                    colors = TextFieldDefaults.textFieldColors(
                        backgroundColor = Color.Transparent,
                        textColor = MaterialTheme.colors.secondary
@@ -437,7 +437,7 @@ fun CreateEvent(
                        },
                        trailingIcon = {
                            IconButton(onClick = {
-                               if (currentUser?.uid == editEvent?.creator) {
+                               if (currentUser?.uid == editEvent?.creator || editEvent == null) {
                                    eventDate = !eventDate
                                }
                            }) {
@@ -460,7 +460,7 @@ fun CreateEvent(
                            .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
                            .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(16.dp))
                            .clickable {
-                               if (currentUser?.uid == editEvent?.creator) {
+                               if (currentUser?.uid == editEvent?.creator || editEvent == null) {
                                    eventTime = !eventTime
                                }
                                       },
@@ -521,7 +521,7 @@ fun CreateEvent(
                            unfocusedIndicatorColor = Color.Transparent,
                            placeholderColor = MaterialTheme.colors.secondary.copy(alpha = ContentAlpha.medium)
                        ),
-                       enabled = currentUser?.uid == editEvent?.creator
+                       enabled = currentUser?.uid == editEvent?.creator || editEvent == null
                    )
                    if (predictions.isNotEmpty()) {
                        LazyColumn(
@@ -613,7 +613,7 @@ fun CreateEvent(
                        onMapClick = { latLng ->
                            selectedLocation = latLng
                            isLoadingLocation = true
-                           if (currentUser?.uid == editEvent?.creator) {
+                           if (currentUser?.uid == editEvent?.creator || editEvent == null) {
                                fetchLocationDetails(
                                    context = context,
                                    latLng = latLng,
