@@ -8,7 +8,10 @@
 
 [Team Contract](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Team-Contract)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 [Project Proposal](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Project-Proposal)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[Design Proposal](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/design-proposal)
+[Design Proposal](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/design-proposal)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[User Documentation](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/User-Documentation)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[Design Diagrams](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Design-Diagrams)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[Team Reflection](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Team-Reflection)
 </div>
 
 
