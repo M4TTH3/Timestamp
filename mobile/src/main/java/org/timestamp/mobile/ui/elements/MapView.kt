@@ -477,6 +477,7 @@ fun MapView(
                                 LatLng(event.latitude, event.longitude),
                                 12f
                             )
+                            isEventShowing = event
                             Log.d("CAMERA UPDATE", "${event.latitude}, ${event.longitude}")
                             isDropdownExpanded = false
                         },
