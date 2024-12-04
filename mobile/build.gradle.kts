@@ -1,7 +1,7 @@
 import com.android.build.api.dsl.Packaging
 
 group = "org.timestamp"
-version = "1.3.0"
+version = "2.0.0"
 
 plugins {
     alias(libs.plugins.android.application)
@@ -89,7 +89,7 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.junit.ktx)
     implementation(libs.play.services.location)
-    testImplementation("io.mockk:mockk:1.13.7")
+    testImplementation(libs.mockk.v1137)
     implementation(project(":lib"))
     implementation("com.github.vsnappy1:ComposeDatePicker:2.2.0") {
         exclude(group = "androidx.compose.material3", module = "material3")
