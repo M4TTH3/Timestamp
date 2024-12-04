@@ -10,6 +10,7 @@ mapsCompose = "2.11.0"
 materialVersion = "1.7.3"
 mockk = "1.13.13"
 mockkAndroid = "1.13.13"
+mockkVersion = "1.13.7"
 places = "4.1.0"
 playServicesMapsVersion = "18.1.0"
 serialization-version = "1.9.0"
@@ -76,6 +77,7 @@ kotlinx-datetime = { module = "io.github.boguszpawlowski.composecalendar:kotlinx
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockkAndroid" }
+mockk-v1137 = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 play-services-maps-v1810 = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMapsVersion" }
 spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-boot-starter-web", version.ref = "spring-boot" }
