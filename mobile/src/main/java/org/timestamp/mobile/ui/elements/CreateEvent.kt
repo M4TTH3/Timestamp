@@ -236,28 +236,30 @@ fun CreateEvent(
     }
 
     if (editEvent != null) {
-        LaunchedEffect(editEvent) {
-            eventName = editEvent.name
-            val date = Date.from(editEvent.arrival.toInstant())
-            selectedDate = dateFormatter.format(date)
-            selectedTime = timeFormatter.format(date)
-            selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)
-            fetchLocationDetails(
-                context = context,
-                latLng = LatLng(editEvent.latitude, editEvent.longitude),
-                onResult = { name, address ->
-                    locationName = name
-                    locationAddress = address
-                },
-                onError = { error ->
-                    // Handle any errors during location detail retrieval
-                    locationName = "Unknown Location"
-                    locationAddress = "Failed to fetch address"
-                    error.printStackTrace()
-                }
-            )
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
-            query = locationName
+        if (currentUser?.uid == editEvent.creator) {
+            LaunchedEffect(editEvent) {
+                eventName = editEvent.name
+                val date = Date.from(editEvent.arrival.toInstant())
+                selectedDate = dateFormatter.format(date)
+                selectedTime = timeFormatter.format(date)
+                selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)
+                fetchLocationDetails(
+                    context = context,
+                    latLng = LatLng(editEvent.latitude, editEvent.longitude),
+                    onResult = { name, address ->
+                        locationName = name
+                        locationAddress = address
+                    },
+                    onError = { error ->
+                        // Handle any errors during location detail retrieval
+                        locationName = "Unknown Location"
+                        locationAddress = "Failed to fetch address"
+                        error.printStackTrace()
+                    }
+                )
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
+                query = locationName
+            }
         }
     }
     LaunchedEffect(locationName) {
