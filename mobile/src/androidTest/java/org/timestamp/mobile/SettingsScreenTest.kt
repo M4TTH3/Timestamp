@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseUser
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.timestamp.mobile.ui.screens.SettingsScreen
 
 // Unit tests for the Settings screen
 @RunWith(AndroidJUnit4::class)

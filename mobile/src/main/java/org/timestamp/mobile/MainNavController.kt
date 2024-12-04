@@ -56,6 +56,11 @@ import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.models.LocationViewModel
 import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.elements.BackgroundLocationDialog
+import org.timestamp.mobile.ui.screens.CalendarScreen
+import org.timestamp.mobile.ui.screens.EventsScreen
+import org.timestamp.mobile.ui.screens.HomeScreen
+import org.timestamp.mobile.ui.screens.LoginScreen
+import org.timestamp.mobile.ui.screens.SettingsScreen
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import org.timestamp.mobile.utility.PermissionProvider
 

@@ -1,19 +1,14 @@
 package org.timestamp.mobile.ui.elements
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Paint.Align
 import android.graphics.Path
-import android.graphics.Point
 import android.graphics.Shader
-import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -60,9 +55,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.graphics.drawable.toBitmap
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.ImageLoader
 import coil.request.ImageRequest
@@ -85,7 +78,7 @@ import org.timestamp.mobile.R
 import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.models.LocationViewModel
-import org.timestamp.mobile.ubuntuFontFamily
+import org.timestamp.mobile.ui.screens.ubuntuFontFamily
 import org.timestamp.mobile.ui.theme.Colors
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
