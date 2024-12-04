@@ -1,4 +1,4 @@
-package org.timestamp.mobile
+package org.timestamp.mobile.ui.screens
 
 // Imports...
 import android.util.Log
@@ -46,6 +46,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseUser
+import org.timestamp.mobile.R
+import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.theme.Colors

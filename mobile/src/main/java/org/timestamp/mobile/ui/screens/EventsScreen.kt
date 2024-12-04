@@ -1,4 +1,4 @@
-package org.timestamp.mobile
+package org.timestamp.mobile.ui.screens
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -34,8 +34,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.mobile.R
+import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.models.EventViewModel
-import org.timestamp.mobile.models.LocationViewModel
 import org.timestamp.mobile.ui.elements.AcceptEvent
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox

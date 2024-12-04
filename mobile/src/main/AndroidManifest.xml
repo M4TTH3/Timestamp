@@ -30,7 +30,9 @@
         <activity
             android:name=".TimestampActivity"
             android:exported="true"
-            android:label="Timestamp">
+            android:label="Timestamp"
+            android:screenOrientation="portrait"
+            android:resizeableActivity="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

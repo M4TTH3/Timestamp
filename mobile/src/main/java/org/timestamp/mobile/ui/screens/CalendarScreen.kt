@@ -1,4 +1,4 @@
-package org.timestamp.mobile
+package org.timestamp.mobile.ui.screens
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.mobile.R
+import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.theme.Colors

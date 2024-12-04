@@ -1,4 +1,4 @@
-package org.timestamp.mobile
+package org.timestamp.mobile.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.models.EventViewModel
 
 @Composable
