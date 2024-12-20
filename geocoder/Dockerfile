@@ -11,6 +11,9 @@ RUN wget https://github.com/komoot/photon/releases/download/${PHOTON_VERSION}/ph
 
 COPY entrypoint.sh /app/entrypoint.sh
 
+# Give execution permission
+RUN chmod +x /app/entrypoint.sh
+
 # Expose the port
 EXPOSE 2322
 
