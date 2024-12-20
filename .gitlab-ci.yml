@@ -18,7 +18,7 @@ build_backend_and_geocoder_docker_image:
     # Create the firebase admin key file
     - echo "$FIREBASE_ADMIN_KEY_BASE64" | base64 -d > backend/src/main/resources/firebase-admin-key.json
   script:
-    - docker build -t $IMAGE_TAG backend
+    - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
     - docker build -t $IMAGE_TAG_GEOCODER geocoder
     - docker push $IMAGE_TAG_GEOCODER
