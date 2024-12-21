@@ -34,12 +34,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -51,6 +53,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import org.timestamp.mobile.models.EventViewModel
@@ -74,12 +77,9 @@ enum class Screen {
 }
 
 class MainNavController(
-    private val context: Context,
-    private val eventViewModel: EventViewModel,
-    private val themeViewModel: ThemeViewModel,
-    private val locationViewModel: LocationViewModel
+    private val context: Context
 ) {
-    private val auth = eventViewModel.auth
+    private val auth = FirebaseAuth.getInstance()
     private val credentialManager: CredentialManager = CredentialManager.create(context)
     private val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption
         .Builder(context.getString(R.string.web_client_id))
@@ -91,7 +91,10 @@ class MainNavController(
     /**
      * Initialize auth login with firebase, prompting a user flow if required
      */
-    private suspend fun handleSignIn(navController : NavController) {
+    private suspend fun handleSignIn(
+        navController : NavController,
+        eventViewModel: EventViewModel
+    ) {
         try {
             val result = credentialManager.getCredential(
                 request = request,
@@ -130,6 +133,8 @@ class MainNavController(
     @OptIn(ExperimentalPermissionsApi::class)
     @Composable
     fun TimestampNavController() {
+        val eventViewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity)
+        val themeViewModel: ThemeViewModel = viewModel(LocalContext.current as TimestampActivity)
         val permissions = rememberMultiplePermissionsState(PermissionProvider.PERMISSIONS)
         val bgPermission = rememberPermissionState(PermissionProvider.BACKGROUND_LOCATION)
         val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
@@ -142,7 +147,7 @@ class MainNavController(
             permissions.launchMultiplePermissionRequest()
         }
 
-        fun signIn() { scope.launch { handleSignIn(navController) } }
+        fun signIn() { scope.launch { handleSignIn(navController, eventViewModel) } }
         fun signOut() {
             auth.signOut()
             eventViewModel.stopGetEventsPolling()

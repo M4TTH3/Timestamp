@@ -10,7 +10,7 @@ import org.timestamp.backend.repository.TimestampUserRepository
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventLinkDTO
 import org.timestamp.lib.dto.NotificationDTO
-import org.timestamp.lib.dto.utcNow
+import org.timestamp.lib.util.utcNow
 import java.util.*
 
 

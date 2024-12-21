@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.firebase.auth.FirebaseAuth
 import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.models.EventViewModel
 
@@ -67,7 +68,7 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            viewModel.auth.currentUser?.let { user ->
+            FirebaseAuth.getInstance().currentUser?.let { user ->
                 user.photoUrl?.let {
                     AsyncImage(
                         modifier = Modifier

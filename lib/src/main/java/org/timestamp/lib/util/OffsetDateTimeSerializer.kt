@@ -1,4 +1,4 @@
-package org.timestamp.lib.dto
+package org.timestamp.lib.util
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

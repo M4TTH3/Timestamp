@@ -15,7 +15,7 @@ import java.util.UUID
  * The link id is used to join an event.
  */
 @Entity
-@Table(name = "event_links", schema = "public")
+@Table(name = "event_links")
 class EventLink (
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

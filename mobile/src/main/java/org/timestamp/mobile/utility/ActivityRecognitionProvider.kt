@@ -17,6 +17,8 @@ import com.google.android.gms.location.ActivityTransitionResult
 import com.google.android.gms.location.DetectedActivity
 import org.timestamp.lib.dto.TravelMode
 import org.timestamp.mobile.ACTION_DETECTED_ACTIVITY
+import org.timestamp.mobile.repository.ErrorRepository
+import org.timestamp.mobile.repository.StateRepository
 
 class ActivityRecognitionProvider(
     private val context: Context

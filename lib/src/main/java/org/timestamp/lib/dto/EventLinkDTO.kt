@@ -1,6 +1,7 @@
 package org.timestamp.lib.dto
 
 import kotlinx.serialization.Serializable
+import org.timestamp.lib.util.UUIDSerializer
 import java.util.UUID
 
 @Serializable

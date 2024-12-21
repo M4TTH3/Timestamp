@@ -7,7 +7,7 @@ import java.time.OffsetDateTime
 
 
 @Entity
-@Table(name = "user_events", schema = "public")
+@Table(name = "user_events")
 class UserEvent(
     @EmbeddedId
     val id: UserEventKey = UserEventKey(),

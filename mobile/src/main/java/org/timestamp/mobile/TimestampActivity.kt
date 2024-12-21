@@ -18,22 +18,24 @@ import org.timestamp.mobile.models.EventViewModel
 import org.timestamp.mobile.models.LocationViewModel
 import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.utility.GoogleAPI
+import org.timestamp.mobile.utility.KtorClient
 
 class TimestampActivity : ComponentActivity() {
 
     private lateinit var googleAPI: GoogleAPI
     private lateinit var mainNavController: MainNavController
     private val eventViewModel: EventViewModel by viewModels()
-    private val themeViewModel: ThemeViewModel by viewModels()
     private val locationViewModel: LocationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        KtorClient.init(this) // Initialize the Ktor client
+
         // Setup variables
         googleAPI = GoogleAPI(this)
-        mainNavController = MainNavController(this.applicationContext, eventViewModel, themeViewModel, locationViewModel)
+        mainNavController = MainNavController(this.applicationContext)
 
         // Setup Places API
         val apiKey = packageManager
