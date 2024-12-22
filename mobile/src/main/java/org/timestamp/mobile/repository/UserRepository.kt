@@ -1,12 +1,10 @@
 package org.timestamp.mobile.repository
 
 import io.ktor.client.request.post
-import kotlinx.coroutines.launch
 import org.timestamp.lib.dto.UserDTO
 import org.timestamp.mobile.utility.KtorClient.bodyOrNull
-import org.timestamp.mobile.utility.KtorClient.success
 
-class UserRepository: ViewModelRepository<UserDTO?>(
+class UserRepository: BaseRepository<UserDTO?>(
     null,
     "User Repository"
 ) {
@@ -20,7 +18,7 @@ class UserRepository: ViewModelRepository<UserDTO?>(
         handler(tag) {
             val endpoint = "/users/me"
             val body: UserDTO? = ktorClient.post(endpoint).bodyOrNull()
-            body?.let { set(it) }
+            body?.let { state = it }
         }
     }
 

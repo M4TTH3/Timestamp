@@ -50,10 +50,9 @@ import kotlinx.coroutines.launch
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import org.timestamp.mobile.R
-import org.timestamp.mobile.models.EventViewModel
+import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import java.util.Locale
-import kotlin.math.max
 import kotlin.math.roundToInt
 
 @Composable

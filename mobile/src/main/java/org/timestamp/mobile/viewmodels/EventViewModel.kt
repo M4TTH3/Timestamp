@@ -1,4 +1,4 @@
-package org.timestamp.mobile.models
+package org.timestamp.mobile.viewmodels
 
 import android.app.Application
 import android.net.Uri

@@ -1,7 +1,5 @@
 package org.timestamp.mobile.repository
 
-import android.util.Log
-import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
@@ -10,10 +8,9 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import org.timestamp.lib.dto.EventDTO
-import org.timestamp.mobile.utility.KtorClient.bodyOrNull
 import org.timestamp.mobile.utility.KtorClient.success
 
-class EventRepository private constructor(): ViewModelRepository<List<EventDTO>>(
+class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
     emptyList(),
     "Events Repository"
 ) {
@@ -66,29 +63,29 @@ class EventRepository private constructor(): ViewModelRepository<List<EventDTO>>
 
     /* --- Operations on the event list -- Update on Main Thread for UI components --- */
 
-    suspend fun update(event: EventDTO) {
-        val newList = item.value.map { if (it.id == event.id) event else it }
+    fun update(event: EventDTO) {
+        val newList = state.map { if (it.id == event.id) event else it }
         set(newList, false)
     }
 
-    suspend fun delete(eventId: Long) {
-        val newList = item.value.filter { it.id != eventId }
+    fun delete(eventId: Long) {
+        val newList = state.filter { it.id != eventId }
         set(newList, false)
     }
 
-    suspend fun add(event: EventDTO) {
-        val newList = item.value + event
-        set(newList, true)
+    fun add(event: EventDTO) {
+        val newList = state + event
+        set(newList)
     }
 
     /**
      * Set the events list and update the UI state.
      * @param events List of events to set
-     * @param sort Sort the list by arrival time
+     * @param sort Sort the list by arrival time (default: true)
      */
-    suspend fun set(events: List<EventDTO>, sort: Boolean) {
+    fun set(events: List<EventDTO>, sort: Boolean = true) {
         val newList = if (sort) events.sortedBy { it.arrival } else events
-        set(newList)
+        state = newList
     }
 
     /* --- Companion Object - Singleton invocation --- */

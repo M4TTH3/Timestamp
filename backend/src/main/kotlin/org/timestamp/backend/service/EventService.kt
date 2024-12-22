@@ -137,8 +137,8 @@ class EventService(
      * For now, we are only showing the closest event upcoming. We can change this later.
      * We will return the event and the distance to the event.
      */
-    fun getNotifications(firebaseUser: FirebaseUser): NotificationDTO {
-        val event = db.findNextEventByUser(firebaseUser.uid) ?: throw EventNotFoundException()
+    fun getNotifications(firebaseUser: FirebaseUser): NotificationDTO? {
+        val event = db.findNextEventByUser(firebaseUser.uid) ?: return null
         val userEvent = event.userEvents.firstOrNull { it.id.userId == firebaseUser.uid }
         userEvent ?: throw InternalServerErrorException()
 

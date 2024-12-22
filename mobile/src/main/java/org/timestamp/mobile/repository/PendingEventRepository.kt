@@ -8,11 +8,10 @@ import io.ktor.client.request.post
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventLinkDTO
 import org.timestamp.mobile.utility.KtorClient
-import org.timestamp.mobile.utility.KtorClient.bodyOrNull
 import org.timestamp.mobile.utility.KtorClient.success
 import java.util.UUID
 
-class PendingEventRepository private constructor(): ViewModelRepository<EventDTO?>(
+class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
     null,
     "Pending Event Repository"
 ) {
@@ -70,7 +69,7 @@ class PendingEventRepository private constructor(): ViewModelRepository<EventDTO
             if (!res.success(tag)) return@handler
 
             val event = res.body<EventDTO>()
-            item.value = event
+            state = event
             Log.d(tag, "Link UUID: $uuid, Event: $event")
         }
     }
@@ -92,7 +91,7 @@ class PendingEventRepository private constructor(): ViewModelRepository<EventDTO
     fun cancelPendingEvent() {
         // Reset the pending events, so the user won't be re-prompted.
         pendingEventLink = null
-        item.value = null
+        state = null
     }
 
     companion object {

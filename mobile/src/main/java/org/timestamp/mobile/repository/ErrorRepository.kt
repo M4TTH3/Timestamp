@@ -4,8 +4,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * A global error state repository for the app. Errors on the global level
+ * are stored here.
+ */
 class ErrorRepository private constructor() : StateRepository<Throwable?> {
-
     private val error = MutableStateFlow<Throwable?>(null)
 
     override fun get(): StateFlow<Throwable?> = error.asStateFlow()

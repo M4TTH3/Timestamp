@@ -1,10 +1,10 @@
 package org.timestamp.mobile
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,30 +18,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -56,9 +54,6 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
-import org.timestamp.mobile.models.EventViewModel
-import org.timestamp.mobile.models.LocationViewModel
-import org.timestamp.mobile.models.ThemeViewModel
 import org.timestamp.mobile.ui.elements.BackgroundLocationDialog
 import org.timestamp.mobile.ui.screens.CalendarScreen
 import org.timestamp.mobile.ui.screens.EventsScreen
@@ -67,6 +62,8 @@ import org.timestamp.mobile.ui.screens.LoginScreen
 import org.timestamp.mobile.ui.screens.SettingsScreen
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import org.timestamp.mobile.utility.PermissionProvider
+import org.timestamp.mobile.viewmodels.EventViewModel
+import org.timestamp.mobile.viewmodels.ThemeViewModel
 
 enum class Screen {
     Login,
@@ -77,12 +74,14 @@ enum class Screen {
 }
 
 class MainNavController(
-    private val context: Context
+    private val activity: TimestampActivity
 ) {
     private val auth = FirebaseAuth.getInstance()
-    private val credentialManager: CredentialManager = CredentialManager.create(context)
+    private val eventViewModel: EventViewModel by activity.viewModels()
+    private val themeViewModel: ThemeViewModel by activity.viewModels()
+    private val credentialManager: CredentialManager = CredentialManager.create(activity)
     private val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption
-        .Builder(context.getString(R.string.web_client_id))
+        .Builder(activity.getString(R.string.web_client_id))
         .build()
     private val request: GetCredentialRequest = GetCredentialRequest.Builder()
         .addCredentialOption(signInWithGoogleOption)
@@ -92,13 +91,12 @@ class MainNavController(
      * Initialize auth login with firebase, prompting a user flow if required
      */
     private suspend fun handleSignIn(
-        navController : NavController,
-        eventViewModel: EventViewModel
+        navController : NavController
     ) {
         try {
             val result = credentialManager.getCredential(
                 request = request,
-                context = context
+                context = activity
             )
             val credential = result.credential
 
@@ -133,8 +131,6 @@ class MainNavController(
     @OptIn(ExperimentalPermissionsApi::class)
     @Composable
     fun TimestampNavController() {
-        val eventViewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity)
-        val themeViewModel: ThemeViewModel = viewModel(LocalContext.current as TimestampActivity)
         val permissions = rememberMultiplePermissionsState(PermissionProvider.PERMISSIONS)
         val bgPermission = rememberPermissionState(PermissionProvider.BACKGROUND_LOCATION)
         val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
@@ -147,7 +143,7 @@ class MainNavController(
             permissions.launchMultiplePermissionRequest()
         }
 
-        fun signIn() { scope.launch { handleSignIn(navController, eventViewModel) } }
+        fun signIn() { scope.launch { handleSignIn(navController) } }
         fun signOut() {
             auth.signOut()
             eventViewModel.stopGetEventsPolling()
@@ -194,10 +190,10 @@ class MainNavController(
                                 // Need the user to update manually in settings
                                 // after many denials
                                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                    data = Uri.fromParts("package", context.packageName, null)
+                                    data = Uri.fromParts("package", activity.packageName, null)
                                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 }
-                                context.startActivity(intent)
+                                activity.startActivity(intent)
                             }
                         },
                         continueText = if (permissionGranted) "Continue" else "Settings",
@@ -328,12 +324,12 @@ class MainNavController(
     }
 
     private fun startLocationService() {
-        val serviceIntent = Intent(context, TimestampService::class.java)
-        context.startService(serviceIntent)
+        val serviceIntent = Intent(activity, TimestampService::class.java)
+        activity.startService(serviceIntent)
     }
 
     private fun clearLocationService() {
-        val serviceIntent = Intent(context, TimestampService::class.java)
-        context.stopService(serviceIntent)
+        val serviceIntent = Intent(activity, TimestampService::class.java)
+        activity.stopService(serviceIntent)
     }
 }

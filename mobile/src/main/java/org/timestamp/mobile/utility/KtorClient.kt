@@ -27,6 +27,12 @@ import org.timestamp.mobile.R
  */
 object KtorClient {
 
+    val json = Json {
+        prettyPrint = true
+        isLenient = true // Optimize payload
+        ignoreUnknownKeys = true
+    }
+
     lateinit var backendBase: String
         private set
 
@@ -41,11 +47,7 @@ object KtorClient {
         backendBase = context.getString(R.string.backend_url)
         backend = HttpClient(CIO) {
             install(ContentNegotiation) {
-                json(Json {
-                    prettyPrint = true
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
+                json(json)
             }
 
             defaultRequest {
@@ -62,7 +64,6 @@ object KtorClient {
                 execute(req)
             }
         }
-
     }
 
     /**
@@ -104,7 +105,6 @@ object KtorClient {
     suspend inline fun <reified T> HttpResponse.bodyOrNull(
         tag: String = "Timestamp Request"
     ): T? = if (success(tag)) this.body<T>().also { Log.d(tag, it.toString()) } else null
-
 }
 
 suspend fun getIdTokenResult(forceRefresh: Boolean = false): GetTokenResult? =

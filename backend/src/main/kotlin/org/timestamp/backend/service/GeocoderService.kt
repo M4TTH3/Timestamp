@@ -5,9 +5,8 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.util.UriComponentsBuilder
-import org.timestamp.backend.model.User
 import org.timestamp.lib.dto.LocationDTO
-import org.timestamp.lib.dto.PhotonDTO
+import org.timestamp.lib.dto.GeocodeDTO
 
 @Service
 class GeocoderService(
@@ -25,10 +24,7 @@ class GeocoderService(
      * Geocode a query string to a list of possible locations.
      * Use the user's location to bias the search.
      */
-     suspend fun geocode(query: String, user: User, limit: Int = 5): PhotonDTO {
-        val lon = user.longitude
-        val lat = user.latitude
-
+     suspend fun geocode(query: String, lat: Double, lon: Double, limit: Int = 5): GeocodeDTO {
         val uri = uriBuilder
             .path("/api")
             .queryParam("q", query)
@@ -41,16 +37,16 @@ class GeocoderService(
             webClient.get()
                 .uri(uri)
                 .retrieve()
-                .awaitBody<PhotonDTO>()
+                .awaitBody<GeocodeDTO>()
         }
 
-        return res.getOrNull() ?: PhotonDTO()
+        return res.getOrNull() ?: GeocodeDTO()
     }
 
     /**
      * Reverse geocode a location to an address.
      */
-    suspend fun reverseGeocode(location: LocationDTO): PhotonDTO {
+    suspend fun reverseGeocode(location: LocationDTO): GeocodeDTO {
         val uri = uriBuilder
             .path("/reverse")
             .queryParam("lat", location.latitude)
@@ -61,10 +57,10 @@ class GeocoderService(
             webClient.get()
                 .uri(uri)
                 .retrieve()
-                .awaitBody<PhotonDTO>()
+                .awaitBody<GeocodeDTO>()
         }
 
-        return res.getOrNull() ?: PhotonDTO()
+        return res.getOrNull() ?: GeocodeDTO()
     }
 
 }

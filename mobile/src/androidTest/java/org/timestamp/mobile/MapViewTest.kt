@@ -3,25 +3,20 @@ package org.timestamp.mobile
 import android.net.Uri
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import com.google.firebase.auth.FirebaseUser
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.stateIn
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.lib.dto.TravelMode
-import org.timestamp.mobile.models.EventViewModel
-import org.timestamp.mobile.models.LocationViewModel
+import org.timestamp.mobile.viewmodels.EventViewModel
+import org.timestamp.mobile.viewmodels.LocationViewModel
 import org.timestamp.mobile.ui.elements.MapView
 import java.time.OffsetDateTime
 

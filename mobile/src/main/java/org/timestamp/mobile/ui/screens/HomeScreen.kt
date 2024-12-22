@@ -30,7 +30,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import org.timestamp.mobile.TimestampActivity
-import org.timestamp.mobile.models.EventViewModel
+import org.timestamp.mobile.viewmodels.EventViewModel
 
 @Composable
 fun HomeScreen(

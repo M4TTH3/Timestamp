@@ -6,12 +6,16 @@ import org.springframework.http.codec.json.KotlinSerializationJsonDecoder
 import org.springframework.http.codec.json.KotlinSerializationJsonEncoder
 import org.springframework.web.reactive.function.client.WebClient
 import kotlinx.serialization.json.Json
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.json.KotlinSerializationJsonHttpMessageConverter
 
 @Configuration
 class AppConfig {
 
     private val json = Json {
         ignoreUnknownKeys = true
+        prettyPrint = true
+        isLenient = true
     }
 
     @Bean
@@ -22,5 +26,15 @@ class AppConfig {
                 it.defaultCodecs().kotlinSerializationJsonEncoder(KotlinSerializationJsonEncoder(json))
             }
             .build()
+    }
+
+    /**
+     * Switch to KotlinSerializationJsonHttpMessageConverter
+     * over Jackson2JsonHttpMessageConverter as default HTTP message converter
+     */
+
+    @Bean
+    fun kotlinxSerializationConverter(): HttpMessageConverter<*> {
+        return KotlinSerializationJsonHttpMessageConverter(json)
     }
 }

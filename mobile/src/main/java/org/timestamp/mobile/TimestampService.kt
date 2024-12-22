@@ -12,26 +12,17 @@ import android.os.IBinder
 import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.patch
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.lib.dto.NotificationDTO
 import org.timestamp.lib.dto.TravelMode
+import org.timestamp.mobile.repository.LocationRepository
+import org.timestamp.mobile.repository.NotificationRepository
 import org.timestamp.mobile.utility.ActivityRecognitionProvider
 import org.timestamp.mobile.utility.KtorClient
-import org.timestamp.mobile.utility.KtorClient.handler
-import org.timestamp.mobile.utility.KtorClient.success
 import org.timestamp.mobile.utility.LocationProvider
 import org.timestamp.mobile.utility.PermissionProvider
 import java.time.format.DateTimeFormatter
@@ -55,25 +46,34 @@ class TimestampService: Service() {
     private lateinit var pmp: PermissionProvider
     private lateinit var lp: LocationProvider
     private lateinit var arp: ActivityRecognitionProvider
-    private lateinit var ktorClient: HttpClient
     private lateinit var largeIcon: Bitmap
     private val notificationManager by lazy {
         getSystemService(NotificationManager::class.java)
     }
 
-    private var notification: NotificationDTO? = null
     private var pollingNotification = false
+    private lateinit var notificationRepo: NotificationRepository
+    private lateinit var locationRepo: LocationRepository
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
+
+        // Initialize clients
+        KtorClient.init(this)
+
+        // Setup utility classes
         lp = LocationProvider(this)
         pmp = PermissionProvider(this)
         arp = ActivityRecognitionProvider(this)
-        ktorClient = KtorClient.backend
+        notificationRepo = NotificationRepository()
+        locationRepo = LocationRepository()
 
+        // Load the large icon for the notification
         val decodedIcon = BitmapFactory.decodeResource(this.resources, R.drawable.cs346logoteef)
         largeIcon = Bitmap.createScaledBitmap(decodedIcon, 128, 128, false)
+
+        // Create the notification channel
+        createNotificationChannel()
     }
 
     override fun onDestroy() {
@@ -91,23 +91,19 @@ class TimestampService: Service() {
         }
 
         try {
-            startForeground(NOTIFICATION_ID, createBasicNotification())
+            startForeground(NOTIFICATION_ID, createBaseNotification())
             getTimestampNotification(FIVE_MINUTES)
             arp.startActivityRecognition { travelMode ->
                 lp.travelMode = travelMode
             }
             lp.startLocationUpdates(THIRTY_SECONDS) {
-                broadcastLocation(it)
                 updateLocation(it)
             }
-        } catch (e: SecurityException) {
-            Log.d("LocationService", "Permissions not granted")
-            arp.stopActivityRecognition()
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            stopSelf()
-            return START_NOT_STICKY
-        } catch (e: Exception) {
-            Log.e("LocationService", "Error starting location updates", e)
+        } catch (e: Throwable) {
+            val message = if (e is SecurityException) "Permissions not granted"
+            else "Error starting location updates"
+            Log.e("LocationService", message)
+
             arp.stopActivityRecognition()
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
@@ -128,11 +124,6 @@ class TimestampService: Service() {
         notificationManager.createNotificationChannel(serviceChannel)
     }
 
-    private fun replaceNotification(title: String, text: String) {
-        val notification = createBasicNotification(title, text)
-        notificationManager.notify(NOTIFICATION_ID, notification)
-    }
-
     private fun replaceNotification(notification: NotificationDTO) {
         notificationManager.notify(EVENT_NOTIFICATION_ID, createEventNotification(notification))
     }
@@ -141,7 +132,7 @@ class TimestampService: Service() {
      * Create a notification to show the user that the service is running
      * and tracking their location.
      */
-    private fun createBasicNotification(
+    private fun createBaseNotification(
         title: String = "Timestamp",
         text: String = "Timestamp is tracking your location...",
 
@@ -161,6 +152,8 @@ class TimestampService: Service() {
             .setContentIntent(pendingIntent)
             .setSmallIcon(R.drawable.cs346logoteefsmaller)
             .setLargeIcon(largeIcon)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOngoing(true)
 
         return notificationBuilder.build()
     }
@@ -215,33 +208,12 @@ class TimestampService: Service() {
     }
 
     /**
-     * Broadcast the current location to Broadcast Receivers listening
-     * for location updates. For instance, the AppViewModel listens for
-     * location updates to use for UI
-     */
-    private fun broadcastLocation(locationDTO: LocationDTO) {
-        val intent = Intent(ACTION_LOCATION_UPDATE)
-        val content = Json.encodeToString(locationDTO)
-        intent.putExtra(INTENT_EXTRA_LOCATION, content)
-        sendBroadcast(intent)
-    }
-
-    /**
      * Update the backend with the current location.
      */
-    private fun updateLocation(location: LocationDTO) = CoroutineScope(Dispatchers.IO).launch {
-        val base = getString(R.string.backend_url)
-        val tag = "Update Location"
-        handler(tag) {
-            val endpoint = "$base/users/me/location"
-            val res = ktorClient.patch(endpoint) {
-                contentType(ContentType.Application.Json)
-                setBody(location)
-            }
-
-            if (!res.success(tag)) return@handler
-            Log.d(tag, "Updated location with $location")
-        }
+    private fun updateLocation(
+        location: LocationDTO
+    ) = CoroutineScope(Dispatchers.IO).launch {
+        locationRepo.updateLocation(location)
     }
 
     private fun getTimestampNotification(
@@ -251,22 +223,9 @@ class TimestampService: Service() {
 
         pollingNotification = true
 
-        val base = getString(R.string.backend_url)
-        val tag = "Get Notification"
-
         while(pollingNotification) {
-            handler(tag) {
-                val endpoint = "$base/users/me/notifications"
-                val res = ktorClient.get(endpoint)
-                if (!res.success(tag)) return@handler
-                val tmp = res.body<NotificationDTO>()
-
-                // If the notification hasn't changed, don't update the notification
-                if (tmp == notification) return@handler
-
-                notification = tmp
-                replaceNotification(notification!!)
-                Log.d(tag, notification.toString())
+            notificationRepo.getNotifications()?.let {
+                replaceNotification(it)
             }
 
             delay(interval)

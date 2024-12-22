@@ -48,8 +48,8 @@ import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseUser
 import org.timestamp.mobile.R
 import org.timestamp.mobile.TimestampActivity
-import org.timestamp.mobile.models.EventViewModel
-import org.timestamp.mobile.models.ThemeViewModel
+import org.timestamp.mobile.viewmodels.EventViewModel
+import org.timestamp.mobile.viewmodels.ThemeViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import kotlin.math.roundToInt
 

@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.material.ContentAlpha
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
@@ -79,7 +80,9 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.util.toOffset
+import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
+import org.timestamp.mobile.viewmodels.GeocodeViewModel
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -198,6 +201,7 @@ fun CreateEvent(
     editEvent: EventDTO?,
     currentUser: FirebaseUser?
 ) {
+    val geocodeViewModel: GeocodeViewModel = viewModel(LocalContext.current as TimestampActivity)
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(false) }
     var eventTime by remember { mutableStateOf(false) }

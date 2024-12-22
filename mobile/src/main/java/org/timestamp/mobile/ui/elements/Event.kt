@@ -59,11 +59,10 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.R
-import org.timestamp.mobile.models.EventViewModel
+import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import java.time.Duration
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * This file contains ALL the DTOs used in Photon Geocoder API
  */
 @Serializable
-data class PhotonDTO (
+data class GeocodeDTO (
     val features: List<GeoJsonFeature> = emptyList(),
     val type: String? = null
 )

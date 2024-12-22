@@ -18,8 +18,7 @@ class LocationProvider(context: Context) {
     var locationDTO = LocationDTO(0.0, 0.0, travelMode)
         private set
 
-    var isRunning = false
-        private set
+    private var isRunning = false
 
     /**
      * Start location updates, and run the callback every [intervalMillis]
