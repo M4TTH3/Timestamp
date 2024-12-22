@@ -1,39 +1,18 @@
-<style>
-#readme-top {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 50px;
-}
-
-#readme-top div {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 5px;
-    padding: 0 20px 0 20px;
-    width: 100%;
-}
-
-#screenshots {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 20px;
-    column-gap: 10px;
-    row-gap: 20px;
-}
-</style>
-
-<div id="readme-top">
+<div id="readme-top" align=center>
     <img src="/assets/applogo.png" alt="Logo" width="110" height="110">
     <h3>Timestamp</h3>
     <p>On time in no time.</p>
     <div>
         <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Team-Contract">Team Contract</a>
+        &nbsp;&nbsp;
         <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Project-Proposal">Project Proposal</a>
+        &nbsp;&nbsp;
         <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/design-proposal">Design Proposal</a>
+        &nbsp;&nbsp;
         <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/User-Documentation">User Documentation</a>
+        &nbsp;&nbsp;
         <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Design-Diagrams">Design Diagrams</a>
+        &nbsp;&nbsp;
         <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Team-Reflection">Team Reflection</a>
     </div>
 </div>
