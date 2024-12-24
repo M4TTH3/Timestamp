@@ -159,7 +159,7 @@ fun EventBox(
                 isEditingEvent = false
             },
             isMock = false,
-            editEvent = data,
+            loadEvent = data,
             currentUser = currentUser
         )
     }

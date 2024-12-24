@@ -33,19 +33,7 @@ class Event(
 
 fun Event.toDTO(): EventDTO {
     val users: List<EventUserDTO> = this.userEvents.map {
-        val user = it.user!!
-
-        // Only get the time est. if the event is today and the user has not arrived
-        EventUserDTO(
-            id = user.id,
-            name = user.name,
-            email = user.email,
-            pfp = user.pfp,
-            timeEst = it.timeEst,
-            distance = it.distance,
-            arrivedTime = it.arrivedTime,
-            arrived = it.arrived
-        )
+        it.toDTO()
     }
 
     return EventDTO(
@@ -77,7 +65,8 @@ fun Event.toHiddenDTO(): EventDTO {
             timeEst = null,
             distance = null,
             arrived = false,
-            arrivedTime = null
+            arrivedTime = null,
+            travelMode = null
         )
     )
 

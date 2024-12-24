@@ -1,27 +1,10 @@
 package org.timestamp.mobile.ui.elements
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.pm.PackageManager
-import android.location.Location
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -34,15 +17,8 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,153 +31,108 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.material.ContentAlpha
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.AutocompletePrediction
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.FetchPlaceRequest
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.firebase.auth.FirebaseUser
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.GeoJsonFeature
+import org.timestamp.lib.dto.GeocodeDTO
+import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.lib.util.toOffset
 import org.timestamp.mobile.TimestampActivity
+import org.timestamp.mobile.getUser
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import org.timestamp.mobile.viewmodels.GeocodeViewModel
-import java.net.URL
+import org.timestamp.mobile.viewmodels.LocationViewModel
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun RequestLocationPermission() {
-    val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
-    SideEffect {
-        permissionState.launchPermissionRequest()
+
+const val UWATERLOO_LATITUDE = 43.4723
+const val UWATERLOO_LONGITUDE = -80.5449
+
+// Default location is UWATERLOO if no location is found at all
+val UWATERLOO = LocationDTO(UWATERLOO_LATITUDE, UWATERLOO_LONGITUDE)
+
+/**
+ * This will extract the information of the selected geocode (location info)
+ * and load it into the EventDTO. If there is no name, it will use the format:
+ *
+ *      description = housenumber street
+ *      address = city, state, country
+ *
+ * Otherwise, it will use the name as the description.
+ * @param feature The selected GeoJsonFeature
+ */
+fun MutableState<EventDTO>.load(feature: GeoJsonFeature?, setLoc: Boolean = false) {
+    feature ?: return // If the feature is null, return
+
+    val properties = feature.properties
+    val geometry = feature.geometry
+    val name = properties.name
+    val validName = !name.isNullOrEmpty()
+
+    val localAddress = listOfNotNull(properties.houseNumber, properties.street)
+        .joinToString(" ")
+    val cityAddressArray = listOfNotNull(if (validName) localAddress else null, properties.city, properties.state)
+
+    val description = if (validName) name!! else localAddress
+    val address = cityAddressArray.joinToString(", ")
+
+    this.value = when {
+        setLoc -> this.value.copy(
+            latitude = geometry.coordinates[1],
+            longitude = geometry.coordinates[0],
+            description = description,
+            address = address
+        )
+        else -> this.value.copy(
+            description = description,
+            address = address
+        )
     }
 }
 
-@SuppressLint("MissingPermission")
-fun fetchCurrentLocation(
-    context: Context,
-    onLocationRetrieved: (LatLng) -> Unit
-) {
-    val permissionCheck = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    )
-    if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
-            if (location != null) {
-                onLocationRetrieved(LatLng(location.latitude, location.longitude))
-            } else {
-                onLocationRetrieved(LatLng(37.7749, -122.4194)) // default, San Fran
-            }
-        }.addOnFailureListener {
-            onLocationRetrieved(LatLng(37.7749, -122.4194))
-        }
-    } else {
-        onLocationRetrieved(LatLng(37.7749, -122.4194))
-    }
-}
-
-@Composable
-fun FetchLocationWrapper(
-    context: Context,
-    onLocationRetrieved: (LatLng) -> Unit
-) {
-    var permissionGranted by remember { mutableStateOf(false) }
-    RequestLocationPermission()
-    val permissionCheck = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    )
-    permissionGranted = permissionCheck == PackageManager.PERMISSION_GRANTED
-    LaunchedEffect(permissionGranted) {
-        if (permissionGranted) {
-            fetchCurrentLocation(context, onLocationRetrieved)
-        }
-    }
-}
-
-fun fetchLocationDetails(
-    context: Context,
-    latLng: LatLng,
-    onResult: (String, String) -> Unit,
-    onError: (Exception) -> Unit
-    ) {
-    val apiKey = context.packageManager
-        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-        .metaData
-        .getString("com.google.android.geo.API_KEY")
-    val geocodeUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=$apiKey"
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val response = URL(geocodeUrl).readText()
-            val json = JSONObject(response)
-            val results = json.getJSONArray("results")
-            if (results.length() > 0) {
-                val result = results.getJSONObject(0)
-                val addressComponents = result.getJSONArray("address_components")
-                var buildingName: String? = null
-                for (i in 0 until addressComponents.length()) {
-                    val component = addressComponents.getJSONObject(i)
-                    val types = component.getJSONArray("types")
-                    for (j in 0 until types.length()) {
-                        val type = types.getString(j)
-                        if (type == "point_of_interest" || type == "premise") {
-                            buildingName = component.getString("short_name")
-                            break
-                        }
-                    }
-                    if (buildingName != null) break
-                }
-                val formattedAddress = result.getString("formatted_address")
-                val nameToUse = buildingName ?: formattedAddress
-                withContext(Dispatchers.Main) {
-                    onResult(nameToUse, formattedAddress)
-                }
-            } else {
-                throw Exception("No results found.")
-            }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                onError(e)
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEvent(
     onDismissRequest: () -> Unit,
     onConfirmation: (EventDTO) -> Unit,
-    isMock: Boolean,
+    isMock: Boolean = false,
     properties: DialogProperties = DialogProperties(),
-    editEvent: EventDTO?,
+
+    /**
+     * The event we can pass and load into the form.
+     * Edit access IFF the current user is the creator of the event OR id is null.
+     */
+    loadEvent: EventDTO? = null,
     currentUser: FirebaseUser?
 ) {
-    val geocodeViewModel: GeocodeViewModel = viewModel(LocalContext.current as TimestampActivity)
+    val curUser = getUser()!! // Assert NOT null, as the user should be logged in
+
+    val geoVm: GeocodeViewModel = viewModel(LocalContext.current as TimestampActivity)
+    val locVm: LocationViewModel = viewModel(LocalContext.current as TimestampActivity)
+
+    val isNewEvent: Boolean = loadEvent == null
+    val canEdit: Boolean = isNewEvent || loadEvent!!.creator == curUser.uid
+
+    // State to edit the event
+    val event = remember {
+        // We don't want to rerender the location on the map. Don't collect state
+        val curLocation = locVm.location.value ?: UWATERLOO
+        mutableStateOf(loadEvent ?: EventDTO(
+            creator = curUser.uid,
+            latitude = curLocation.latitude,
+            longitude = curLocation.longitude,
+        ))
+    }
+
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(false) }
     var eventTime by remember { mutableStateOf(false) }
@@ -213,103 +144,35 @@ fun CreateEvent(
     var locationName by remember { mutableStateOf("") }
     var locationAddress by remember { mutableStateOf("") }
     var isLoadingLocation by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val placesClient = remember { Places.createClient(context) }
     var isSearchActive by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
-    var predictions by remember { mutableStateOf<List<AutocompletePrediction>>(emptyList()) }
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            editEvent?.let { LatLng(it.latitude, it.longitude) } ?: LatLng(37.7749, -122.4194),
-            if (editEvent != null) 15f else 10f
+    val cameraPositionState = rememberCameraPositionState {}
+
+    LaunchedEffect(Unit) {
+        // If it's a new event, geocode the current location into the map
+        if (isNewEvent) {
+            val geocodeDTO = geoVm.currentLocPhotonDTO()
+            geocodeDTO?.features?.firstOrNull()?.let {
+                event.load(it, true)
+            }
+        }
+    }
+
+    LaunchedEffect(event.value.latitude, event.value.longitude) {
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(
+            LatLng(event.value.latitude, event.value.longitude),
+            if (loadEvent != null) 15f else 10f
         )
     }
 
-    if (editEvent != null) {
-        if (currentUser?.uid == editEvent.creator) {
-            LaunchedEffect(editEvent) {
-                eventName = editEvent.name
-                val date = Date.from(editEvent.arrival.toInstant())
-                selectedDate = dateFormatter.format(date)
-                selectedTime = timeFormatter.format(date)
-                selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)
-                fetchLocationDetails(
-                    context = context,
-                    latLng = LatLng(editEvent.latitude, editEvent.longitude),
-                    onResult = { name, address ->
-                        locationName = name
-                        locationAddress = address
-                    },
-                    onError = { error ->
-                        // Handle any errors during location detail retrieval
-                        locationName = "Unknown Location"
-                        locationAddress = "Failed to fetch address"
-                        error.printStackTrace()
-                    }
-                )
-                cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
-                query = locationName
-            }
-        } else {
-            eventName = editEvent.name
-            val date = Date.from(editEvent.arrival.toInstant())
-            selectedDate = dateFormatter.format(date)
-            selectedTime = timeFormatter.format(date)
-            selectedLocation = LatLng(editEvent.latitude, editEvent.longitude)
-            fetchLocationDetails(
-                context = context,
-                latLng = LatLng(editEvent.latitude, editEvent.longitude),
-                onResult = { name, address ->
-                    locationName = name
-                    locationAddress = address
-                },
-                onError = { error ->
-                    // Handle any errors during location detail retrieval
-                    locationName = "Unknown Location"
-                    locationAddress = "Failed to fetch address"
-                    error.printStackTrace()
-                }
-            )
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(selectedLocation!!, 15f)
-            query = locationName
-        }
-    }
     LaunchedEffect(locationName) {
         if (!isSearchActive) {
             query = locationName
         }
     }
-    val defaultMockLocation = LatLng(37.7749, -122.4194)
-    if (isMock) {
-        // Use mock location
-        selectedLocation = defaultMockLocation
-        cameraPositionState.position = CameraPosition.fromLatLngZoom(defaultMockLocation, 15f)
-    } else {
-        // Real location fetching logic
-        FetchLocationWrapper(context) { location ->
-            selectedLocation = location
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
-            isLoadingLocation = true
-            fetchLocationDetails(
-                context = context,
-                latLng = location,
-                onResult = { name, address ->
-                    locationName = name
-                    locationAddress = address
-                    isLoadingLocation = false
-                    isSearchActive = false
-                    query = locationName
-                },
-                onError = { error ->
-                    Log.e("CreateEvent", "Error fetching location: ${error.message}")
-                    locationName = "Failed to fetch location"
-                    locationAddress = ""
-                    isLoadingLocation = false
-                }
-            )
-        }
-    }
+
+    // TODO: Remove this when the location fetching is fixed
 
     if (eventDate) {
         DatePickerDialog(
@@ -328,23 +191,6 @@ fun CreateEvent(
             },
             onDismiss = { eventTime = false },
         )
-    }
-
-    LaunchedEffect(query) {
-        if (isSearchActive && query.isNotEmpty()) {
-            val request = FindAutocompletePredictionsRequest.builder()
-                .setQuery(query)
-                .build()
-            placesClient.findAutocompletePredictions(request)
-                .addOnSuccessListener { response ->
-                    predictions = response.autocompletePredictions
-                }
-                .addOnFailureListener {
-                    predictions = emptyList()
-                }
-        } else {
-            predictions = emptyList()
-        }
     }
 
    Dialog(
@@ -372,7 +218,7 @@ fun CreateEvent(
                Text(
                    modifier = Modifier
                        .padding(16.dp),
-                   text = if (currentUser?.uid != editEvent?.creator && editEvent != null) "View Event" else if (editEvent == null) "Add Event" else "Edit Event",
+                   text = if (currentUser?.uid != loadEvent?.creator && loadEvent != null) "View Event" else if (loadEvent == null) "Add Event" else "Edit Event",
                    color = MaterialTheme.colors.secondary,
                    fontFamily = ubuntuFontFamily,
                    fontWeight = FontWeight.Bold,
@@ -398,7 +244,7 @@ fun CreateEvent(
                        fontFamily = ubuntuFontFamily,
                        fontWeight = FontWeight.Bold) },
                    singleLine = true,
-                   enabled = if (currentUser?.uid == editEvent?.creator || editEvent == null) true else false,
+                   enabled = if (currentUser?.uid == loadEvent?.creator || loadEvent == null) true else false,
                    colors = TextFieldDefaults.textFieldColors(
                        backgroundColor = Color.Transparent,
                        textColor = MaterialTheme.colors.secondary
@@ -428,7 +274,7 @@ fun CreateEvent(
                        },
                        trailingIcon = {
                            IconButton(onClick = {
-                               if (currentUser?.uid == editEvent?.creator || editEvent == null) {
+                               if (currentUser?.uid == loadEvent?.creator || loadEvent == null) {
                                    eventDate = !eventDate
                                }
                            }) {
@@ -451,7 +297,7 @@ fun CreateEvent(
                            .border(1.dp, Color.LightGray, shape = RoundedCornerShape(16.dp))
                            .background(MaterialTheme.colors.primary, shape = RoundedCornerShape(16.dp))
                            .clickable {
-                               if (currentUser?.uid == editEvent?.creator || editEvent == null) {
+                               if (currentUser?.uid == loadEvent?.creator || loadEvent == null) {
                                    eventTime = !eventTime
                                }
                                       },
@@ -512,56 +358,8 @@ fun CreateEvent(
                            unfocusedIndicatorColor = Color.Transparent,
                            placeholderColor = MaterialTheme.colors.secondary.copy(alpha = ContentAlpha.medium)
                        ),
-                       enabled = currentUser?.uid == editEvent?.creator || editEvent == null
+                       enabled = currentUser?.uid == loadEvent?.creator || loadEvent == null
                    )
-                   if (predictions.isNotEmpty()) {
-                       LazyColumn(
-                           modifier = Modifier
-                               .fillMaxWidth(0.9f)
-                               .heightIn(max = 200.dp)
-                       ) {
-                           items(predictions) { prediction ->
-                               Text(
-                                   text = prediction.getFullText(null).toString(),
-                                   modifier = Modifier
-                                       .fillMaxWidth()
-                                       .clickable {
-                                           val placeFields = listOf(
-                                               Place.Field.ID,
-                                               Place.Field.NAME,
-                                               Place.Field.ADDRESS,
-                                               Place.Field.LAT_LNG
-                                           )
-                                           val request = FetchPlaceRequest.builder(
-                                               prediction.placeId,
-                                               placeFields
-                                           ).build()
-                                           placesClient.fetchPlace(request)
-                                               .addOnSuccessListener { response ->
-                                                   val place = response.place
-                                                   selectedLocation = place.latLng
-                                                   locationName = place.name ?: ""
-                                                   locationAddress = place.address ?: ""
-                                                   cameraPositionState.position =
-                                                       CameraPosition.fromLatLngZoom(
-                                                           place.latLng!!,
-                                                           15f
-                                                       )
-                                                   isSearchActive = false
-                                                   query = locationName
-                                               }
-                                               .addOnFailureListener { exception ->
-                                                   Log.e(
-                                                       "Places API",
-                                                       "Place not found: ${exception.message}"
-                                                   )
-                                               }
-                                       }
-                                       .padding(16.dp)
-                               )
-                           }
-                       }
-                   }
                } else {
                    Box(
                        modifier = Modifier
@@ -583,7 +381,7 @@ fun CreateEvent(
                        contentAlignment = Alignment.CenterStart
                    ) {
                        Text(
-                           text = if (locationName.isNotEmpty()) locationName else "Event Location",
+                           text = event.value.address.ifEmpty { "Search for a location..." },
                            modifier = Modifier
                                .fillMaxWidth()
                                .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -604,24 +402,8 @@ fun CreateEvent(
                        onMapClick = { latLng ->
                            selectedLocation = latLng
                            isLoadingLocation = true
-                           if (currentUser?.uid == editEvent?.creator || editEvent == null) {
-                               fetchLocationDetails(
-                                   context = context,
-                                   latLng = latLng,
-                                   onResult = { name, address ->
-                                       locationName = name
-                                       locationAddress = address
-                                       isLoadingLocation = false
-                                       isSearchActive = false
-                                       query = locationName
-                                   },
-                                   onError = { error ->
-                                       Log.e("CreateEvent", "Error fetching location: ${error.message}")
-                                       locationName = "Failed to fetch location"
-                                       locationAddress = ""
-                                       isLoadingLocation = false
-                                   }
-                               )
+                           if (currentUser?.uid == loadEvent?.creator || loadEvent == null) {
+                               // TODO: Remove this when the location fetching is fixed
                            }
                        }
                    ) {
@@ -660,7 +442,7 @@ fun CreateEvent(
                            color = Color(0xFFFFFFFF)
                        )
                    }
-                   if (currentUser?.uid == editEvent?.creator || editEvent == null) {
+                   if (currentUser?.uid == loadEvent?.creator || loadEvent == null) {
                        Spacer(modifier = Modifier.width(32.dp));
                        Button(
                            onClick = {
@@ -686,7 +468,7 @@ fun CreateEvent(
                                        val currentDateTime = LocalDateTime.now()
                                        Log.d("Time", selectedDateTime.toOffset().toString())
                                        if (selectedDateTime.isAfter(currentDateTime)) {
-                                           if (editEvent != null) {
+                                           if (loadEvent != null) {
                                                onConfirmation(
                                                    EventDTO(
                                                        name = eventName,
@@ -695,7 +477,7 @@ fun CreateEvent(
                                                        longitude = selectedLocation?.longitude ?: 0.0,
                                                        description = locationName,
                                                        address = locationAddress,
-                                                       id = editEvent.id,
+                                                       id = loadEvent.id,
                                                    )
                                                )
                                            } else {
@@ -732,7 +514,7 @@ fun CreateEvent(
                                .shadow(4.dp, shape = RoundedCornerShape(24.dp), ambientColor = Color(0x33000000))
                        ) {
                            Text(
-                               text = if (editEvent == null) "Add" else "Edit",
+                               text = if (loadEvent == null) "Add" else "Edit",
                                fontFamily = ubuntuFontFamily,
                                fontWeight = FontWeight.Bold,
                                fontSize = 24.sp,

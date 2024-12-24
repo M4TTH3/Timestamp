@@ -189,7 +189,7 @@ fun CalendarScreen(
                         refreshTrigger++
                     },
                     isMock = false,
-                    editEvent = event,
+                    loadEvent = event,
                     currentUser = currentUser
                 )
             }

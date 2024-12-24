@@ -2,6 +2,8 @@ package org.timestamp.backend.model
 
 import com.fasterxml.jackson.annotation.JsonBackReference
 import jakarta.persistence.*
+import org.timestamp.lib.dto.EventUserDTO
+import org.timestamp.lib.dto.TravelMode
 import java.io.Serializable
 import java.time.OffsetDateTime
 
@@ -22,6 +24,14 @@ class UserEvent(
 
     @Column(name = "arrived_time")
     var arrivedTime: OffsetDateTime? = null,
+
+    /**
+     * Travel mode in a UserEvent is used for smart notifications AND overrides
+     * the users own travel mode for this event.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "travel_mode")
+    var travelMode: TravelMode? = null,
 
     @MapsId("eventId")
     @ManyToOne
@@ -48,3 +58,19 @@ data class UserEventKey(
     @Column(name = "user_id", nullable = false)
     val userId: String = "",
 ): Serializable
+
+fun UserEvent.toDTO(): EventUserDTO {
+    val user = this.user!!
+
+    return EventUserDTO(
+        id = user.id,
+        name = user.name,
+        email = user.email,
+        pfp = user.pfp,
+        timeEst = this.timeEst,
+        distance = this.distance,
+        arrivedTime = this.arrivedTime,
+        arrived = this.arrived,
+        travelMode = this.travelMode
+    )
+}

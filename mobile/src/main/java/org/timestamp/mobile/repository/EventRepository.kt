@@ -8,6 +8,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.TravelMode
 import org.timestamp.mobile.utility.KtorClient.success
 
 class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
@@ -55,6 +56,19 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
             val body: EventDTO? = ktorClient.patch(endpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(event)
+            }.bodyOrNull(tag)
+
+            body?.let { update(it) }
+        }
+    }
+
+    suspend fun patchEventTravelMode(eventId: Long, travelMode: TravelMode) {
+        val tag = "Events Patch Travel Mode"
+        handler(tag) {
+            val endpoint = "/events/$eventId/travel-mode"
+            val body: EventDTO? = ktorClient.patch(endpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(travelMode)
             }.bodyOrNull(tag)
 
             body?.let { update(it) }

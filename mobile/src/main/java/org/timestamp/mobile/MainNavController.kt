@@ -52,6 +52,7 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import org.timestamp.mobile.ui.elements.BackgroundLocationDialog
@@ -136,7 +137,7 @@ class MainNavController(
         val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
         val navController = rememberNavController()
         val scope = rememberCoroutineScope()
-        val startDestination = if (auth.currentUser == null) Screen.Login.name else Screen.Home.name
+        val startDestination = remember { if (auth.currentUser == null) Screen.Login.name else Screen.Home.name }
 
         LaunchedEffect(Unit) {
             if (!permissions.allPermissionsGranted) navController.navigate(startDestination)
@@ -273,13 +274,6 @@ class MainNavController(
                             tint = if (currentScreen == "Events") Color.Black else Color(0xFF522D2A)
                         )
                     }
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .fillMaxHeight(0.95f)
-                            .background(Color.LightGray)
-                            .align(Alignment.Bottom)
-                    )
                     IconButton(
                         onClick = {
                             navController.navigate(Screen.Calendar.name)
@@ -295,13 +289,6 @@ class MainNavController(
                             tint = if (currentScreen == "Calendar") Color.Black else Color(0xFF522D2A)
                         )
                     }
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .fillMaxHeight(0.95f)
-                            .background(Color.LightGray)
-                            .align(Alignment.Bottom)
-                    )
                     IconButton(
                         onClick = {
                             navController.navigate(Screen.Settings.name)
@@ -317,7 +304,7 @@ class MainNavController(
                             tint = if (currentScreen == "Settings") Color.Black else Color(0xFF522D2A)
                         )
                     }
-                    Box() {}
+                    Box {}
                 }
             }
         }
@@ -333,3 +320,5 @@ class MainNavController(
         activity.stopService(serviceIntent)
     }
 }
+
+fun getUser() : FirebaseUser? = FirebaseAuth.getInstance().currentUser

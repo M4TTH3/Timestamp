@@ -16,8 +16,7 @@ import org.timestamp.lib.dto.TravelMode
 @RestController
 @RequestMapping("/geocode")
 class GeocodeController(
-    private val gs: GeocoderService,
-    private val us: UserService
+    private val gs: GeocoderService
 ) {
     @GetMapping
     suspend fun geocode(

@@ -14,5 +14,6 @@ data class EventUserDTO(
     val distance: Double?,
     val arrived: Boolean,
     @Serializable(with = OffsetDateTimeSerializer::class)
-    val arrivedTime: OffsetDateTime?
+    val arrivedTime: OffsetDateTime?,
+    val travelMode: TravelMode?
 )

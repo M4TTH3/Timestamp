@@ -4,14 +4,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.timestamp.backend.config.FirebaseUser
-import org.timestamp.backend.model.Event
 import org.timestamp.backend.model.User
-import org.timestamp.backend.model.toDTO
-import org.timestamp.backend.model.toHiddenDTO
 import org.timestamp.backend.service.EventService
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventLinkDTO
-import org.timestamp.lib.dto.EventUserDTO
+import org.timestamp.lib.dto.TravelMode
 import java.net.URI
 import java.util.*
 
@@ -30,7 +27,7 @@ class EventController(
     @PostMapping
     suspend fun createEvent(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
-        @RequestBody event: Event
+        @RequestBody event: EventDTO
     ): ResponseEntity<EventDTO> {
         val e = eventService.createEvent(User(firebaseUser), event)
         return ResponseEntity.created(URI("/events/${e.id}")).body(e)
@@ -48,9 +45,10 @@ class EventController(
     @PostMapping("/join/{eventLinkId}")
     suspend fun joinEvent(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
-        @PathVariable eventLinkId: UUID
+        @PathVariable eventLinkId: UUID,
+        @RequestParam travelMode: TravelMode? = null
     ): ResponseEntity<EventDTO> {
-        val e = eventService.joinEvent(firebaseUser, eventLinkId)
+        val e = eventService.joinEvent(firebaseUser, eventLinkId, travelMode)
         return ResponseEntity.ok(e)
     }
 
@@ -66,9 +64,19 @@ class EventController(
     @PatchMapping
     suspend fun updateEvent(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
-        @RequestBody event: Event
+        @RequestBody event: EventDTO
     ): ResponseEntity<EventDTO> {
         val e = eventService.updateEvent(firebaseUser, event)
+        return ResponseEntity.ok(e)
+    }
+
+    @PatchMapping("/{eventId}/travel-mode")
+    suspend fun updateEventTravelMode(
+        @AuthenticationPrincipal firebaseUser: FirebaseUser,
+        @PathVariable eventId: Long,
+        @RequestBody travelMode: TravelMode
+    ): ResponseEntity<EventDTO> {
+        val e = eventService.updateEventTravelMode(firebaseUser, eventId, travelMode)
         return ResponseEntity.ok(e)
     }
 

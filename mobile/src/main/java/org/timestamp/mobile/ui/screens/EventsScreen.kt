@@ -72,7 +72,7 @@ fun EventsScreen(
                 createEvents.value = false
             },
             isMock = isMock,
-            editEvent = null,
+            loadEvent = null,
             currentUser = currentUser
         )
     }
