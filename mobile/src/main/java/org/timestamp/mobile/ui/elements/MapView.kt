@@ -34,7 +34,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -82,12 +81,11 @@ import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.mobile.R
 import org.timestamp.mobile.TimestampActivity
-import org.timestamp.mobile.models.EventViewModel
-import org.timestamp.mobile.models.LocationViewModel
-import org.timestamp.mobile.models.ThemeViewModel
+import org.timestamp.mobile.viewmodels.EventViewModel
+import org.timestamp.mobile.viewmodels.LocationViewModel
+import org.timestamp.mobile.viewmodels.ThemeViewModel
 import org.timestamp.mobile.ui.screens.ubuntuFontFamily
 import org.timestamp.mobile.ui.theme.Colors
-import java.sql.Time
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale

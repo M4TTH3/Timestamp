@@ -33,7 +33,7 @@ class DatePickerTest {
                 onDismissRequest = {},
                 onConfirmation = {},
                 isMock = true,
-                editEvent = null,
+                loadEvent = null,
                 currentUser = mockFirebaseUser
             )
         }

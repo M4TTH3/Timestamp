@@ -1,9 +1,6 @@
-package org.timestamp.mobile.models
+package org.timestamp.mobile.viewmodels
 
 import android.app.Application
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
@@ -11,8 +8,6 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Shader
 import android.net.Uri
-import android.util.Log
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.AndroidViewModel
 import coil.ImageLoader
@@ -22,13 +17,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.serialization.json.Json
-import org.timestamp.lib.dto.LocationDTO
-import org.timestamp.mobile.INTENT_EXTRA_LOCATION
-import org.timestamp.mobile.R
-import org.timestamp.mobile.utility.KtorClient
 
 class ProfileViewModel (
     private val application: Application

@@ -7,7 +7,7 @@ import org.timestamp.lib.dto.TravelMode
 import org.timestamp.lib.dto.UserDTO
 
 @Entity
-@Table(name = "users", schema = "public")
+@Table(name = "users")
 class User(
     @Id
     val id: String = "",

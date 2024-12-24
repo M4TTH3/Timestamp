@@ -17,6 +17,8 @@ import com.google.android.gms.location.ActivityTransitionResult
 import com.google.android.gms.location.DetectedActivity
 import org.timestamp.lib.dto.TravelMode
 import org.timestamp.mobile.ACTION_DETECTED_ACTIVITY
+import org.timestamp.mobile.repository.ErrorRepository
+import org.timestamp.mobile.repository.StateRepository
 
 class ActivityRecognitionProvider(
     private val context: Context
@@ -35,14 +37,9 @@ class ActivityRecognitionProvider(
     )
 
     private var isRunning = false
-    var travelMode: TravelMode? = null
-        private set
+    private var travelMode: TravelMode? = null
 
     init {
-        ActivityBroadcastReceiver.updateTravelMode = {
-            travelMode = it
-        }
-
         val filter = IntentFilter(ACTION_DETECTED_ACTIVITY)
         context.registerReceiver(ActivityBroadcastReceiver, filter, Context.RECEIVER_EXPORTED)
     }
@@ -59,7 +56,10 @@ class ActivityRecognitionProvider(
         if (isRunning || !pmp.activityRecognitionPermission) return
 
         // Set the callback
-        ActivityBroadcastReceiver.callback = callback
+        ActivityBroadcastReceiver.callback = {
+            travelMode = it
+            callback(it)
+        }
 
         val task = activityRecognitionClient
             .requestActivityTransitionUpdates(request, pendingIntent)
@@ -119,7 +119,6 @@ class ActivityRecognitionProvider(
 
     private object ActivityBroadcastReceiver: BroadcastReceiver() {
 
-        lateinit var updateTravelMode: (TravelMode) -> Unit
         lateinit var callback: (TravelMode) -> Unit
 
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -130,7 +129,6 @@ class ActivityRecognitionProvider(
             val detectedActivity = result.transitionEvents.singleOrNull() ?: return
 
             val travelMode = toTravelMode(detectedActivity.activityType)
-            updateTravelMode(travelMode)
             callback(travelMode)
 
             Log.d("ActivityRecognition", "Detected activity: $travelMode")

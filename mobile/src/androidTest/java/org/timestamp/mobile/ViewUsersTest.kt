@@ -1,23 +1,17 @@
 package org.timestamp.mobile
 
-import android.content.Intent
 import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.firebase.auth.FirebaseUser
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.manipulation.Ordering.Context
 import org.timestamp.lib.dto.EventDTO
-import org.timestamp.mobile.models.EventViewModel
+import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.ui.elements.ViewUsers
 
 class ViewUsersTest {

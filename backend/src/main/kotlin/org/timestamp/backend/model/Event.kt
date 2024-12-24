@@ -1,5 +1,6 @@
 package org.timestamp.backend.model
 
+
 import com.fasterxml.jackson.annotation.JsonManagedReference
 import jakarta.persistence.*
 import org.timestamp.lib.dto.EventDTO
@@ -7,7 +8,7 @@ import org.timestamp.lib.dto.EventUserDTO
 import java.time.OffsetDateTime
 
 @Entity
-@Table(name = "events", schema = "public")
+@Table(name = "events")
 class Event(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,19 +33,7 @@ class Event(
 
 fun Event.toDTO(): EventDTO {
     val users: List<EventUserDTO> = this.userEvents.map {
-        val user = it.user!!
-
-        // Only get the time est. if the event is today and the user has not arrived
-        EventUserDTO(
-            id = user.id,
-            name = user.name,
-            email = user.email,
-            pfp = user.pfp,
-            timeEst = it.timeEst,
-            distance = it.distance,
-            arrivedTime = it.arrivedTime,
-            arrived = it.arrived
-        )
+        it.toDTO()
     }
 
     return EventDTO(
@@ -76,7 +65,8 @@ fun Event.toHiddenDTO(): EventDTO {
             timeEst = null,
             distance = null,
             arrived = false,
-            arrivedTime = null
+            arrivedTime = null,
+            travelMode = null
         )
     )
 

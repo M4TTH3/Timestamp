@@ -1,6 +1,7 @@
 package org.timestamp.lib.dto
 
 import kotlinx.serialization.Serializable
+import org.timestamp.lib.util.OffsetDateTimeSerializer
 import java.time.OffsetDateTime
 
 @Serializable
@@ -13,5 +14,6 @@ data class EventUserDTO(
     val distance: Double?,
     val arrived: Boolean,
     @Serializable(with = OffsetDateTimeSerializer::class)
-    val arrivedTime: OffsetDateTime?
+    val arrivedTime: OffsetDateTime?,
+    val travelMode: TravelMode?
 )

@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class LocationDTO(
     val latitude: Double,
     val longitude: Double,
-    val travelMode: TravelMode
+    val travelMode: TravelMode = TravelMode.Car
 )

@@ -19,7 +19,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBlzpHwjEUlP5yMuix-QwMxFXn8CVWvM3E" />
+            android:value="AIzaSyAq6ghcMf6lKGPhfEue0UACdAjkMrOCQQY" />
 
         <service android:name=".TimestampService"
             android:exported="false"

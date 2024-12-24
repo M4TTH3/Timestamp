@@ -1,7 +1,6 @@
 package org.timestamp.mobile
 
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
@@ -42,7 +41,7 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = {},
                 isMock = true,
-                editEvent = null,
+                loadEvent = null,
                 currentUser = mockFirebaseUser,
             )
         }
@@ -55,7 +54,7 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = {},
                 isMock = true,
-                editEvent = null,
+                loadEvent = null,
                 currentUser = mockFirebaseUser,
             )
         }
@@ -75,7 +74,7 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = { event -> confirmedEvent = event },
                 isMock = true,
-                editEvent = null,
+                loadEvent = null,
                 currentUser = mockFirebaseUser
             )
         }
@@ -92,7 +91,7 @@ class CreateEventTest {
                 onDismissRequest = { dismissed.value = true },
                 onConfirmation = {},
                 isMock = true,
-                editEvent = null,
+                loadEvent = null,
                 currentUser = mockFirebaseUser
             )
         }
@@ -108,7 +107,7 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = {},
                 isMock = true,
-                editEvent = null,
+                loadEvent = null,
                 currentUser = mockFirebaseUser
             )
         }
@@ -123,7 +122,7 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = {},
                 isMock = true,
-                editEvent = null,
+                loadEvent = null,
                 currentUser = mockFirebaseUser
             )
         }
@@ -139,7 +138,7 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = { event -> confirmedEvent = event },
                 isMock = true,
-                editEvent = null,
+                loadEvent = null,
                 currentUser = mockFirebaseUser
             )
         }
@@ -170,7 +169,7 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = {},
                 isMock = false,
-                editEvent = existingEvent,
+                loadEvent = existingEvent,
                 currentUser = mockFirebaseUser
             )
         }
@@ -199,7 +198,7 @@ class CreateEventTest {
                 onDismissRequest = {},
                 onConfirmation = {},
                 isMock = false,
-                editEvent = null,
+                loadEvent = null,
                 currentUser = mockFirebaseUser
             )
         }

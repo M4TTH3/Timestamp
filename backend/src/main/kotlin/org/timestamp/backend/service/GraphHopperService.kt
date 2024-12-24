@@ -9,6 +9,8 @@ import org.timestamp.backend.model.User
 import org.timestamp.backend.model.UserEvent
 import org.timestamp.backend.model.toDTO
 import org.timestamp.lib.dto.*
+import org.timestamp.lib.util.toUtc
+import org.timestamp.lib.util.utcNow
 import java.util.*
 
 @Component
@@ -33,7 +35,7 @@ class GraphHopperService(
             user.longitude,
             event.latitude,
             event.longitude,
-            user.travelMode
+            userEvent.travelMode ?: user.travelMode
         )
 
         userEvent.timeEst = res?.time
@@ -51,18 +53,7 @@ class GraphHopperService(
         return userEvent
     }
 
-    /**
-     * Creates a new user event with both the event & user. It will update
-     * it's time est, distance, and arrival status.
-     */
-    fun createUserEvent(user: User, event: Event): UserEvent {
-        return updateUserEvent(
-            UserEvent(
-                event = event,
-                user = user
-            )
-        )
-    }
+
 
     /**
      * Get the route info between the user and the event.

@@ -1,4 +1,4 @@
-package org.timestamp.mobile.models
+package org.timestamp.mobile.viewmodels
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

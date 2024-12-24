@@ -23,11 +23,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,7 +36,7 @@ import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.R
 import org.timestamp.mobile.TimestampActivity
-import org.timestamp.mobile.models.EventViewModel
+import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.ui.elements.AcceptEvent
 import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
@@ -75,7 +72,7 @@ fun EventsScreen(
                 createEvents.value = false
             },
             isMock = isMock,
-            editEvent = null,
+            loadEvent = null,
             currentUser = currentUser
         )
     }

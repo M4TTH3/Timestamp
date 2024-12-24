@@ -4,6 +4,7 @@ import com.graphhopper.GraphHopper
 import com.graphhopper.config.CHProfile
 import com.graphhopper.config.Profile
 import com.graphhopper.util.GHUtility
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.nio.file.Path
@@ -17,11 +18,13 @@ data class RouteResponse(
 )
 
 @Configuration
-class GraphHopperConfig {
+class GraphHopperConfig(
+    @Value("\${osm.file}")
+    private val osmFile: String = "ontario-latest.osm.pbf"
+) {
 
     @Bean
     fun graphHopperInstance(): GraphHopper {
-        val osmFile = System.getenv("OSM_FILE") ?: "ontario-latest.osm.pbf"
         val path = Path("osm/$osmFile")
         val cachePath = Path("graph-cache")
 

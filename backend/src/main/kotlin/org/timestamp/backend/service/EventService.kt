@@ -10,7 +10,8 @@ import org.timestamp.backend.repository.TimestampUserRepository
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventLinkDTO
 import org.timestamp.lib.dto.NotificationDTO
-import org.timestamp.lib.dto.utcNow
+import org.timestamp.lib.dto.TravelMode
+import org.timestamp.lib.util.utcNow
 import java.util.*
 
 
@@ -52,17 +53,19 @@ class EventService(
     /**
      * Create an event with the given user as the creator.
      */
-    fun createEvent(userId: String, event: Event): EventDTO {
+    fun createEvent(userId: String, eventDTO: EventDTO): EventDTO {
         val user = userDb.findByIdOrNull(userId) ?: throw EventNotFoundException()
+        val event = eventDTO.toEvent()
         event.creator = user.id
 
-        val userEvent = graphHopperService.createUserEvent(user, event)
+        val userEvent = UserEvent(user = user, event = event)
+        graphHopperService.updateUserEvent(userEvent.updateTravelMode(eventDTO, userId))
         event.userEvents.add(userEvent)
         return db.save(event).toDTO()
     }
 
-    fun createEvent(user: User, event: Event): EventDTO {
-        return createEvent(user.id, event)
+    fun createEvent(user: User, eventDTO: EventDTO): EventDTO {
+        return createEvent(user.id, eventDTO)
     }
 
     /**
@@ -70,7 +73,7 @@ class EventService(
      * We will verify the event info by getting the DB version and modifying that.
      * Returns true if the event was updated, false otherwise.
      */
-     fun updateEvent(firebaseUser: FirebaseUser, event: Event): EventDTO {
+     fun updateEvent(firebaseUser: FirebaseUser, event: EventDTO): EventDTO {
         val item: Event = db.findByIdOrNull(event.id) ?: throw EventNotFoundException()
 
         if (item.creator != firebaseUser.uid) throw ForbiddenException()
@@ -82,13 +85,29 @@ class EventService(
         item.description = event.description
         item.name = event.name
 
+        // Update the travel mode of the current user
+        item.userEvents.first { it.id.userId == firebaseUser.uid }.updateTravelMode(event, firebaseUser.uid)
+
+        return db.save(item).toDTO()
+    }
+
+    /**
+     * Update the travel mode of the user in the event. The user must be part of the event.
+     * @return the updated event
+     */
+    fun updateEventTravelMode(firebaseUser: FirebaseUser, eventId: Long, travelMode: TravelMode): EventDTO {
+        val item: Event = db.findByIdOrNull(eventId) ?: throw EventNotFoundException()
+
+        val userEvent = item.userEvents.firstOrNull { it.id.userId == firebaseUser.uid } ?: throw UserNotFoundException()
+        graphHopperService.updateUserEvent(userEvent.updateTravelMode(travelMode))
+
         return db.save(item).toDTO()
     }
 
     /**
      * Join an event with the given user. The user must exist in the database.
      */
-    fun joinEvent(firebaseUser: FirebaseUser, eventLinkId: UUID): EventDTO {
+    fun joinEvent(firebaseUser: FirebaseUser, eventLinkId: UUID, travelMode: TravelMode?): EventDTO {
         val user = userDb.findByIdOrNull(firebaseUser.uid)?: throw UserNotFoundException()
         val link = eventLinkDb.findByIdOrNull(eventLinkId) ?: throw EventLinkNotFoundException()
         val threshold = utcNow().minusMinutes(30)
@@ -98,7 +117,8 @@ class EventService(
         val event = link.event!!
         if (user.id in event.userEvents.map { it.id.userId }) throw BadRequestException()
 
-        val userEvent = graphHopperService.createUserEvent(user, event)
+        val userEvent = UserEvent(user = user, event = event)
+        graphHopperService.updateUserEvent(userEvent.updateTravelMode(travelMode))
         event.userEvents.add(userEvent)
 
         return db.save(event).toDTO()
@@ -137,11 +157,49 @@ class EventService(
      * For now, we are only showing the closest event upcoming. We can change this later.
      * We will return the event and the distance to the event.
      */
-    fun getNotifications(firebaseUser: FirebaseUser): NotificationDTO {
-        val event = db.findNextEventByUser(firebaseUser.uid) ?: throw EventNotFoundException()
+    fun getNotifications(firebaseUser: FirebaseUser): NotificationDTO? {
+        val event = db.findNextEventByUser(firebaseUser.uid) ?: return null
         val userEvent = event.userEvents.firstOrNull { it.id.userId == firebaseUser.uid }
         userEvent ?: throw InternalServerErrorException()
 
         return graphHopperService.getNotificationDto(userEvent)
+    }
+
+    /**
+     * Convert an EventDTO to an Event object. Don't include any
+     * join table information, as we will manually update those.
+     */
+    private fun EventDTO.toEvent(): Event {
+        return Event(
+            id = id,
+            name = name,
+            description = description,
+            latitude = latitude,
+            longitude = longitude,
+            address = address,
+            arrival = arrival,
+            creator = creator
+        )
+    }
+
+    /**
+     * Update the travel method of the userEvent based on the source event.
+     * This will update the travel method of the userEvent based on the source event.
+     */
+    private fun UserEvent.updateTravelMode(
+        src: EventDTO,
+        userId: String
+    ): UserEvent {
+        val user = src.users.firstOrNull { it.id == userId } ?: return this
+
+        // Only update if the user is in the src event
+        return this.updateTravelMode(user.travelMode)
+    }
+
+    private fun UserEvent.updateTravelMode(
+        travelMode: TravelMode?
+    ): UserEvent {
+        this.travelMode = travelMode
+        return this
     }
 }

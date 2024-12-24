@@ -9,14 +9,14 @@ import org.timestamp.backend.model.toDTO
 import org.timestamp.backend.repository.TimestampUserRepository
 import org.timestamp.lib.dto.TravelMode
 import org.timestamp.lib.dto.UserDTO
-import org.timestamp.lib.dto.utcNow
+import org.timestamp.lib.util.utcNow
 
 @Service
 class UserService(
     private val db: TimestampUserRepository,
     private val graphHopperService: GraphHopperService
 ) {
-    fun getUserById(id: String): User? = db.findByIdOrNull(id)
+    fun getUserById(id: String): User = db.findByIdOrNull(id) ?: throw UserNotFoundException()
 
     /**
      * Create a user from a FirebaseUser object if it does not exist, otherwise return
