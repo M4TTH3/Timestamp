@@ -20,7 +20,7 @@ data class RouteResponse(
 @Configuration
 class GraphHopperConfig(
     @Value("\${osm.file}")
-    private val osmFile: String = "ontario-latest.osm.pbf"
+    private val osmFile: String
 ) {
 
     @Bean
@@ -51,7 +51,7 @@ class GraphHopperConfig(
                 "foot_access,foot_priority,foot_average_speed"
 
         private fun createGraphHopperInstance(path: Path, cachePath: Path): GraphHopper {
-            assert(path.exists()) { "OSM file does not exist" }
+            if (path.exists().not()) throw IllegalArgumentException("OSM file does not exist")
 
             val hopper = GraphHopper()
 
