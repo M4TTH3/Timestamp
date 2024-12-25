@@ -8,6 +8,8 @@ COPY backend/build.gradle.kts backend/
 COPY lib/src lib/src
 COPY lib/build.gradle.kts lib/
 
+COPY entrypoint.sh ./entrypoint.sh
+
 RUN chmod +x ./gradlew
 RUN ./gradlew --no-daemon :backend:bootJar
 
@@ -17,7 +19,10 @@ WORKDIR /app
 RUN mkdir osm
 RUN mkdir graph-cache
 COPY --from=build /app/backend/build/libs/timestamp.jar /app/timestamp.jar
+COPY --from=build /app/entrypoint.sh /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "/app/timestamp.jar"]
+CMD ["/app/entrypoint.sh"]

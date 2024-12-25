@@ -5,12 +5,15 @@ import com.graphhopper.config.CHProfile
 import com.graphhopper.config.Profile
 import com.graphhopper.util.GHUtility
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.exists
+import kotlin.system.exitProcess
 
 data class RouteResponse(
     val time: Long,
@@ -23,11 +26,24 @@ class GraphHopperConfig(
     private val osmFile: String
 ) {
 
-    @Bean
-    fun graphHopperInstance(): GraphHopper {
-        val path = Path("osm/$osmFile")
-        val cachePath = Path("graph-cache")
+    private val path = Path("osm/$osmFile")
+    private val cachePath = Path("graph-cache")
 
+    @Bean
+    @Order(1)
+    @org.springframework.context.annotation.Profile("graphhopper-import")
+    fun graphHopperPreprocessor(): CommandLineRunner {
+        return CommandLineRunner {
+            println("Running GraphHopper import...")
+            createGraphHopperInstance(path, cachePath, shouldImport = true)
+            println("Import complete, exiting...")
+            exitProcess(0)
+        }
+    }
+
+    @Bean
+    @Order(2) // Run after the import to ensure no errors
+    fun graphHopperInstance(): GraphHopper {
         val hopper = createGraphHopperInstance(path, cachePath)
         return hopper
     }
@@ -50,7 +66,15 @@ class GraphHopperConfig(
                 "bike_priority,mtb_rating,hike_rating,bike_access,roundabout,bike_average_speed," +
                 "foot_access,foot_priority,foot_average_speed"
 
-        private fun createGraphHopperInstance(path: Path, cachePath: Path): GraphHopper {
+        private fun createGraphHopperInstance(
+            path: Path,
+            cachePath: Path,
+            /**
+             * If true, the OSM file will be imported and the graphhopper instance will be closed
+             * after the import is done. If false, the graphhopper instance will be loaded from the cache.
+             */
+            shouldImport: Boolean = false
+        ): GraphHopper {
             if (path.exists().not()) throw IllegalArgumentException("OSM file does not exist")
 
             val hopper = GraphHopper()
@@ -64,7 +88,7 @@ class GraphHopperConfig(
             hopper.setProfiles(profiles)
 
             // Load graphhopper cache if it exists, otherwise create it
-            hopper.importOrLoad()
+            if (shouldImport) hopper.importOrLoad() else hopper.load()
             return hopper
         }
     }
