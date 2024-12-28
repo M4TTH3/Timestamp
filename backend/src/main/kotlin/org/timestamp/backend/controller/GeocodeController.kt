@@ -1,4 +1,4 @@
-package org.timestamp.backend
+package org.timestamp.backend.controller
 
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.service.GeocoderService
-import org.timestamp.backend.service.UserService
 import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.lib.dto.GeocodeDTO
 import org.timestamp.lib.dto.TravelMode

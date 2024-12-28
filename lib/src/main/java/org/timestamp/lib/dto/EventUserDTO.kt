@@ -6,14 +6,14 @@ import java.time.OffsetDateTime
 
 @Serializable
 data class EventUserDTO(
-    val id: String,
-    val name: String,
-    val email: String,
-    val pfp: String,
-    val timeEst: Long?,
-    val distance: Double?,
-    val arrived: Boolean,
+    val id: String = "",
+    val name: String = "",
+    val email: String = "",
+    val pfp: String = "",
+    val timeEst: Long? = null,
+    val distance: Double? = null,
+    val arrived: Boolean = false,
     @Serializable(with = OffsetDateTimeSerializer::class)
-    val arrivedTime: OffsetDateTime?,
-    val travelMode: TravelMode?
+    val arrivedTime: OffsetDateTime? = null,
+    val travelMode: TravelMode? = null,
 )

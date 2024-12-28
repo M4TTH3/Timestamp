@@ -21,7 +21,7 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
     suspend fun getEvents() {
         val tag = "Events Get"
         handler(tag) {
-            val endpoint = "/events"
+            val endpoint = "events"
             val body: List<EventDTO>? = ktorClient.get(endpoint).bodyOrNull(tag)
             body?.let { set(it) }
         }
@@ -30,7 +30,7 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
     suspend fun postEvent(event: EventDTO) {
         val tag = "Events Post"
         handler(tag) {
-            val endpoint = "/events"
+            val endpoint = "events"
             val body: EventDTO? = ktorClient.post(endpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(event)
@@ -43,7 +43,7 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
     suspend fun deleteEvent(eventId: Long) {
         val tag = "Events Delete"
         handler(tag) {
-            val endpoint = "/events/$eventId"
+            val endpoint = "events/$eventId"
             val res = ktorClient.delete(endpoint)
             if (res.success(tag)) delete(eventId)
         }
@@ -52,7 +52,7 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
     suspend fun patchEvent(event: EventDTO) {
         val tag = "Events Patch"
         handler(tag) {
-            val endpoint = "/events"
+            val endpoint = "events"
             val body: EventDTO? = ktorClient.patch(endpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(event)
@@ -65,7 +65,7 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
     suspend fun patchEventTravelMode(eventId: Long, travelMode: TravelMode) {
         val tag = "Events Patch Travel Mode"
         handler(tag) {
-            val endpoint = "/events/$eventId/travel-mode"
+            val endpoint = "events/$eventId/travel-mode"
             val body: EventDTO? = ktorClient.patch(endpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(travelMode)

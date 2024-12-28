@@ -12,12 +12,10 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.plugin
 import io.ktor.client.statement.HttpResponse
-import io.ktor.http.isSuccess
-import io.ktor.http.takeFrom
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.timestamp.mobile.R
 
@@ -51,10 +49,7 @@ object KtorClient {
             }
 
             defaultRequest {
-                url {
-                    // Set the default backend url protocol and host
-                    takeFrom(backendBase)
-                }
+                url(backendBase)
             }
         }.apply {
             plugin(HttpSend).intercept { req ->
@@ -66,25 +61,40 @@ object KtorClient {
         }
     }
 
+    private val lastActiveJob = mutableMapOf<String, Job>()
+
     /**
      * Handler for a request, performs try catch and updates
      * states if required. Run the action in the IO context.
      */
     suspend fun <T> handler(
         tag: String = "Backend Request",
+        cancelOnNewRequest: Boolean = false,
         onError: suspend (e: Throwable?) -> Unit = {},
         action: suspend () -> T?
     ): T? {
-        val t = runCatching {
-            withContext(Dispatchers.IO) {
-                action()
+
+        if (cancelOnNewRequest) lastActiveJob[tag]?.cancel()
+
+        val job = CoroutineScope(Dispatchers.IO).async {
+            val tmp = runCatching {
+                withContext(Dispatchers.IO) {
+                    action()
+                }
+            }.onFailure {
+                if (it is CancellationException) {
+                    Log.d(tag, "Request Cancelled for $tag")
+                } else {
+                    onError(it)
+                    Log.e(tag, it.toString())
+                }
             }
-        }.onFailure {
-            onError(it)
-            Log.e(tag, it.toString())
+
+            tmp.getOrNull()
         }
 
-        return t.getOrNull()
+        lastActiveJob[tag] = job
+        return job.await()
     }
 
     /**

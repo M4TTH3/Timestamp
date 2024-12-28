@@ -22,7 +22,7 @@ class LocationRepository private constructor(): BaseRepository<LocationDTO?>
     suspend fun updateLocation(location: LocationDTO) {
         val tag = "UpdateLocation"
         handler(tag) {
-            val endpoint = "/users/me/location"
+            val endpoint = "users/me/location"
             val success = ktorClient.patch(endpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(location)

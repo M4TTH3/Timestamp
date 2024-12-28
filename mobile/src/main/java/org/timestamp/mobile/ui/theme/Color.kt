@@ -10,6 +10,7 @@ object Colors {
     val BittersweetDark = Color(0xFFCC1A09)
     var Black = Color(0xFF2A2B2E)
     var White = Color(0xFFFFFFFF)
+    var Gray = Color(0xFFB2B4BE)
 
     fun setThemeColors(darkModeOn : Boolean) {
         if (darkModeOn) {

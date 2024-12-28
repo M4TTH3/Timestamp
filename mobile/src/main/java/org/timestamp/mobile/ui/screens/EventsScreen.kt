@@ -2,29 +2,16 @@ package org.timestamp.mobile.ui.screens
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,13 +23,12 @@ import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.R
 import org.timestamp.mobile.TimestampActivity
-import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.ui.elements.AcceptEvent
-import org.timestamp.mobile.ui.elements.CreateEvent
 import org.timestamp.mobile.ui.elements.EventBox
 import org.timestamp.mobile.ui.elements.MapView
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
+import org.timestamp.mobile.viewmodels.EventViewModel
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
@@ -50,7 +36,8 @@ import java.time.ZoneId
 fun EventsScreen(
     viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
     isMock: Boolean = false,
-    currentUser: FirebaseUser?
+    currentUser: FirebaseUser?,
+    navigateCreateEvent: (EventDTO?) -> Unit
 ) {
 
     val eventListState = viewModel.events.collectAsState()
@@ -65,16 +52,7 @@ fun EventsScreen(
     val hasEvents = remember { mutableStateOf(false) }
     val showMapView = remember { mutableStateOf(false) }
     if (createEvents.value) {
-        CreateEvent(
-            onDismissRequest = { createEvents.value = false },
-            onConfirmation = { event ->
-                viewModel.postEvent(event)
-                createEvents.value = false
-            },
-            isMock = isMock,
-            loadEvent = null,
-            currentUser = currentUser
-        )
+        navigateCreateEvent(null)
     }
 
     if (eventList.isNotEmpty()) hasEvents.value = true

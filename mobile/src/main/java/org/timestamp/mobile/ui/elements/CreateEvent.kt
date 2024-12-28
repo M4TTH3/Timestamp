@@ -6,12 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
@@ -41,8 +36,6 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import org.timestamp.lib.dto.EventDTO
-import org.timestamp.lib.dto.GeoJsonFeature
-import org.timestamp.lib.dto.GeocodeDTO
 import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.lib.util.toOffset
 import org.timestamp.mobile.TimestampActivity
@@ -60,45 +53,6 @@ const val UWATERLOO_LONGITUDE = -80.5449
 
 // Default location is UWATERLOO if no location is found at all
 val UWATERLOO = LocationDTO(UWATERLOO_LATITUDE, UWATERLOO_LONGITUDE)
-
-/**
- * This will extract the information of the selected geocode (location info)
- * and load it into the EventDTO. If there is no name, it will use the format:
- *
- *      description = housenumber street
- *      address = city, state, country
- *
- * Otherwise, it will use the name as the description.
- * @param feature The selected GeoJsonFeature
- */
-fun MutableState<EventDTO>.load(feature: GeoJsonFeature?, setLoc: Boolean = false) {
-    feature ?: return // If the feature is null, return
-
-    val properties = feature.properties
-    val geometry = feature.geometry
-    val name = properties.name
-    val validName = !name.isNullOrEmpty()
-
-    val localAddress = listOfNotNull(properties.houseNumber, properties.street)
-        .joinToString(" ")
-    val cityAddressArray = listOfNotNull(if (validName) localAddress else null, properties.city, properties.state)
-
-    val description = if (validName) name!! else localAddress
-    val address = cityAddressArray.joinToString(", ")
-
-    this.value = when {
-        setLoc -> this.value.copy(
-            latitude = geometry.coordinates[1],
-            longitude = geometry.coordinates[0],
-            description = description,
-            address = address
-        )
-        else -> this.value.copy(
-            description = description,
-            address = address
-        )
-    }
-}
 
 @Composable
 fun CreateEvent(
@@ -154,7 +108,7 @@ fun CreateEvent(
         if (isNewEvent) {
             val geocodeDTO = geoVm.currentLocPhotonDTO()
             geocodeDTO?.features?.firstOrNull()?.let {
-                event.load(it, true)
+
             }
         }
     }

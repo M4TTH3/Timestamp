@@ -1,4 +1,4 @@
-package org.timestamp.backend
+package org.timestamp.backend.controller
 
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal

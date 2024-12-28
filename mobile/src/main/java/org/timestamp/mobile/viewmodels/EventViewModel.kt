@@ -5,7 +5,9 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.timestamp.lib.dto.EventDTO
@@ -26,11 +28,15 @@ class EventViewModel (
     private val pendEventRepo = PendingEventRepository()
     private val errorRepo = ErrorRepository()
 
+    // This is the event if selected will be used to create or edit the event
+    private val _viewEvent: MutableStateFlow<EventDTO?> = MutableStateFlow(null)
+
     // Whether we are polling events
     private var isPollingEvents = false
 
     // Events model
     val events: StateFlow<List<EventDTO>> = eventRepo.get()
+    val viewEvent = _viewEvent.asStateFlow()
 
     // Error progress
     val error: StateFlow<Throwable?> = errorRepo.get()
@@ -133,4 +139,7 @@ class EventViewModel (
         pendEventRepo.setPendingEvent()
     }
 
+    fun setViewEvent(event: EventDTO?) {
+        _viewEvent.value = event
+    }
 }

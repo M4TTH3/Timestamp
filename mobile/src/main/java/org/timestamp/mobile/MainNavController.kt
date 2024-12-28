@@ -6,31 +6,14 @@ import android.provider.Settings
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +27,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -55,24 +39,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
+import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.ui.elements.BackgroundLocationDialog
-import org.timestamp.mobile.ui.screens.CalendarScreen
-import org.timestamp.mobile.ui.screens.EventsScreen
-import org.timestamp.mobile.ui.screens.HomeScreen
-import org.timestamp.mobile.ui.screens.LoginScreen
-import org.timestamp.mobile.ui.screens.SettingsScreen
+import org.timestamp.mobile.ui.screens.*
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import org.timestamp.mobile.utility.PermissionProvider
+import org.timestamp.mobile.utility.Screen
 import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.viewmodels.ThemeViewModel
-
-enum class Screen {
-    Login,
-    Home,
-    Events,
-    Calendar,
-    Settings
-}
 
 class MainNavController(
     private val activity: TimestampActivity
@@ -144,7 +118,11 @@ class MainNavController(
             permissions.launchMultiplePermissionRequest()
         }
 
-        fun signIn() { scope.launch { handleSignIn(navController) } }
+        fun signIn() {
+            scope.launch {
+                handleSignIn(navController)
+            }
+        }
         fun signOut() {
             auth.signOut()
             eventViewModel.stopGetEventsPolling()
@@ -156,6 +134,11 @@ class MainNavController(
                 navController.popBackStack()
                 navController.navigate(Screen.Login.name)
             }
+        }
+
+        fun navigateCreateEvent(event: EventDTO?) {
+            eventViewModel.setViewEvent(event)
+            navController.navigate(Screen.CreateOrEditEvent.name)
         }
 
         TimestampTheme(darkTheme = isDarkTheme) {
@@ -212,8 +195,9 @@ class MainNavController(
                     }
                 }
                 composable(Screen.Events.name) {
-                    EventsScreen(currentUser = auth.currentUser)
+                    EventsScreen(currentUser = auth.currentUser, navigateCreateEvent = ::navigateCreateEvent)
                     NavBar(navController = navController, currentScreen = "Events")
+//                    NavBarV2({navController.navigate(it)}, currentScreen = Screen.Events.name)
                 }
                 composable(Screen.Calendar.name) {
                     CalendarScreen(currentUser = auth.currentUser)
@@ -225,6 +209,11 @@ class MainNavController(
                         onSignOutClick = ::signOut
                     )
                     NavBar(navController = navController, currentScreen = "Settings")
+                }
+
+                composable(Screen.CreateOrEditEvent.name) {
+                    // Navigation to Create or Edit an Event
+                    CreateEventScreen(navController::popBackStack)
                 }
             }
         }
@@ -319,6 +308,63 @@ class MainNavController(
         val serviceIntent = Intent(activity, TimestampService::class.java)
         activity.stopService(serviceIntent)
     }
+}
+
+@Composable
+fun NavBarV2(
+    navigate: (String) -> Unit,
+    currentScreen : String
+) {
+    val eventsName = Screen.Events.name
+    val calendarName = Screen.Calendar.name
+    val settingsName = Screen.Settings.name
+
+    @Composable
+    fun NavBar() = NavigationBar(
+        containerColor = MaterialTheme.colors.secondary,
+        contentColor = Color.Black
+    ) {
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Home,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = if (currentScreen == "Events") Color.Black else Color(0xFF522D2A)
+                )
+            },
+            selected = currentScreen == eventsName,
+            onClick = { navigate(eventsName) }
+        )
+
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.CalendarMonth,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = if (currentScreen == "Calendar") Color.Black else Color(0xFF522D2A)
+                )
+            },
+            selected = currentScreen == calendarName,
+            onClick = { navigate(calendarName) }
+        )
+
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = if (currentScreen == "Settings") Color.Black else Color(0xFF522D2A)
+                )
+            },
+            selected = currentScreen == settingsName,
+            onClick = { navigate(settingsName) }
+        )
+    }
+
+    NavBar()
 }
 
 fun getUser() : FirebaseUser? = FirebaseAuth.getInstance().currentUser

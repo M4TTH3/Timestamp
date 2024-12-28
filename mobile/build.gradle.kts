@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.Packaging
-
 group = "org.timestamp"
 version = "2.0.0"
 
@@ -11,11 +9,13 @@ plugins {
 
     // Add the Google services Gradle plugin
     alias(libs.plugins.google.services)
+
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "org.timestamp.mobile"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "org.timestamp.mobile"
@@ -89,6 +89,8 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.junit.ktx)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.ui.tooling.preview.android)
+    implementation(libs.androidx.ui.tooling.preview)
     testImplementation(libs.mockk.v1137)
     implementation(project(":lib"))
     implementation("com.github.vsnappy1:ComposeDatePicker:2.2.0") {
@@ -101,6 +103,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4.android)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    debugImplementation(libs.androidx.ui.tooling)
 }
 
 configurations.all {
