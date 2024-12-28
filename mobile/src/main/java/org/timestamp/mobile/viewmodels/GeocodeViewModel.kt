@@ -30,6 +30,12 @@ class GeocodeViewModel (
         }
     }
 
+    suspend fun reverseGeocode(lat: Double, lon: Double): GeocodeDTO? = withContext(
+        viewModelScope.coroutineContext
+    ) {
+        repo.reverseGeocode(lat, lon)
+    }
+
 
     /**
      * Search for possible locations based on the given query. Use a pinpointed location
@@ -42,4 +48,9 @@ class GeocodeViewModel (
     fun search(query: String, lat: Double, lon: Double) = viewModelScope.launch {
         repo.geocode(query, lat, lon)
     }
+
+    /**
+     * Reset the search results
+     */
+    fun clear() = repo.reset()
 }

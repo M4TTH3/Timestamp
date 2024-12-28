@@ -11,7 +11,7 @@ class NotificationRepository: BaseRepository<NotificationDTO?>(
     suspend fun getNotifications(): NotificationDTO? {
         val tag = "Get Notifications"
         return handler(tag) {
-            val endpoint = "/users/me/notifications"
+            val endpoint = "users/me/notifications"
             val body: NotificationDTO? = ktorClient.get(endpoint).bodyOrNull()
             body?.also {
                 if (somewhatEqual(it)) state = it

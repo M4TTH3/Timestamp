@@ -16,7 +16,7 @@ class UserRepository: BaseRepository<UserDTO?>(
     suspend fun postUser()  {
         val tag = "Get User"
         handler(tag) {
-            val endpoint = "/users/me"
+            val endpoint = "users/me"
             val body: UserDTO? = ktorClient.post(endpoint).bodyOrNull()
             body?.let { state = it }
         }

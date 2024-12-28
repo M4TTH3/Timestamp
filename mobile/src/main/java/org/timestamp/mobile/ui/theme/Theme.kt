@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 @Composable
@@ -25,8 +26,24 @@ fun TimestampTheme(
             background = Color.LightGray
         )
     }
+
+    val lightColorScheme = lightColorScheme(
+        primary = Color(0xFF2A2B2E),
+        secondary = Color(0xFFFFFFFF),
+        background = Color.LightGray
+    )
+
+    @Composable
+    fun Theme3() {
+        androidx.compose.material3.MaterialTheme(
+            colorScheme = lightColorScheme,
+            content = content,
+            typography = UbuntuTypography3
+        )
+    }
+
     MaterialTheme(
         colors = colorScheme,
-        content = content
+        content = { Theme3() }
     )
 }

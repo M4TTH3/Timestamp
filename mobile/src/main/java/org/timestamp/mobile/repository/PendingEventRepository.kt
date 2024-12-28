@@ -17,7 +17,8 @@ class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
 ) {
     private val eventViewRepository = EventRepository()
     private val base = KtorClient.backendBase
-    private val deepLinkPath = "/events/join"
+    private val deepLinkPathBase = "events/join"
+    private val deepLinkPath = "/$deepLinkPathBase"
     private val deepLinkPrefix = "$base$deepLinkPath"
     private var pendingEventLink: UUID? = null
 
@@ -27,7 +28,7 @@ class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
     suspend fun getEventLink(eventId: Long): String? {
         val tag = "Event Link"
         return handler(tag) {
-            val endpoint = "/events/link/$eventId"
+            val endpoint = "events/link/$eventId"
             val body: EventLinkDTO? = ktorClient.get(endpoint).bodyOrNull(tag)
 
             return@handler body?.let {
@@ -43,7 +44,7 @@ class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
     suspend fun joinPendingEvent() {
         val tag = "Events Join"
         handler(tag) {
-            val endpoint = "$deepLinkPath/$pendingEventLink"
+            val endpoint = "$deepLinkPathBase/$pendingEventLink"
             val res = ktorClient.post(endpoint)
 
             if (!res.success(tag)) return@handler
@@ -63,7 +64,7 @@ class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
         val uuid = pendingEventLink ?: return
 
         handler(tag) {
-            val endpoint = "/events/$uuid"
+            val endpoint = "events/$uuid"
             val res = ktorClient.get(endpoint)
 
             if (!res.success(tag)) return@handler

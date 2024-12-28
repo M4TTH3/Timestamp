@@ -71,6 +71,7 @@ open class BaseRepository<T>(
      */
     protected suspend fun <T> handler(
         tag: String = "View Model Request",
+        cancelOnNewRequest: Boolean = false,
         onError: suspend () -> Unit = {},
         action: suspend () -> T?
     ): T? {
@@ -79,7 +80,7 @@ open class BaseRepository<T>(
             onError()
         }
 
-        return KtorClient.handler(tag, ::onErrorHandler, action)
+        return KtorClient.handler(tag, cancelOnNewRequest, ::onErrorHandler, action)
     }
 
     protected suspend inline fun <reified T> HttpResponse.bodyOrNull(
