@@ -58,10 +58,11 @@ class EventViewModel (
     }
 
     /**
-     * Start polling the backend for events.
+     * Start polling the backend for events. This needs to be
+     * concurrent to the main thread.
      */
-    suspend fun startGetEventsPolling() {
-        if (isPollingEvents) return
+     fun startGetEventsPolling() = viewModelScope.launch {
+        if (isPollingEvents) return@launch
 
         isPollingEvents = true
 
