@@ -1,4 +1,4 @@
-package org.timestamp.mobile.ui.elements
+package org.timestamp.mobile.ui.deprecated
 
 import android.content.Intent
 import androidx.compose.foundation.Image

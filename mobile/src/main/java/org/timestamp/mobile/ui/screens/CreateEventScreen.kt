@@ -35,23 +35,22 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toJavaInstant
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventUserDTO
 import org.timestamp.lib.dto.GeoJsonFeature
 import org.timestamp.lib.dto.TravelMode
-import org.timestamp.mobile.TimestampActivity
+import org.timestamp.mobile.getActivity
 import org.timestamp.mobile.getUser
 import org.timestamp.mobile.repository.address
 import org.timestamp.mobile.repository.copy
 import org.timestamp.mobile.repository.headline
 import org.timestamp.mobile.ui.elements.TimePickerDialog
 import org.timestamp.mobile.ui.theme.Colors
-import org.timestamp.mobile.ui.theme.UbuntuTypography3
+import org.timestamp.mobile.ui.theme.tsTypography
 import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.viewmodels.GeocodeViewModel
 import org.timestamp.mobile.viewmodels.LocationViewModel
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -74,7 +73,7 @@ fun CreateEventScreen(
     navigateBack: () -> Unit
 ) {
     // Window values
-    val activity = LocalContext.current as TimestampActivity
+    val activity = LocalContext.current.getActivity()
     val locVm: LocationViewModel = viewModel(activity)
     val eventVm: EventViewModel = viewModel(activity)
     val geoVm: GeocodeViewModel = viewModel(activity)
@@ -100,7 +99,7 @@ fun CreateEventScreen(
         editEvent = it
     }
 
-    val createEventFields = CreateEventFields(editEvent, canEdit, isNewEvent, onEventUpdate)
+    val fields = Fields(editEvent, canEdit, isNewEvent, onEventUpdate)
 
     LaunchedEffect(Unit) {
         // New event -> set current location
@@ -128,7 +127,7 @@ fun CreateEventScreen(
         },
         bottomBar = { DeviceNavBar() }
     ) {
-        CreateEventFields(createEventFields, it, 1.dp)
+        CreateEventFields(fields, it, 1.dp)
     }
 }
 
@@ -136,7 +135,7 @@ fun CreateEventScreen(
  * This function is the container for the fields required to CreateEvent.
  * @param event The event to create.
  */
-data class CreateEventFields(
+data class Fields(
     val event: EventDTO,
     val canEdit: Boolean,
     val isNewEvent: Boolean,
@@ -146,7 +145,7 @@ data class CreateEventFields(
 /**
  *
  */
-private val LocalFields = compositionLocalOf<CreateEventFields> { error("No fields provided") }
+private val LocalFields = compositionLocalOf<Fields> { error("No fields provided") }
 
 /**
  * This function is the container for the fields in create/edit event.
@@ -158,7 +157,7 @@ private val LocalFields = compositionLocalOf<CreateEventFields> { error("No fiel
 @Composable
 fun CreateEventFields(
     // We want to hide mutations to the event from the parent
-    fields: CreateEventFields,
+    fields: Fields,
     innerPadding: PaddingValues = PaddingValues(0.dp),
     dividerThickness: Dp? = null
 ) {
@@ -180,7 +179,7 @@ fun CreateEventFields(
                 value = event.name,
                 onValueChange = { s -> onEventUpdate(event.copy(name = s)) },
                 placeholder = { Text(event.name.ifBlank { "Event Name" }) },
-                readOnly = canEdit,
+                readOnly = !canEdit,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = InputColours()
@@ -212,7 +211,7 @@ fun CreateEventFields(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 30.dp),
-                style = UbuntuTypography3.titleLarge,
+                style = tsTypography.titleLarge,
             color = Colors.Platinum
         )
     }
@@ -267,7 +266,7 @@ private fun EventArrivalDate() {
                 onClick = {
                     showModal = false
                     val newDate = datePickerState.selectedDateMillis!!
-                    val instant = Instant.fromEpochMilliseconds(newDate).toJavaInstant()
+                    val instant = Instant.ofEpochMilli(newDate)
 
                     // Must be UTC, because they selected as if it were UTC
                     val dateOffset = OffsetDateTime.ofInstant(instant, ZoneOffset.UTC)
@@ -332,7 +331,7 @@ private fun EventArrivalTime() {
 @Composable
 private fun MapWithSearch() {
     val (event, canEdit, _, onEventUpdate) = LocalFields.current
-    val geoVm: GeocodeViewModel = viewModel(LocalContext.current as TimestampActivity)
+    val geoVm: GeocodeViewModel = viewModel(LocalContext.current.getActivity())
     val cameraPositionState = rememberCameraPositionState {}
     var showModal by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -397,7 +396,7 @@ private fun MapWithSearch() {
                 .clipToBounds(),
             contentPadding = PaddingValues(horizontal = 10.dp)
         ) {
-            val font = UbuntuTypography3.labelSmall
+            val font = tsTypography.labelSmall
             Text(
                 event.address.ifBlank { "Search for a location" },
                 fontFamily = font.fontFamily,
@@ -440,7 +439,7 @@ fun SearchLocationModal(
     event: EventDTO,
     callback: (GeoJsonFeature?) -> Unit
 ) {
-    val geoVm: GeocodeViewModel = viewModel(LocalContext.current as TimestampActivity)
+    val geoVm: GeocodeViewModel = viewModel(LocalContext.current.getActivity())
     val searchResults by geoVm.searchResults.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
 
@@ -653,7 +652,7 @@ private fun CreateEventTopBar(
             }
         } else {
             TextButton(onClick = onSave) {
-                Text("Save", style = UbuntuTypography3.titleMedium)
+                Text("Save", style = tsTypography.titleMedium)
             }
         }
     }

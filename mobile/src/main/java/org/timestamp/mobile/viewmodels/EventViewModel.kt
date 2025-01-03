@@ -16,6 +16,8 @@ import org.timestamp.mobile.repository.EventRepository
 import org.timestamp.mobile.repository.PendingEventRepository
 import org.timestamp.mobile.repository.UserRepository
 
+private const val THIRTY_SECONDS_MS = 30000L
+
 /**
  * Global view model that holds Auth & Events states
  */
@@ -68,7 +70,7 @@ class EventViewModel (
 
         while(isPollingEvents) {
             getEvents()
-            delay(10000)
+            delay(THIRTY_SECONDS_MS)
         }
 
         isPollingEvents = false
@@ -79,9 +81,7 @@ class EventViewModel (
     /**
      * Fetch ALL events to update UI
      */
-    private fun getEvents() = viewModelScope.launch {
-        eventRepo.getEvents()
-    }
+    suspend fun getEvents() = eventRepo.getEvents()
 
     /**
      * Post an event, and modify the current list with the new event.

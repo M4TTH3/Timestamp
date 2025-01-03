@@ -11,7 +11,7 @@ import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.timestamp.mobile.ui.elements.CreateEvent
+import org.timestamp.mobile.ui.deprecated.CreateEvent
 import org.timestamp.mobile.ui.elements.DatePickerDialog
 
 class DatePickerTest {

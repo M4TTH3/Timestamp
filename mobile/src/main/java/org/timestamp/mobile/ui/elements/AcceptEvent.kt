@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import com.google.android.gms.maps.model.LatLng
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.mobile.ui.deprecated.EventMap
 import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily

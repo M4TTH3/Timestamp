@@ -2,24 +2,16 @@ package org.timestamp.mobile
 
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextClearance
-import androidx.compose.ui.test.performTextInput
-import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseUser
 import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.timestamp.lib.dto.EventDTO
-import org.timestamp.lib.dto.toOffset
-import org.timestamp.mobile.ui.elements.CreateEvent
-import org.timestamp.mobile.ui.elements.FetchLocationWrapper
+import org.timestamp.lib.util.toOffset
+import org.timestamp.mobile.ui.deprecated.CreateEvent
 import java.time.LocalDateTime
 
 class CreateEventTest {
@@ -175,20 +167,6 @@ class CreateEventTest {
         }
         composeTestRule.onNodeWithText("Edit Event").assertIsDisplayed()
         composeTestRule.onNodeWithText("Existing Event").assertIsDisplayed()
-    }
-
-    @Test
-    fun locationSelectionUpdatesMap() {
-        var selectedLocation: LatLng? = null
-        composeTestRule.activity.setContent {
-            FetchLocationWrapper(LocalContext.current) { location ->
-                selectedLocation = location
-            }
-        }
-        composeTestRule.waitForIdle()
-        assert(selectedLocation != null) {
-            "Location selection failed; no location was set."
-        }
     }
 
     @Test

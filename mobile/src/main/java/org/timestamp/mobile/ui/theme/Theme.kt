@@ -38,7 +38,7 @@ fun TimestampTheme(
         androidx.compose.material3.MaterialTheme(
             colorScheme = lightColorScheme,
             content = content,
-            typography = UbuntuTypography3
+            typography = tsTypography
         )
     }
 

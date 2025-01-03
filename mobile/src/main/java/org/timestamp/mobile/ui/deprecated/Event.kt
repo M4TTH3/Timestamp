@@ -1,40 +1,20 @@
-package org.timestamp.mobile.ui.elements
+package org.timestamp.mobile.ui.deprecated
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,21 +32,17 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseUser
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.*
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.R
-import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
+import org.timestamp.mobile.viewmodels.EventViewModel
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun EventMap(locationName: String, eventName: String, eventLocation: LatLng, context: Context, isClickable: Boolean) {
@@ -120,7 +96,8 @@ fun EventBox(
     data: EventDTO,
     viewModel: EventViewModel = viewModel(),
     currentUser: FirebaseUser?,
-    today: Boolean
+    today: Boolean,
+    navigateCreateEvent: (EventDTO?) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
@@ -149,19 +126,7 @@ fun EventBox(
     }
 
     if (isEditingEvent) {
-        CreateEvent(
-            onDismissRequest = {
-                isEditingEvent = false
-            },
-            onConfirmation = { event ->
-                Log.d("UPDATE EVENT", event.id.toString())
-                viewModel.updateEvent(event)
-                isEditingEvent = false
-            },
-            isMock = false,
-            loadEvent = data,
-            currentUser = currentUser
-        )
+        navigateCreateEvent(data)
     }
 
     // Define the box content
