@@ -377,6 +377,7 @@ private fun EventCardInfo(
 ) {
     val uid = getUser()!!.uid
     val userEvent = event.users.first { it.id == uid }
+    val eventVm: EventViewModel = viewModel(LocalContext.current.getActivity())
 
     val isUpcoming = event.withinNextDay()
     val timeFormatter = DateTimeFormatter.ofPattern("h:mm a")
@@ -484,7 +485,11 @@ private fun EventCardInfo(
             isUpcoming -> InfoUpcoming()
             else -> InfoLater()
         }
+    }
 
+    if (showTravelDialog) TravelModeModal(onDismiss = { showTravelDialog = false }) {
+        it?.let { if (it != userEvent.travelMode) eventVm.updateEventTravelMode(event.id!!, it) }
+        showTravelDialog = false
     }
 }
 

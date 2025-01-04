@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.TravelMode
 import org.timestamp.mobile.repository.ErrorRepository
 import org.timestamp.mobile.repository.EventRepository
 import org.timestamp.mobile.repository.PendingEventRepository
@@ -97,12 +98,20 @@ class EventViewModel (
         eventRepo.deleteEvent(eventId)
     }
 
+    fun kickUser(eventId: Long, userId: String) = viewModelScope.launch {
+        eventRepo.kickUser(eventId, userId)
+    }
+
     /**
      * This will update an event, and update the local state for that
      * event only. Improves latency.
      */
     fun updateEvent(event: EventDTO) = viewModelScope.launch {
         eventRepo.patchEvent(event)
+    }
+
+    fun updateEventTravelMode(eventId: Long, travelMode: TravelMode?) = viewModelScope.launch {
+        eventRepo.patchEventTravelMode(eventId, travelMode)
     }
 
     /**

@@ -95,7 +95,7 @@ class EventService(
      * Update the travel mode of the user in the event. The user must be part of the event.
      * @return the updated event
      */
-    fun updateEventTravelMode(firebaseUser: FirebaseUser, eventId: Long, travelMode: TravelMode): EventDTO {
+    fun updateEventTravelMode(firebaseUser: FirebaseUser, eventId: Long, travelMode: TravelMode?): EventDTO {
         val item: Event = db.findByIdOrNull(eventId) ?: throw EventNotFoundException()
 
         val userEvent = item.userEvents.firstOrNull { it.id.userId == firebaseUser.uid } ?: throw UserNotFoundException()
@@ -150,6 +150,17 @@ class EventService(
         val joinRow = item.userEvents.firstOrNull { it.id.userId == firebaseUser.uid } ?: return false
         item.userEvents.remove(joinRow)
         db.save(item)
+        return true
+    }
+
+    fun kickUser(eventId: Long, deleteUID: String, firebaseUser: FirebaseUser): Boolean {
+        val event = db.findByIdOrNull(eventId) ?: return false
+        if (event.creator != firebaseUser.uid) return false
+
+        val userEvent = event.userEvents.firstOrNull { it.id.userId == deleteUID } ?: return false
+
+        event.userEvents.remove(userEvent)
+        db.save(event)
         return true
     }
 
