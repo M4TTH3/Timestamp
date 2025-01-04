@@ -11,10 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.lib.dto.TravelMode
 import org.timestamp.mobile.repository.ErrorRepository
 import org.timestamp.mobile.repository.EventRepository
 import org.timestamp.mobile.repository.PendingEventRepository
 import org.timestamp.mobile.repository.UserRepository
+
+private const val THIRTY_SECONDS_MS = 30000L
 
 /**
  * Global view model that holds Auth & Events states
@@ -58,16 +61,17 @@ class EventViewModel (
     }
 
     /**
-     * Start polling the backend for events.
+     * Start polling the backend for events. This needs to be
+     * concurrent to the main thread.
      */
-    suspend fun startGetEventsPolling() {
-        if (isPollingEvents) return
+     fun startGetEventsPolling() = viewModelScope.launch {
+        if (isPollingEvents) return@launch
 
         isPollingEvents = true
 
         while(isPollingEvents) {
             getEvents()
-            delay(10000)
+            delay(THIRTY_SECONDS_MS)
         }
 
         isPollingEvents = false
@@ -78,9 +82,7 @@ class EventViewModel (
     /**
      * Fetch ALL events to update UI
      */
-    private fun getEvents() = viewModelScope.launch {
-        eventRepo.getEvents()
-    }
+    suspend fun getEvents() = eventRepo.getEvents()
 
     /**
      * Post an event, and modify the current list with the new event.
@@ -96,12 +98,20 @@ class EventViewModel (
         eventRepo.deleteEvent(eventId)
     }
 
+    fun kickUser(eventId: Long, userId: String) = viewModelScope.launch {
+        eventRepo.kickUser(eventId, userId)
+    }
+
     /**
      * This will update an event, and update the local state for that
      * event only. Improves latency.
      */
     fun updateEvent(event: EventDTO) = viewModelScope.launch {
         eventRepo.patchEvent(event)
+    }
+
+    fun updateEventTravelMode(eventId: Long, travelMode: TravelMode?) = viewModelScope.launch {
+        eventRepo.patchEventTravelMode(eventId, travelMode)
     }
 
     /**

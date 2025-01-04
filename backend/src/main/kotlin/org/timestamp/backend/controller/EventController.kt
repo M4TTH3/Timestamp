@@ -74,7 +74,7 @@ class EventController(
     suspend fun updateEventTravelMode(
         @AuthenticationPrincipal firebaseUser: FirebaseUser,
         @PathVariable eventId: Long,
-        @RequestBody travelMode: TravelMode
+        @RequestBody travelMode: TravelMode?
     ): ResponseEntity<EventDTO> {
         val e = eventService.updateEventTravelMode(firebaseUser, eventId, travelMode)
         return ResponseEntity.ok(e)
@@ -91,5 +91,15 @@ class EventController(
     ): ResponseEntity<Unit> {
         val success = eventService.deleteEvent(id, firebaseUser)
         return if (success) ResponseEntity.noContent().build() else ResponseEntity.notFound().build()
+    }
+
+    @DeleteMapping("/{id}/kick/{userId}")
+    fun kickUser(
+        @AuthenticationPrincipal firebaseUser: FirebaseUser,
+        @PathVariable id: Long,
+        @PathVariable userId: String
+    ): ResponseEntity<Unit> {
+        val success = eventService.kickUser(id, userId, firebaseUser)
+        return if (success) ResponseEntity.noContent().build() else ResponseEntity.badRequest().build()
     }
 }

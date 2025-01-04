@@ -49,6 +49,15 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
         }
     }
 
+    suspend fun kickUser(eventId: Long, userId: String) {
+        val tag = "Events Kick User"
+        handler(tag) {
+            val endpoint = "events/$eventId/kick/$userId"
+            val res = ktorClient.delete(endpoint)
+            if (res.success(tag)) deleteUser(eventId, userId)
+        }
+    }
+
     suspend fun patchEvent(event: EventDTO) {
         val tag = "Events Patch"
         handler(tag) {
@@ -62,7 +71,7 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
         }
     }
 
-    suspend fun patchEventTravelMode(eventId: Long, travelMode: TravelMode) {
+    suspend fun patchEventTravelMode(eventId: Long, travelMode: TravelMode?) {
         val tag = "Events Patch Travel Mode"
         handler(tag) {
             val endpoint = "events/$eventId/travel-mode"
@@ -84,6 +93,16 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
 
     fun delete(eventId: Long) {
         val newList = state.filter { it.id != eventId }
+        set(newList, false)
+    }
+
+    fun deleteUser(eventId: Long, userId: String) {
+        val newList = state.map {
+            if (it.id == eventId) {
+                val newUsers = it.users.filter { eu -> eu.id != userId }
+                it.copy(users = newUsers)
+            } else it
+        }
         set(newList, false)
     }
 

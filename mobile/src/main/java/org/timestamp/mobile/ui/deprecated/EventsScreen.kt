@@ -1,4 +1,4 @@
-package org.timestamp.mobile.ui.screens
+package org.timestamp.mobile.ui.deprecated
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -24,7 +24,6 @@ import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.R
 import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.ui.elements.AcceptEvent
-import org.timestamp.mobile.ui.elements.EventBox
 import org.timestamp.mobile.ui.elements.MapView
 import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
@@ -129,7 +128,7 @@ fun EventsScreen(
                         )
                     }
                     if (next24HourEvents.isNotEmpty()) {
-                        next24HourEvents.forEach { item { EventBox(it, viewModel, currentUser, true) }}
+                        next24HourEvents.forEach { item { EventBox(it, viewModel, currentUser, true, navigateCreateEvent) }}
                     } else {
                         item {
                             Text(
@@ -161,7 +160,7 @@ fun EventsScreen(
                         )
                     }
                     if (otherEvents.isNotEmpty()) {
-                        otherEvents.forEach { item { EventBox(it, viewModel, currentUser, false) }}
+                        otherEvents.forEach { item { EventBox(it, viewModel, currentUser, false, navigateCreateEvent) }}
                     } else {
                         item {
                             Text(

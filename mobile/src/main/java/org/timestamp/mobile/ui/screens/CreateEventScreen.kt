@@ -35,23 +35,22 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toJavaInstant
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventUserDTO
 import org.timestamp.lib.dto.GeoJsonFeature
 import org.timestamp.lib.dto.TravelMode
-import org.timestamp.mobile.TimestampActivity
+import org.timestamp.mobile.getActivity
 import org.timestamp.mobile.getUser
 import org.timestamp.mobile.repository.address
 import org.timestamp.mobile.repository.copy
 import org.timestamp.mobile.repository.headline
 import org.timestamp.mobile.ui.elements.TimePickerDialog
 import org.timestamp.mobile.ui.theme.Colors
-import org.timestamp.mobile.ui.theme.UbuntuTypography3
+import org.timestamp.mobile.ui.theme.tsTypography
 import org.timestamp.mobile.viewmodels.EventViewModel
 import org.timestamp.mobile.viewmodels.GeocodeViewModel
 import org.timestamp.mobile.viewmodels.LocationViewModel
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -74,7 +73,7 @@ fun CreateEventScreen(
     navigateBack: () -> Unit
 ) {
     // Window values
-    val activity = LocalContext.current as TimestampActivity
+    val activity = LocalContext.current.getActivity()
     val locVm: LocationViewModel = viewModel(activity)
     val eventVm: EventViewModel = viewModel(activity)
     val geoVm: GeocodeViewModel = viewModel(activity)
@@ -99,6 +98,8 @@ fun CreateEventScreen(
     val onEventUpdate: (EventDTO) -> Unit = {
         editEvent = it
     }
+
+    val fields = Fields(editEvent, canEdit, isNewEvent, onEventUpdate)
 
     LaunchedEffect(Unit) {
         // New event -> set current location
@@ -126,26 +127,44 @@ fun CreateEventScreen(
         },
         bottomBar = { DeviceNavBar() }
     ) {
-        CreateEventFields(editEvent, canEdit, isNewEvent, onEventUpdate, it, 1.dp)
+        CreateEventFields(fields, it, 1.dp)
     }
 }
 
 /**
- * This function is the container for the fields in create/edit event.
+ * This function is the container for the fields required to CreateEvent.
  * @param event The event to create.
+ */
+data class Fields(
+    val event: EventDTO,
+    val canEdit: Boolean,
+    val isNewEvent: Boolean,
+    val onEventUpdate: (EventDTO) -> Unit = {}
+)
+
+/**
+ *
+ */
+private val LocalFields = compositionLocalOf<Fields> { error("No fields provided") }
+
+/**
+ * This function is the container for the fields in create/edit event.
+ * @param fields The fields containing the event to create/edit.
+ * @param innerPadding The padding for the fields.
+ * @param dividerThickness The thickness of the divider.
  */
 
 @Composable
 fun CreateEventFields(
     // We want to hide mutations to the event from the parent
-    event: EventDTO,
-    canEdit: Boolean = false,
-    isNewEvent: Boolean,
-    onEventUpdate: (EventDTO) -> Unit,
+    fields: Fields,
     innerPadding: PaddingValues = PaddingValues(0.dp),
     dividerThickness: Dp? = null
 ) {
-    Box(
+    val (event, canEdit, _, onEventUpdate) = fields
+
+    @Composable
+    fun Contents() = Box(
         modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize()
@@ -160,7 +179,7 @@ fun CreateEventFields(
                 value = event.name,
                 onValueChange = { s -> onEventUpdate(event.copy(name = s)) },
                 placeholder = { Text(event.name.ifBlank { "Event Name" }) },
-                enabled = canEdit,
+                readOnly = !canEdit,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = InputColours()
@@ -173,18 +192,18 @@ fun CreateEventFields(
                 Box(
                     modifier = Modifier.weight(1f).padding(end = 10.dp)
                 ) {
-                    EventArrivalDate(event, onEventUpdate)
+                    EventArrivalDate()
                 }
                 Box(
                     modifier = Modifier.weight(1f).padding(start = 10.dp)
                 ) {
-                    EventArrivalTime(event, onEventUpdate)
+                    EventArrivalTime()
                 }
             }
             Spacer(modifier = Modifier.height(40.dp))
-            MapWithSearch(event, onEventUpdate, isNewEvent)
+            MapWithSearch()
             Spacer(modifier = Modifier.height(48.dp))
-            TransportationInput(event, onEventUpdate)
+            TransportationInput()
         }
 
         Text(
@@ -192,18 +211,20 @@ fun CreateEventFields(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 30.dp),
-                style = UbuntuTypography3.titleLarge,
+                style = tsTypography.titleLarge,
             color = Colors.Platinum
         )
+    }
+
+    CompositionLocalProvider(LocalFields provides fields) {
+        Contents()
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EventArrivalDate(
-    event: EventDTO,
-    onEventUpdate: (EventDTO) -> Unit
-) {
+private fun EventArrivalDate() {
+    val (event, canEdit, _, onEventUpdate) = LocalFields.current
     val eventTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
     val arrivalDate = event.arrival.format(eventTimeFormatter)
 
@@ -231,7 +252,7 @@ private fun EventArrivalDate(
         modifier = Modifier
             .fillMaxWidth()
             .pointerInput(arrivalDate) {
-                onPress { showModal = true }
+                onPress { showModal = canEdit && true } // Only show if we can edit
             },
         colors = InputColours()
     )
@@ -245,7 +266,7 @@ private fun EventArrivalDate(
                 onClick = {
                     showModal = false
                     val newDate = datePickerState.selectedDateMillis!!
-                    val instant = Instant.fromEpochMilliseconds(newDate).toJavaInstant()
+                    val instant = Instant.ofEpochMilli(newDate)
 
                     // Must be UTC, because they selected as if it were UTC
                     val dateOffset = OffsetDateTime.ofInstant(instant, ZoneOffset.UTC)
@@ -267,15 +288,10 @@ private fun EventArrivalDate(
 
 /**
  * This function is the arrival time for the create/edit event screen.
- * @param event The event to create.
- * @param onEventUpdate The function to update the event.
  */
 @Composable
-private fun EventArrivalTime(
-    event: EventDTO,
-    onEventUpdate: (EventDTO) -> Unit
-) {
-
+private fun EventArrivalTime() {
+    val (event, canEdit, _, onEventUpdate) = LocalFields.current
     val eventTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
     val arrivalTime = event.arrival.format(eventTimeFormatter)
 
@@ -292,7 +308,7 @@ private fun EventArrivalTime(
         modifier = Modifier
             .fillMaxWidth()
             .pointerInput(arrivalTime) {
-                onPress { showModal = true }
+                onPress { showModal = canEdit && true }
             },
         colors = InputColours()
     )
@@ -311,23 +327,18 @@ private fun EventArrivalTime(
 
 /**
  * This function is the map with search for the create/edit event screen.
- * @param event The event to create.
- * @param onEventUpdate The function to update the event.
- * @param isNewEvent Whether the event is new or not.
  */
 @Composable
-private fun MapWithSearch(
-    event: EventDTO,
-    onEventUpdate: (EventDTO) -> Unit,
-    isNewEvent: Boolean = false
-) {
-
-    val geoVm: GeocodeViewModel = viewModel(LocalContext.current as TimestampActivity)
+private fun MapWithSearch() {
+    val (event, canEdit, _, onEventUpdate) = LocalFields.current
+    val geoVm: GeocodeViewModel = viewModel(LocalContext.current.getActivity())
     val cameraPositionState = rememberCameraPositionState {}
     var showModal by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     fun updateEvent(latLng: LatLng, name: String?) {
+        if (!canEdit) return // Prevent updates on the map clicks
+
         // On a map click, we want to reverse geocode any name we can find
         scope.launch {
             val info = geoVm.reverseGeocode(latLng.latitude, latLng.longitude)
@@ -374,6 +385,7 @@ private fun MapWithSearch(
         // Display the current address in the Top Left
         TextButton(
             onClick = { showModal = true },
+            enabled = canEdit,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(5.dp)
@@ -384,7 +396,7 @@ private fun MapWithSearch(
                 .clipToBounds(),
             contentPadding = PaddingValues(horizontal = 10.dp)
         ) {
-            val font = UbuntuTypography3.labelSmall
+            val font = tsTypography.labelSmall
             Text(
                 event.address.ifBlank { "Search for a location" },
                 fontFamily = font.fontFamily,
@@ -427,7 +439,7 @@ fun SearchLocationModal(
     event: EventDTO,
     callback: (GeoJsonFeature?) -> Unit
 ) {
-    val geoVm: GeocodeViewModel = viewModel(LocalContext.current as TimestampActivity)
+    val geoVm: GeocodeViewModel = viewModel(LocalContext.current.getActivity())
     val searchResults by geoVm.searchResults.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
 
@@ -515,15 +527,15 @@ fun SearchLocationModal(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransportationInput(
-    event: EventDTO,
-    onEventUpdate: (EventDTO) -> Unit
-) {
+private fun TransportationInput() {
+    val (event, canEdit, _, onEventUpdate) = LocalFields.current
     val user = getUser()
     val uid = user!!.uid
 
     val travelMode: TravelMode? = event.users.firstOrNull { it.id == uid }?.travelMode
     var expanded by remember { mutableStateOf(false) }
+
+    fun isExpanded() = expanded && canEdit
 
     fun updateTransportation(mode: TravelMode?) {
         val users = event.users.filterNot { it.id == uid }
@@ -541,7 +553,7 @@ fun TransportationInput(
     fun SupportingText(): @Composable () -> Unit = { Text("Specify for smart reminders!") }
 
     ExposedDropdownMenuBox(
-        expanded = expanded,
+        expanded = isExpanded(),
         onExpandedChange = { expanded = it },
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -549,12 +561,16 @@ fun TransportationInput(
             value = travelMode?.name ?: "",
             onValueChange = {},
             placeholder = { Text("Transportation: Auto") },
-            supportingText = if (expanded) null else SupportingText(),
+            supportingText = if (isExpanded()) null else SupportingText(),
             readOnly = true,
             singleLine = true,
             trailingIcon = {
-                when (travelMode) {
-                    null -> Icon(Icons.Default.ArrowDropDown, contentDescription = "Select Transportation")
+                when {
+                    // If we can't edit, we don't want to show the close icon
+                    (travelMode == null || !canEdit) -> Icon(
+                        Icons.Default.ArrowDropDown,
+                        contentDescription = "Select Transportation"
+                    )
                     else -> Icon(
                         Icons.Default.Close,
                         contentDescription = "Clear Transportation",
@@ -571,7 +587,7 @@ fun TransportationInput(
 
         // The dropdown menu for the transportation
         ExposedDropdownMenu(
-            expanded = expanded,
+            expanded = isExpanded(), // Only show if we can edit
             onDismissRequest = { expanded = false },
             containerColor = Colors.White,
         ) {
@@ -636,7 +652,7 @@ private fun CreateEventTopBar(
             }
         } else {
             TextButton(onClick = onSave) {
-                Text("Save")
+                Text("Save", style = tsTypography.titleMedium)
             }
         }
     }

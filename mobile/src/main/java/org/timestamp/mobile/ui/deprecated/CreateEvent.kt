@@ -1,4 +1,4 @@
-package org.timestamp.mobile.ui.elements
+package org.timestamp.mobile.ui.deprecated
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.wear.compose.material.ContentAlpha
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseUser
@@ -40,6 +39,8 @@ import org.timestamp.lib.dto.LocationDTO
 import org.timestamp.lib.util.toOffset
 import org.timestamp.mobile.TimestampActivity
 import org.timestamp.mobile.getUser
+import org.timestamp.mobile.ui.elements.DatePickerDialog
+import org.timestamp.mobile.ui.elements.TimePickerDialog
 import org.timestamp.mobile.ui.theme.ubuntuFontFamily
 import org.timestamp.mobile.viewmodels.GeocodeViewModel
 import org.timestamp.mobile.viewmodels.LocationViewModel

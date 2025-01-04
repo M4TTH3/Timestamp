@@ -2,14 +2,13 @@ package org.timestamp.mobile.repository
 
 import android.net.Uri
 import android.util.Log
-import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.post
+import io.ktor.client.call.*
+import io.ktor.client.request.*
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.lib.dto.EventLinkDTO
 import org.timestamp.mobile.utility.KtorClient
 import org.timestamp.mobile.utility.KtorClient.success
-import java.util.UUID
+import java.util.*
 
 class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
     null,
@@ -18,8 +17,7 @@ class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
     private val eventViewRepository = EventRepository()
     private val base = KtorClient.backendBase
     private val deepLinkPathBase = "events/join"
-    private val deepLinkPath = "/$deepLinkPathBase"
-    private val deepLinkPrefix = "$base$deepLinkPath"
+    private val deepLinkPrefix = "$base/$deepLinkPathBase"
     private var pendingEventLink: UUID? = null
 
     /**
@@ -31,7 +29,7 @@ class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
             val endpoint = "events/link/$eventId"
             val body: EventLinkDTO? = ktorClient.get(endpoint).bodyOrNull(tag)
 
-            return@handler body?.let {
+            body?.let {
                 "$deepLinkPrefix/${it.id}"
             }
         }
@@ -45,13 +43,10 @@ class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
         val tag = "Events Join"
         handler(tag) {
             val endpoint = "$deepLinkPathBase/$pendingEventLink"
-            val res = ktorClient.post(endpoint)
-
-            if (!res.success(tag)) return@handler
-
-            val newEvent: EventDTO = res.body()
-            eventViewRepository.add(newEvent)
-            cancelPendingEvent()
+            ktorClient.post(endpoint).bodyOrNull<EventDTO>(tag)?.let {
+                eventViewRepository.add(it)
+                cancelPendingEvent()
+            }
         }
     }
 
@@ -62,16 +57,11 @@ class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
     suspend fun setPendingEvent() {
         val tag = "Set Pending Event"
         val uuid = pendingEventLink ?: return
-
         handler(tag) {
             val endpoint = "events/$uuid"
-            val res = ktorClient.get(endpoint)
-
-            if (!res.success(tag)) return@handler
-
-            val event = res.body<EventDTO>()
-            state = event
-            Log.d(tag, "Link UUID: $uuid, Event: $event")
+            ktorClient.get(endpoint).bodyOrNull<EventDTO>()?.let {
+                state = it
+            }
         }
     }
 
@@ -81,11 +71,12 @@ class PendingEventRepository private constructor(): BaseRepository<EventDTO?>(
      */
     fun setPendingEventLink(uri: Uri?) {
         val tag = "Set Pending Event Link"
-        if (uri?.toString()?.startsWith(deepLinkPrefix)?.not() != null) return
+        if (uri == null || !uri.toString().startsWith(deepLinkPrefix)) return
 
         runCatching {
-            val uuid = UUID.fromString(uri?.lastPathSegment)
+            val uuid = UUID.fromString(uri.lastPathSegment)
             pendingEventLink = uuid
+            Log.d(tag, "Pending Event Link: $uuid")
         }
     }
 

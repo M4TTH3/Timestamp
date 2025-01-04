@@ -9,8 +9,10 @@ object Colors {
     val PowderBlue = Color(0xFF9CC5E1)
     val BittersweetDark = Color(0xFFCC1A09)
     var Black = Color(0xFF2A2B2E)
+    var BlackFaint = Black.copy(alpha = 0.7f)
     var White = Color(0xFFFFFFFF)
     var Gray = Color(0xFFB2B4BE)
+    var Green = Color(0xFF34C759)
 
     fun setThemeColors(darkModeOn : Boolean) {
         if (darkModeOn) {

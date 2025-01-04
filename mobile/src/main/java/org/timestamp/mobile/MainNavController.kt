@@ -27,7 +27,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -42,6 +41,7 @@ import kotlinx.coroutines.launch
 import org.timestamp.lib.dto.EventDTO
 import org.timestamp.mobile.ui.elements.BackgroundLocationDialog
 import org.timestamp.mobile.ui.screens.*
+import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.theme.TimestampTheme
 import org.timestamp.mobile.utility.PermissionProvider
 import org.timestamp.mobile.utility.Screen
@@ -195,9 +195,10 @@ class MainNavController(
                     }
                 }
                 composable(Screen.Events.name) {
-                    EventsScreen(currentUser = auth.currentUser, navigateCreateEvent = ::navigateCreateEvent)
-                    NavBar(navController = navController, currentScreen = "Events")
-//                    NavBarV2({navController.navigate(it)}, currentScreen = Screen.Events.name)
+                    EventHomeScreen(
+                        navigateCreateEvent = ::navigateCreateEvent,
+                        navigate = { screen -> navController.navigate(screen.name) }
+                    )
                 }
                 composable(Screen.Calendar.name) {
                     CalendarScreen(currentUser = auth.currentUser)
@@ -312,59 +313,46 @@ class MainNavController(
 
 @Composable
 fun NavBarV2(
-    navigate: (String) -> Unit,
-    currentScreen : String
+    navigate: (Screen) -> Unit,
+    currentScreen : Screen
 ) {
-    val eventsName = Screen.Events.name
-    val calendarName = Screen.Calendar.name
-    val settingsName = Screen.Settings.name
+    val eventScreen = Screen.Events
+    val calendarScreen = Screen.Calendar
+    val settingScreen = Screen.Settings
 
-    @Composable
-    fun NavBar() = NavigationBar(
-        containerColor = MaterialTheme.colors.secondary,
-        contentColor = Color.Black
-    ) {
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.Home,
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = if (currentScreen == "Events") Color.Black else Color(0xFF522D2A)
-                )
-            },
-            selected = currentScreen == eventsName,
-            onClick = { navigate(eventsName) }
-        )
-
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.CalendarMonth,
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = if (currentScreen == "Calendar") Color.Black else Color(0xFF522D2A)
-                )
-            },
-            selected = currentScreen == calendarName,
-            onClick = { navigate(calendarName) }
-        )
-
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = if (currentScreen == "Settings") Color.Black else Color(0xFF522D2A)
-                )
-            },
-            selected = currentScreen == settingsName,
-            onClick = { navigate(settingsName) }
-        )
+    require (currentScreen in listOf(eventScreen, calendarScreen, settingScreen)) {
+        "Invalid current screen: $currentScreen"
     }
 
-    NavBar()
+    @Composable
+    fun NavItemColour() = NavigationBarItemDefaults.colors(
+        indicatorColor = Color.Transparent
+    )
+
+    NavigationBar(
+        containerColor = Colors.Bittersweet
+    ) {
+        listOf(
+            Pair(eventScreen, Icons.Filled.Home),
+            Pair(calendarScreen, Icons.Filled.CalendarMonth),
+            Pair(settingScreen, Icons.Filled.Settings)
+        ).map { (screen, icon) ->
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(32.dp),
+                        tint = if (currentScreen == screen) Color.Black else Colors.BlackFaint
+                    )
+                },
+                selected = currentScreen == screen,
+                onClick = { navigate(screen) },
+                colors = NavItemColour()
+            )
+
+        }
+    }
 }
 
 fun getUser() : FirebaseUser? = FirebaseAuth.getInstance().currentUser

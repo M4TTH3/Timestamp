@@ -45,7 +45,7 @@
 
                 <data android:scheme="https" />
                 <data android:scheme="http" />
-                <data android:host="timestampdev.mattheway.com" />
+                <data android:host="timestampapp.com" />
             </intent-filter>
         </activity>
     </application>

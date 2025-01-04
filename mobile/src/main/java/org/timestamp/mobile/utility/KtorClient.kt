@@ -49,7 +49,10 @@ object KtorClient {
             }
 
             defaultRequest {
-                url(backendBase)
+                url {
+                    takeFrom(backendBase)
+                    path("api/")
+                }
             }
         }.apply {
             plugin(HttpSend).intercept { req ->
