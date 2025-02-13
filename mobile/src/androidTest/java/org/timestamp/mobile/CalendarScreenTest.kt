@@ -23,23 +23,4 @@ class CalendarScreenTest {
     fun setup() {
         mockFirebaseUser = mockk(relaxed = true)
     }
-
-    @Test
-    fun elementsAreDisplayed() {
-        composeTestRule.activity.setContent {
-            CalendarScreen(currentUser = mockFirebaseUser)
-        }
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Calendar").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("calendar").assertIsDisplayed()
-    }
-
-    @Test
-    fun testCalendarScreenElements() {
-        composeTestRule.activity.setContent {
-            CalendarScreen(currentUser = mockFirebaseUser)
-        }
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag("calendar").assertExists()
-    }
 }

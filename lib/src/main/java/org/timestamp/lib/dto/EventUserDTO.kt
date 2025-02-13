@@ -17,6 +17,8 @@ data class EventUserDTO(
     @Serializable(with = OffsetDateTimeSerializer::class)
     val arrivedTime: OffsetDateTime? = null,
     val travelMode: TravelMode? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
 )
 
 fun EventDTO.withinNextDay(): Boolean = this.before(OffsetDateTime.now().plusDays(1))

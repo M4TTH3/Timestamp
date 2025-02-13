@@ -1,5 +1,6 @@
 package org.timestamp.mobile.repository
 
+import android.util.Log
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.patch

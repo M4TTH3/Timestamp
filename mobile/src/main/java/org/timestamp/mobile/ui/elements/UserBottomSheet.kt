@@ -3,20 +3,22 @@ package org.timestamp.mobile.ui.elements
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -28,31 +30,7 @@ import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.viewmodels.EventViewModel
 import java.time.OffsetDateTime
 
-val testUsers = listOf(
-    EventUserDTO(
-        name = "John Doe",
-        email = "asdasds@gmail.com",
-        arrived = false,
-        timeEst = 1000L,
-        pfp = "https://lh3.googleusercontent.com/a/ACg8ocLJEXurWDwRTHAoHuxuAABsPT3Wne9QVSzQUxugBjkt_55RIU0=s96-c",
-    ),
-    EventUserDTO(
-        name = "Jane As",
-        email = "jameas@hotmail.com",
-        arrived = false,
-        timeEst = 20000L,
-        pfp = "https://lh3.googleusercontent.com/a/ACg8ocKa52qVuuqk3tKfiEqfI5Sbk12VSyKpc8XGAB5rNoOGGPBeaQ=s96-c"
-    ),
-    EventUserDTO(
-        name = "John Smith",
-        email = "smith@outlook.com",
-        arrived = false,
-        timeEst = 30000L,
-        pfp = "https://lh3.googleusercontent.com/a/ACg8ocKa52qVuuqk3tKfiEqfI5Sbk12VSyKpc8XGAB5rNoOGGPBeaQ=s96-c"
-    ),
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun UserBottomSheet(
     event: EventDTO,
@@ -60,10 +38,13 @@ fun UserBottomSheet(
     isOwner: Boolean,
     onDismiss: () -> Unit
 ) {
+    val eventVm: EventViewModel = viewModel(LocalContext.current.getActivity())
     val users = event.users
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val activity = LocalContext.current.getActivity()
     val scope = rememberCoroutineScope()
+
+    var deleteUser: EventUserDTO? by remember { mutableStateOf(null) }
 
     ModalBottomSheet(
         sheetState = sheetState,
@@ -78,7 +59,7 @@ fun UserBottomSheet(
                 Button(
                     onClick = { scope.shareLink(event, activity) },
                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Colors.Bittersweet)
                 ) {
                     Text("Share", color = Colors.White)
@@ -86,7 +67,7 @@ fun UserBottomSheet(
                         Icons.Default.Share,
                         contentDescription = "Share",
                         tint = Colors.White,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 HorizontalDivider(
@@ -126,11 +107,26 @@ fun UserBottomSheet(
                                 .clip(CircleShape)
                         )
                     },
-                    colors = ListItemDefaults.colors(containerColor = Colors.White)
+                    colors = ListItemDefaults.colors(containerColor = Colors.White),
+                    modifier = Modifier
+                        .combinedClickable(
+                            onLongClick = {
+                                if (isOwner && it.id != event.creator) deleteUser = it
+                            }
+                        ) { }
                 )
             }
-
         }
+    }
+
+    deleteUser?.let {
+        ConfirmDeleteModal(
+            onDismiss = { deleteUser = null },
+            onConfirm = {
+                eventVm.kickUser(event.id!!, it.id)
+                deleteUser = null
+            }
+        )
     }
 }
 

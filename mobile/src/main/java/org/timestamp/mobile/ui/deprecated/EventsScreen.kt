@@ -45,7 +45,7 @@ fun EventsScreen(
     val pendingEventState = viewModel.pendingEvent.collectAsState()
     val pendingEvent: EventDTO? = pendingEventState.value
 
-    if (pendingEvent != null) AcceptEvent(viewModel, pendingEvent)
+    if (pendingEvent != null) AcceptEvent(pendingEvent)
 
     val createEvents = remember { mutableStateOf(false) }
     val hasEvents = remember { mutableStateOf(false) }

@@ -91,7 +91,7 @@ fun TravelModeModal(
                 containerColor = Color.Transparent,
                 contentColor = Colors.Black
             ),
-            border = BorderStroke(2.dp, Colors.TeaRose),
+            border = BorderStroke(2.dp, Colors.Platinum),
             onClick = { onConfirm(null) }
         ) {
             Row(
