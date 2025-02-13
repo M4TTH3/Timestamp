@@ -102,6 +102,7 @@ dependencies {
 
     // Extra Utility
     implementation(libs.maps.compose)
+    implementation(libs.android.maps.utils)
     implementation(libs.accompanist.permissions)
     implementation(libs.googleid) // Auth dependency
     implementation(libs.composecalendar)

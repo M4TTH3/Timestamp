@@ -6,5 +6,6 @@ enum class Screen {
     Events,
     Calendar,
     Settings,
-    CreateOrEditEvent
+    CreateOrEditEvent,
+    MapView
 }

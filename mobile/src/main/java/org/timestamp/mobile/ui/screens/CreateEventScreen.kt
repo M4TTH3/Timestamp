@@ -679,7 +679,7 @@ private fun CreateEventTopBar(
  * @see CreateEventScreen
  */
 @Composable
-private fun DeviceNavBar(color: Color = Colors.Bittersweet) {
+fun DeviceNavBar(color: Color = Colors.Bittersweet) {
     Box(modifier = Modifier
         .windowInsetsBottomHeight(WindowInsets.navigationBars)
         .fillMaxSize()

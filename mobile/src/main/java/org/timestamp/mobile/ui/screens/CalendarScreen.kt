@@ -1,51 +1,33 @@
 package org.timestamp.mobile.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Typography
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.Typography
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.auth.FirebaseUser
 import org.timestamp.lib.dto.EventDTO
+import org.timestamp.mobile.NavBarV2
 import org.timestamp.mobile.R
-import org.timestamp.mobile.TimestampActivity
-import org.timestamp.mobile.viewmodels.EventViewModel
-import org.timestamp.mobile.ui.deprecated.CreateEvent
-import org.timestamp.mobile.ui.theme.Colors
 import org.timestamp.mobile.ui.elements.DynamicCalendar
+import org.timestamp.mobile.ui.elements.ModalViewEventSheet
+import org.timestamp.mobile.ui.theme.Colors
+import org.timestamp.mobile.utility.Screen
+import org.timestamp.mobile.viewmodels.EventViewModel
 import java.time.LocalDate
 
 val ubuntuFontFamily = FontFamily(
@@ -55,9 +37,10 @@ val ubuntuFontFamily = FontFamily(
 
 @Composable
 fun CalendarScreen(
-    viewModel: EventViewModel = viewModel(LocalContext.current as TimestampActivity),
-    currentUser: FirebaseUser?
+    navigateCreateEvent: (EventDTO?) -> Unit,
+    navigate: (Screen) -> Unit
 ) {
+    val viewModel: EventViewModel = viewModel()
     val eventListState = viewModel.events.collectAsState()
     val eventList: MutableList<EventDTO> = eventListState.value.toMutableList()
     var selectedDate by remember { mutableStateOf<LocalDate?>(null)}
@@ -79,13 +62,11 @@ fun CalendarScreen(
         ),
         h1 = TextStyle(
             color = MaterialTheme.colors.secondary,
-            fontFamily = ubuntuFontFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 28.sp,
         ),
         h4 = TextStyle(
             color = Colors.Bittersweet,
-            fontFamily = ubuntuFontFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 28.sp,
         ),
@@ -96,17 +77,18 @@ fun CalendarScreen(
         ),
         h6 = TextStyle(
             color = MaterialTheme.colors.secondary,
-            fontFamily = ubuntuFontFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
         )
     )
 
-    MaterialTheme(typography = calendarTypography) {
+    @Composable
+    fun Calendar(inset: PaddingValues) = MaterialTheme(typography = calendarTypography) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = MaterialTheme.colors.primary)
+                .padding(inset)
         ) {
             Column(
                 modifier = Modifier
@@ -180,19 +162,20 @@ fun CalendarScreen(
                 }
             }
             editingEvent?.let { event ->
-                CreateEvent(
-                    onDismissRequest = { editingEvent = null },
-                    onConfirmation = { updatedEvent ->
-                        Log.d("UPDATE EVENT", updatedEvent.id.toString())
-                        viewModel.updateEvent(updatedEvent)
-                        editingEvent = null
-                        refreshTrigger++
-                    },
-                    isMock = false,
-                    loadEvent = event,
-                    currentUser = currentUser
-                )
+                ModalViewEventSheet(event, {
+                    editingEvent = null
+                }) {
+                    navigateCreateEvent(event)
+                }
             }
         }
+    }
+
+    Scaffold(
+        bottomBar = {
+            NavBarV2(navigate, Screen.Calendar)
+        }
+    ) { insets ->
+        Calendar(insets)
     }
 }

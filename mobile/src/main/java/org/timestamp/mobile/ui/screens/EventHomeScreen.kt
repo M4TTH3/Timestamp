@@ -80,6 +80,7 @@ fun EventHomeScreen(
 ) {
     val eventVm: EventViewModel = viewModel(LocalContext.current as TimestampActivity)
     val events by eventVm.events.collectAsState()
+    val pendingEvent by eventVm.pendingEvent.collectAsState()
 
     // Filters we have, and the corresponding functions
     val filters = remember { mutableStateOf(emptySet<EventFilterKey>()) }
@@ -143,6 +144,10 @@ fun EventHomeScreen(
         ) { inset ->
             EventHomeScreenContent(inset)
         }
+    }
+
+    pendingEvent?.let {
+        AcceptEvent(it)
     }
 }
 
@@ -488,7 +493,7 @@ private fun EventCardInfo(
     }
 
     if (showTravelDialog) TravelModeModal(onDismiss = { showTravelDialog = false }) {
-        it?.let { if (it != userEvent.travelMode) eventVm.updateEventTravelMode(event.id!!, it) }
+        if (it != userEvent.travelMode) eventVm.updateEventTravelMode(event.id!!, it)
         showTravelDialog = false
     }
 }

@@ -141,6 +141,10 @@ class MainNavController(
             navController.navigate(Screen.CreateOrEditEvent.name)
         }
 
+        fun navigate(screen: Screen) {
+            navController.navigate(screen.name)
+        }
+
         TimestampTheme(darkTheme = isDarkTheme) {
             NavHost(
                 navController = navController,
@@ -197,12 +201,14 @@ class MainNavController(
                 composable(Screen.Events.name) {
                     EventHomeScreen(
                         navigateCreateEvent = ::navigateCreateEvent,
-                        navigate = { screen -> navController.navigate(screen.name) }
+                        navigate = ::navigate
                     )
                 }
                 composable(Screen.Calendar.name) {
-                    CalendarScreen(currentUser = auth.currentUser)
-                    NavBar(navController = navController, currentScreen = "Calendar")
+                    CalendarScreen(
+                        navigateCreateEvent = ::navigateCreateEvent,
+                        navigate = ::navigate
+                    )
                 }
                 composable(Screen.Settings.name) {
                     SettingsScreen(
@@ -215,6 +221,10 @@ class MainNavController(
                 composable(Screen.CreateOrEditEvent.name) {
                     // Navigation to Create or Edit an Event
                     CreateEventScreen(navController::popBackStack)
+                }
+
+                composable(Screen.MapView.name) {
+                    MapScreen()
                 }
             }
         }
