@@ -1,7 +1,3 @@
-import com.android.build.api.dsl.Packaging
-
-group = "org.timestamp"
-version = "2.0.0"
 
 plugins {
     alias(libs.plugins.android.application)

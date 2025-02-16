@@ -1,0 +1,117 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+#  pull_request:
+#    branches:
+#      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@v3.5.0
+        with:
+          cosign-release: 'v2.2.4'
+
+      - name: Filter changed paths
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'Dockerfile'
+              - '.dockerignore'
+            geocoder:
+              - 'geocoder/**'
+
+      - name: Get Version
+        id: version
+        run: |
+          VERSION=$(./gradlew -q version)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Firebase Admin Key File
+        if: steps.filter.outputs.backend == 'true'
+        run: |
+          echo "${{ secrets.FIREBASE_ADMIN_KEY_BASE64 }}" | base64 -d > backend/src/main/resources/firebase-admin-key.json
+
+      - name: Extract Docker Metadata for Backend
+        if: steps.filter.outputs.backend == 'true'
+        id: backend_metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ env.VERSION }}
+
+      - name: Build and push backend image
+        if: steps.filter.outputs.backend == 'true'
+        id: build_backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.backend_metadata.outputs.tags }}
+          labels: ${{ steps.backend_metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract Docker Metadata for Geocoder
+        if: steps.filter.outputs.geocoder == 'true'
+        id: geocoder_metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/geocoder:${{ env.VERSION }}
+
+      - name: Build and push geocoder image
+        if: steps.filter.outputs.geocoder == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: geocoder
+          push: true
+          tags: ${{ steps.geocoder_metadata.outputs.tags }}
+          labels: ${{ steps.geocoder_metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign the backend Docker image
+        if: steps.filter.outputs.backend == 'true'
+        env:
+          TAGS: ${{ steps.backend_metadata.outputs.tags }}
+          DIGEST: ${{ steps.build_backend.outputs.digest }}
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+      - name: Sign the geocoder Docker image
+        if: steps.filter.outputs.geocoder == 'true'
+        env:
+          TAGS: ${{ steps.geocoder_metadata.outputs.tags }}
+          DIGEST: ${{ steps.build_geocoder.outputs.digest }}
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
