@@ -14,9 +14,6 @@ java {
     }
 }
 
-group = "org.timestamp"
-version = "2.0.0"
-
 dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.jpa)

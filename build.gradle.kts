@@ -30,6 +30,9 @@ dependencies {
 }
 */
 
+group = "org.timestamp"
+version = "1.0.0"
+
 // Define all the libraries
 plugins {
     alias(libs.plugins.android.application) apply false
@@ -43,5 +46,11 @@ plugins {
     alias(libs.plugins.kotlin.spring) apply false
     alias(libs.plugins.spring.boot) apply false
     alias(libs.plugins.spring.dependency.management) apply false
+}
+
+tasks.register("version") {
+    doLast {
+        println(version)
+    }
 }
 
