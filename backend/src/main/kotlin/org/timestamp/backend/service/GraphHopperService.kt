@@ -4,13 +4,11 @@ import com.graphhopper.GHRequest
 import com.graphhopper.GraphHopper
 import com.graphhopper.ResponsePath
 import org.springframework.stereotype.Component
-import org.timestamp.backend.model.Event
-import org.timestamp.backend.model.User
 import org.timestamp.backend.model.UserEvent
 import org.timestamp.backend.model.toDTO
-import org.timestamp.lib.dto.*
-import org.timestamp.lib.util.toUtc
-import org.timestamp.lib.util.utcNow
+import org.timestamp.shared.dto.*
+import org.timestamp.shared.util.toUtc
+import org.timestamp.shared.util.utcNow
 import java.util.*
 
 @Component

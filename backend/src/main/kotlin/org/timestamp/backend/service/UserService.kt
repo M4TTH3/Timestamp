@@ -7,9 +7,9 @@ import org.timestamp.backend.config.UserNotFoundException
 import org.timestamp.backend.model.User
 import org.timestamp.backend.model.toDTO
 import org.timestamp.backend.repository.TimestampUserRepository
-import org.timestamp.lib.dto.TravelMode
-import org.timestamp.lib.dto.UserDTO
-import org.timestamp.lib.util.utcNow
+import org.timestamp.shared.dto.TravelMode
+import org.timestamp.shared.dto.UserDTO
+import org.timestamp.shared.util.utcNow
 
 @Service
 class UserService(

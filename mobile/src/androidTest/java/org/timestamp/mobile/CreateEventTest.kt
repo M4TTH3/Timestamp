@@ -9,8 +9,8 @@ import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.timestamp.lib.dto.EventDTO
-import org.timestamp.lib.util.toOffset
+import org.timestamp.shared.dto.EventDTO
+import org.timestamp.shared.util.toOffset
 import org.timestamp.mobile.ui.deprecated.CreateEvent
 import java.time.LocalDateTime
 

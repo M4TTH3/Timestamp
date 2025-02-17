@@ -7,11 +7,11 @@ import org.timestamp.backend.model.*
 import org.timestamp.backend.repository.TimestampEventLinkRepository
 import org.timestamp.backend.repository.TimestampEventRepository
 import org.timestamp.backend.repository.TimestampUserRepository
-import org.timestamp.lib.dto.EventDTO
-import org.timestamp.lib.dto.EventLinkDTO
-import org.timestamp.lib.dto.NotificationDTO
-import org.timestamp.lib.dto.TravelMode
-import org.timestamp.lib.util.utcNow
+import org.timestamp.shared.dto.EventDTO
+import org.timestamp.shared.dto.EventLinkDTO
+import org.timestamp.shared.dto.NotificationDTO
+import org.timestamp.shared.dto.TravelMode
+import org.timestamp.shared.util.utcNow
 import java.util.*
 
 
@@ -30,7 +30,7 @@ class EventService(
      * Return an event DTO with many fields obscured
      */
     fun getEventByLinkId(firebaseUser: FirebaseUser, id: UUID): EventDTO {
-        val user = userDb.findById(firebaseUser.uid).orElseThrow()
+        val user = userDb.findByIdOrNull(firebaseUser.uid) ?: throw UserNotFoundException()
 
         val threshold = utcNow().minusMinutes(30)
         val link = eventLinkDb.findByIdOrNull(id) ?: throw EventLinkNotFoundException()

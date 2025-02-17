@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.*
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.service.EventService
 import org.timestamp.backend.service.UserService
-import org.timestamp.lib.dto.LocationDTO
-import org.timestamp.lib.dto.NotificationDTO
-import org.timestamp.lib.dto.UserDTO
+import org.timestamp.shared.dto.LocationDTO
+import org.timestamp.shared.dto.NotificationDTO
+import org.timestamp.shared.dto.UserDTO
 
 @RestController
 @RequestMapping("/users")

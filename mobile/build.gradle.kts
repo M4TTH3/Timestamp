@@ -57,7 +57,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":lib"))
+    implementation(project(":shared"))
 
     // Kotlin dependencies
     implementation(libs.androidx.core.ktx)
@@ -84,12 +84,6 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
     implementation(platform(libs.firebase.bom))
-
-    // Ktor dependencies
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.json)
 
     // Play dependencies
     implementation(libs.play.services.auth)
