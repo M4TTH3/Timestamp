@@ -3,8 +3,8 @@ package org.timestamp.backend.model
 import com.fasterxml.jackson.annotation.JsonManagedReference
 import jakarta.persistence.*
 import org.timestamp.backend.config.FirebaseUser
-import org.timestamp.lib.dto.TravelMode
-import org.timestamp.lib.dto.UserDTO
+import org.timestamp.shared.dto.TravelMode
+import org.timestamp.shared.dto.UserDTO
 
 @Entity
 @Table(name = "users")

@@ -5,8 +5,8 @@ COPY gradle/ gradle/
 COPY gradle.properties build.gradle.kts settings.gradle gradlew ./
 COPY backend/src backend/src
 COPY backend/build.gradle.kts backend/
-COPY lib/src lib/src
-COPY lib/build.gradle.kts lib/
+COPY shared/src shared/src
+COPY shared/build.gradle.kts shared/
 
 COPY entrypoint.sh ./entrypoint.sh
 

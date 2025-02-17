@@ -2,8 +2,8 @@ package org.timestamp.backend.model
 
 import com.fasterxml.jackson.annotation.JsonBackReference
 import jakarta.persistence.*
-import org.timestamp.lib.dto.EventUserDTO
-import org.timestamp.lib.dto.TravelMode
+import org.timestamp.shared.dto.EventUserDTO
+import org.timestamp.shared.dto.TravelMode
 import java.io.Serializable
 import java.time.OffsetDateTime
 

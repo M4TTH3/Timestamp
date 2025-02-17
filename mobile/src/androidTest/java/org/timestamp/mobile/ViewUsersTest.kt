@@ -10,8 +10,8 @@ import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.timestamp.lib.dto.EventDTO
-import org.timestamp.mobile.viewmodels.EventViewModel
+import org.timestamp.shared.dto.EventDTO
+import org.timestamp.shared.viewmodel.EventViewModel
 import org.timestamp.mobile.ui.deprecated.ViewUsers
 
 class ViewUsersTest {

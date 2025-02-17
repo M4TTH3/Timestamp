@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.*
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.model.User
 import org.timestamp.backend.service.EventService
-import org.timestamp.lib.dto.EventDTO
-import org.timestamp.lib.dto.EventLinkDTO
-import org.timestamp.lib.dto.TravelMode
+import org.timestamp.shared.dto.EventDTO
+import org.timestamp.shared.dto.EventLinkDTO
+import org.timestamp.shared.dto.TravelMode
 import java.net.URI
 import java.util.*
 

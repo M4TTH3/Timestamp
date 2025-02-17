@@ -3,8 +3,8 @@ package org.timestamp.backend.model
 
 import com.fasterxml.jackson.annotation.JsonManagedReference
 import jakarta.persistence.*
-import org.timestamp.lib.dto.EventDTO
-import org.timestamp.lib.dto.EventUserDTO
+import org.timestamp.shared.dto.EventDTO
+import org.timestamp.shared.dto.EventUserDTO
 import java.time.OffsetDateTime
 
 @Entity

@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-#  pull_request:
-#    branches:
-#      - main
+  pull_request:
+    branches:
+      - main
 
 env:
   REGISTRY: ghcr.io
@@ -82,7 +82,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.backend_metadata.outputs.tags }}
           labels: ${{ steps.backend_metadata.outputs.labels }}
           cache-from: type=gha
@@ -103,21 +103,21 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: geocoder
-          push: true
+          push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.geocoder_metadata.outputs.tags }}
           labels: ${{ steps.geocoder_metadata.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Sign the backend Docker image
-        if: steps.filter.outputs.backend == 'true'
+        if: steps.filter.outputs.backend == 'true' && github.event_name == 'push'
         env:
           TAGS: ${{ steps.backend_metadata.outputs.tags }}
           DIGEST: ${{ steps.build_backend.outputs.digest }}
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
 
       - name: Sign the geocoder Docker image
-        if: steps.filter.outputs.geocoder == 'true'
+        if: steps.filter.outputs.geocoder == 'true' && github.event_name == 'push'
         env:
           TAGS: ${{ steps.geocoder_metadata.outputs.tags }}
           DIGEST: ${{ steps.build_geocoder.outputs.digest }}

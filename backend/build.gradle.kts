@@ -15,6 +15,8 @@ java {
 }
 
 dependencies {
+    implementation(project(":shared"))
+
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.jpa)
     implementation(libs.spring.boot.starter.webflux)
@@ -26,7 +28,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.graphhopper.core)
-    implementation(project(":lib"))
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit5)
     testRuntimeOnly(libs.junit5.platform.launch)

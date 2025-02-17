@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.timestamp.backend.config.FirebaseUser
 import org.timestamp.backend.service.GeocoderService
-import org.timestamp.lib.dto.LocationDTO
-import org.timestamp.lib.dto.GeocodeDTO
-import org.timestamp.lib.dto.TravelMode
+import org.timestamp.shared.dto.LocationDTO
+import org.timestamp.shared.dto.GeocodeDTO
+import org.timestamp.shared.dto.TravelMode
 
 @RestController
 @RequestMapping("/geocode")

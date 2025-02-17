@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.util.UriComponentsBuilder
-import org.timestamp.lib.dto.LocationDTO
-import org.timestamp.lib.dto.GeocodeDTO
+import org.timestamp.shared.dto.LocationDTO
+import org.timestamp.shared.dto.GeocodeDTO
 
 @Service
 class GeocoderService(

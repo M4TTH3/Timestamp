@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.timestamp.lib.dto.RouteInfoDTO
-import org.timestamp.lib.dto.TravelMode
+import org.timestamp.shared.dto.RouteInfoDTO
+import org.timestamp.shared.dto.TravelMode
 
 /**
  * Currently restrict access to this endpoint to only authenticated users.

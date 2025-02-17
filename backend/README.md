@@ -1,5 +1,4 @@
 ## Environment Variables
-
 The following environment variables are required to run the application:
 
     - DB_URL=jdbc:postgresql://{url}/{db}
@@ -12,10 +11,8 @@ The following environment variables are required to run the application:
     - GEOCODER_URL=http://geocoder:2322
 
 ## Volumes
-
     - {hostpath}:/app/graph-cache/
     - {path}:/app/osm/
 
 ## Firebase Admin Key
-
 Make sure to add backend/src/main/resources/firebase-admin-key.json when building.

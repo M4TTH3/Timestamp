@@ -7,7 +7,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.JoinColumn
-import org.timestamp.lib.dto.EventLinkDTO
+import org.timestamp.shared.dto.EventLinkDTO
 import java.util.UUID
 
 /**
