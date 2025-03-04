@@ -1,8 +1,10 @@
 package org.timestamp.shared.viewmodel
 
 import android.net.Uri
+import androidx.lifecycle.AtomicReference
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +34,7 @@ class EventViewModel () : ViewModel() {
     private val _viewEvent: MutableStateFlow<EventDTO?> = MutableStateFlow(null)
 
     // Whether we are polling events
-    private var isPollingEvents = false
+    private val eventsJob = AtomicReference<Job?>(null)
 
     // Events model
     val events: StateFlow<List<EventDTO>> = eventRepo.get()
@@ -46,7 +48,7 @@ class EventViewModel () : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        stopGetEventsPolling()
+         stopGetEventsPolling()
     }
 
     /**
@@ -57,29 +59,17 @@ class EventViewModel () : ViewModel() {
         userRepo.postUser()
     }
 
-    /**
-     * Start polling the backend for events. This needs to be
-     * concurrent to the main thread.
-     */
-     fun startGetEventsPolling() = viewModelScope.launch {
-        if (isPollingEvents) return@launch
-
-        isPollingEvents = true
-
-        while(isPollingEvents) {
-            getEvents()
-            delay(THIRTY_SECONDS_MS)
-        }
-
-        isPollingEvents = false
+    fun stopGetEventsPolling() {
+        val job = eventsJob.getAndSet(null)
+        job?.cancel()
     }
-
-    fun stopGetEventsPolling() { isPollingEvents = false }
 
     /**
      * Fetch ALL events to update UI
      */
-    suspend fun getEvents() = eventRepo.getEvents()
+    suspend fun getEvents() = eventRepo.getEvents {
+        eventsJob.compareAndSet(null, it)
+    }
 
     /**
      * Post an event, and modify the current list with the new event.

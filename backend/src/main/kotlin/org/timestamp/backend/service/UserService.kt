@@ -1,5 +1,7 @@
 package org.timestamp.backend.service
 
+import com.graphhopper.GraphHopper
+import kotlinx.coroutines.launch
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.timestamp.backend.config.FirebaseUser
@@ -7,6 +9,10 @@ import org.timestamp.backend.config.UserNotFoundException
 import org.timestamp.backend.model.User
 import org.timestamp.backend.model.toDTO
 import org.timestamp.backend.repository.TimestampUserRepository
+import org.timestamp.backend.util.SseHub
+import org.timestamp.backend.util.updateUserEvent
+import org.timestamp.shared.dto.EventDTO
+import org.timestamp.shared.dto.EventStreamType
 import org.timestamp.shared.dto.TravelMode
 import org.timestamp.shared.dto.UserDTO
 import org.timestamp.shared.util.utcNow
@@ -14,9 +20,9 @@ import org.timestamp.shared.util.utcNow
 @Service
 class UserService(
     private val db: TimestampUserRepository,
-    private val graphHopperService: GraphHopperService
+    private val graphHopper: GraphHopper,
+    private val sseEventHub: SseHub<EventDTO, EventStreamType>
 ) {
-    fun getUserById(id: String): User = db.findByIdOrNull(id) ?: throw UserNotFoundException()
 
     /**
      * Create a user from a FirebaseUser object if it does not exist, otherwise return
@@ -57,7 +63,18 @@ class UserService(
             val arrival = userEvent.event!!.arrival
             val withinPeriod = arrival.isAfter(twoHoursBefore) && arrival.isBefore(nextDay)
 
-            if (withinPeriod) graphHopperService.updateUserEvent(userEvent)
+            if (withinPeriod) graphHopper.updateUserEvent(userEvent)
+        }
+
+        // Update each event associated with the user
+
+        user.userEvents.forEach {
+            val event = it.event!!
+            val users = event.userEvents.map { it.user!!.id }
+            val e = event.toDTO()
+            users.forEach {
+                if (it != user.id) sseEventHub.scope.launch { sseEventHub.send(it, e, EventStreamType.UPDATE) }
+            }
         }
 
         return db.save(user).toDTO()

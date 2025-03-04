@@ -1,7 +1,9 @@
 package org.timestamp.backend.config
 
+import com.graphhopper.GHRequest
 import com.graphhopper.GraphHopper
 import com.graphhopper.GraphHopperConfig
+import com.graphhopper.ResponsePath
 import com.graphhopper.config.CHProfile
 import com.graphhopper.config.Profile
 import com.graphhopper.routing.ev.EncodedValue
@@ -14,7 +16,9 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
+import org.timestamp.shared.dto.TravelMode
 import java.nio.file.Path
+import java.util.Locale
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.exists
@@ -112,8 +116,8 @@ class GraphHopperConfig(
                 // Set the data access to MMAP
                 putObject("graph.dataaccess", "MMAP")
 
-                setProfiles(profilesCustom)
-                setCHProfiles(chProfilesCustom) // Enable CH "speed mode" - Alternatively use LM
+                profiles = profilesCustom
+                chProfiles = chProfilesCustom // Enable CH "speed mode" - Alternatively use LM
 
                 putObject("graph.encoded_values", encodedValues.joinToString(","))
                 putObject("import.osm.ignored_highways", "")
@@ -127,4 +131,3 @@ class GraphHopperConfig(
         }
     }
 }
-

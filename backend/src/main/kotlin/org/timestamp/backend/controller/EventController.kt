@@ -1,6 +1,9 @@
 package org.timestamp.backend.controller
 
+import kotlinx.coroutines.flow.Flow
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.http.codec.ServerSentEvent
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.timestamp.backend.config.FirebaseUser
@@ -13,15 +16,18 @@ import java.net.URI
 import java.util.*
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping(EventController.EVENTS_ENDPOINT)
 class EventController(
     private val eventService: EventService
 ) {
 
-    @GetMapping
-    suspend fun getEvents(@AuthenticationPrincipal firebaseUser: FirebaseUser): ResponseEntity<List<EventDTO>> {
-        val events = eventService.getEvents(firebaseUser)
-        return ResponseEntity.ok(events)
+    companion object {
+        const val EVENTS_ENDPOINT = "/events"
+    }
+
+    @GetMapping(produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    suspend fun sseEvents(@AuthenticationPrincipal firebaseUser: FirebaseUser): Flow<ServerSentEvent<EventDTO>> {
+        return eventService.registerSseEvents(firebaseUser)
     }
 
     @PostMapping

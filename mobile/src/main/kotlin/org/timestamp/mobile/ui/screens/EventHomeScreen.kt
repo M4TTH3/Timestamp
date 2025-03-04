@@ -156,7 +156,6 @@ fun EventHomeScreen(
 private fun EventHomeScreenContent(
     inset: PaddingValues = PaddingValues(0.dp)
 ) {
-    val eventVm: EventViewModel = viewModel(LocalContext.current as TimestampActivity)
     val (events, _, _, setIsSearching) = LocalFields.current
     val scope = rememberCoroutineScope()
     val state = rememberPullToRefreshState()
@@ -166,7 +165,7 @@ private fun EventHomeScreenContent(
         isRefreshing = true
         scope.launch {
             // Simulate a refresh delay
-            eventVm.getEvents()
+            // TODO remove because we stream events now
             isRefreshing = false
         }
     }

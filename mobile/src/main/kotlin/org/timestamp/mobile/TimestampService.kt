@@ -186,16 +186,16 @@ class TimestampService: Service() {
         layout.setTextViewText(R.id.notification_title, eventName)
         layout.setTextViewText(R.id.notification_event_time, eventTime)
 
-        for (routeInfo in notification.routeInfos) {
-            val timeEst = routeInfo.timeEst
+        notification.routeInfo.let {
+            val timeEst = it.timeEst
             val time = if (timeEst == null) "Not Calculated" else formatDuration(timeEst)
-            val viewId = when (routeInfo.travelMode) {
+            val viewId = when (it.travelMode) {
                 TravelMode.Car -> R.id.notification_car_time
                 TravelMode.Bike -> R.id.notification_bike_time
                 else -> R.id.notification_walk_time
             }
 
-            layout.setTextViewText(viewId, "${routeInfo.travelMode!!.name}: $time")
+            layout.setTextViewText(viewId, "${it.travelMode!!.name}: $time")
         }
 
         val notificationBuilder = NotificationCompat
