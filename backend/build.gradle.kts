@@ -18,8 +18,8 @@ dependencies {
     implementation(project(":shared"))
 
     implementation(libs.spring.boot.starter.web)
-    implementation(libs.spring.boot.starter.jpa)
     implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.jpa)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.kotlin.reflect)
     implementation(libs.postgresql)

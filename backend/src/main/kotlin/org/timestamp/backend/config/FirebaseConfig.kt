@@ -15,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
+import org.timestamp.shared.util.AppLogger
 import java.io.IOException
 
 @Configuration
@@ -47,7 +48,7 @@ class FirebaseAuthFilter: jakarta.servlet.Filter {
         val auth = FirebaseAuth.getInstance()
         val authHeader = httpReq.getHeader("Authorization")
 
-        try {
+        runCatching {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 val token = authHeader.removePrefix("Bearer ")
                 val decodedToken = auth.verifyIdToken(token)
@@ -66,8 +67,8 @@ class FirebaseAuthFilter: jakarta.servlet.Filter {
                 securityToken.details = WebAuthenticationDetailsSource().buildDetails(httpReq)
                 SecurityContextHolder.getContext().authentication = securityToken
             }
-        } catch (e: Exception) {
-            println("Firebase token verification failed: ${e.message}")
+        }.onFailure {
+            AppLogger.e(FirebaseAuthFilter::class.simpleName.toString(), "Firebase token verification failed", it)
         }
 
         chain.doFilter(req, res)

@@ -5,6 +5,8 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.sse.SSE
+import io.ktor.client.request.request
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -40,8 +42,11 @@ object KtorClient {
     ) {
         this.backendBase = backendBase
         backend = HttpClient(CIO) {
-            install(ContentNegotiation.Plugin) {
+            install(ContentNegotiation) {
                 json(json)
+            }
+            install(SSE) {
+                showRetryEvents()
             }
 
             defaultRequest {
@@ -65,12 +70,12 @@ object KtorClient {
      * Handler for a request, performs try catch and updates
      * states if required. Run the action in the IO context.
      */
-    suspend fun <T> handler(
+    fun <T> handler(
         tag: String = "Backend Request",
         cancelOnNewRequest: Boolean = false,
         onError: suspend (e: Throwable?) -> Unit = {},
         action: suspend () -> T?
-    ): T? {
+    ): Deferred<T?> {
 
         if (cancelOnNewRequest) lastActiveJob[tag]?.cancel()
 
@@ -92,7 +97,7 @@ object KtorClient {
         }
 
         lastActiveJob[tag] = job
-        return job.await()
+        return job
     }
 
     /**

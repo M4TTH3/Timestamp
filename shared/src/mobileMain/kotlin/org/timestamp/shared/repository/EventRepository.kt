@@ -1,14 +1,19 @@
 package org.timestamp.shared.repository
 
+import io.ktor.client.plugins.sse.ClientSSESession
+import io.ktor.client.plugins.sse.sse
 import io.ktor.client.request.delete
-import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import kotlinx.coroutines.Job
 import org.timestamp.shared.dto.EventDTO
+import org.timestamp.shared.dto.EventStreamType
 import org.timestamp.shared.dto.TravelMode
+import org.timestamp.shared.util.AppLogger
+import org.timestamp.shared.util.KtorClient
 import org.timestamp.shared.util.KtorClient.success
 
 class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
@@ -16,14 +21,44 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
     EventRepository::class
 ) {
 
+    /**
+     * Used to determine if an event has already been processed.
+     * This is necessary because the backend sends events in a stream,
+     * and we don't want to process the same event multiple times.
+     *
+     * Doesn't need concurrency protection since it's only accessed on the main thread.
+     * Chances of two events with the same ID being processed at the same time are slim.
+     */
+    private val eventCache = mutableSetOf<Long>()
+
     /* --- Backend Request Operations --- */
 
-    suspend fun getEvents() {
+    suspend fun getEvents(
+        jobCallback: (Job) -> Unit
+    ) {
         val tag = "Events Get"
-        handler(tag) {
-            val endpoint = "events"
-            val body: List<EventDTO>? = ktorClient.get(endpoint).bodyOrNull(tag)
-            body?.let { set(it) }
+        val endpoint = "events"
+
+        suspend fun ClientSSESession.collect() = this.incoming.collect {
+            val data = it.data ?: return@collect
+            val event = KtorClient.json.decodeFromString<EventDTO>(data)
+            val eventType = runCatching { EventStreamType.valueOf(it.event ?: "") }.getOrNull()
+            AppLogger.d(tag, "Event: $event, Type: $eventType")
+            when (eventType) {
+                EventStreamType.ADD -> add(event)
+                EventStreamType.UPDATE -> update(event)
+                EventStreamType.DELETE -> delete(event.id!!)
+                else -> Unit
+            }
+        }
+
+        handler(
+            tag,
+            deferredCallback = jobCallback
+        ) {
+            ktorClient.sse(endpoint) {
+                while (true) collect()
+            }
         }
     }
 
@@ -104,9 +139,17 @@ class EventRepository private constructor(): BaseRepository<List<EventDTO>>(
             } else it
         }
         set(newList, false)
+
+        eventCache.remove(eventId)
     }
 
     fun add(event: EventDTO) {
+        if (eventCache.contains(event.id)) {
+            update(event)
+            return
+        }
+
+        eventCache.add(event.id!!)
         val newList = state + event
         set(newList)
     }

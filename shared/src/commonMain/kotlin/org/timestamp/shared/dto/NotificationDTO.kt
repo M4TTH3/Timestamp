@@ -10,5 +10,6 @@ data class NotificationDTO(
      * The route information for the user to get to the event.
      * Contains all three travel modes.
      */
-    val routeInfos : List<RouteInfoDTO>
+    val routeInfo : RouteInfoDTO
 )
+

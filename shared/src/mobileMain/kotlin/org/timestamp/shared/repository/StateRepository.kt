@@ -4,8 +4,11 @@ import android.util.Log
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.contentLength
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.timestamp.shared.util.KtorClient
 import org.timestamp.shared.util.KtorClient.success
@@ -17,6 +20,7 @@ import kotlin.reflect.KClass
  */
 interface StateRepository<T> {
     fun get(): StateFlow<T>
+    fun getSharedFlow(): SharedFlow<T>
 
     companion object {
         /**
@@ -66,23 +70,28 @@ open class BaseRepository<T>(
     }
 
     override fun get(): StateFlow<T> = stateFlow.asStateFlow()
+    override fun getSharedFlow(): SharedFlow<T> = stateFlow.asSharedFlow()
 
     /**
      * Handler for a request, performs try catch and updates
      * states if required.
      */
     protected suspend fun <T> handler(
-        tag: String = "View Model Request",
+        tag: String = repositoryTag,
         cancelOnNewRequest: Boolean = false,
-        onError: suspend () -> Unit = {},
+        onError: (e: Throwable?) -> Unit = {},
+        deferredCallback: (Deferred<T?>) -> Unit = {},
         action: suspend () -> T?
     ): T? {
-        suspend fun onErrorHandler(e: Throwable?) {
+        fun onErrorHandler(e: Throwable?) {
             setError(e)
-            onError()
+            onError(e)
         }
 
-        return KtorClient.handler(tag, cancelOnNewRequest, ::onErrorHandler, action)
+        return KtorClient.handler(tag, cancelOnNewRequest, ::onErrorHandler, action).let {
+            deferredCallback(it)
+            it.await()
+        }
     }
 
     protected suspend inline fun <reified T> HttpResponse.bodyOrNull(

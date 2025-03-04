@@ -1,16 +1,20 @@
 package org.timestamp.backend.service
 
+import com.graphhopper.GraphHopper
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.codec.ServerSentEvent
 import org.springframework.stereotype.Service
 import org.timestamp.backend.config.*
 import org.timestamp.backend.model.*
 import org.timestamp.backend.repository.TimestampEventLinkRepository
 import org.timestamp.backend.repository.TimestampEventRepository
 import org.timestamp.backend.repository.TimestampUserRepository
-import org.timestamp.shared.dto.EventDTO
-import org.timestamp.shared.dto.EventLinkDTO
-import org.timestamp.shared.dto.NotificationDTO
-import org.timestamp.shared.dto.TravelMode
+import org.timestamp.backend.util.SseHub
+import org.timestamp.backend.util.getNotification
+import org.timestamp.backend.util.updateUserEvent
+import org.timestamp.shared.dto.*
 import org.timestamp.shared.util.utcNow
 import java.util.*
 
@@ -20,9 +24,20 @@ class EventService(
     private val db: TimestampEventRepository,
     private val userDb: TimestampUserRepository,
     private val eventLinkDb: TimestampEventLinkRepository,
-    private val graphHopperService: GraphHopperService
+    private val graphHopper: GraphHopper,
+    private val sseHub: SseHub<EventDTO, EventStreamType>
 ) {
-    fun getAllEvents(): List<Event> = db.findAll()
+
+    fun registerSseEvents(firebaseUser: FirebaseUser): Flow<ServerSentEvent<EventDTO>> {
+        val events = db.findAllEventsByUser(firebaseUser.uid).map {
+            Pair(
+                it.toDTO(),
+                EventStreamType.ADD
+            )
+        }
+
+        return sseHub.registerFlow(firebaseUser.uid, *events.toTypedArray())
+    }
 
     /**
      * Get events by user ID. We only return events the user isn't part of yet.
@@ -34,38 +49,27 @@ class EventService(
 
         val threshold = utcNow().minusMinutes(30)
         val link = eventLinkDb.findByIdOrNull(id) ?: throw EventLinkNotFoundException()
-        if (link.createdAt!!.isBefore(threshold)) throw EventLinkExpiredException()
+        if (link.createdAt.isBefore(threshold)) throw EventLinkExpiredException()
 
         val event = link.event!!
 
         // Check if the user is already part of the event
         if (event.userEvents.firstOrNull { it.id.userId == user.id } != null) throw BadRequestException()
-
         return event.toHiddenDTO()
     }
-
-    fun getEventById(id: Long): Event? = db.findByIdOrNull(id)
-
-    fun getEvents(firebaseUser: FirebaseUser): List<EventDTO> = db
-        .findAllEventsByUser(firebaseUser.uid)
-        .map { it.toDTO()}
 
     /**
      * Create an event with the given user as the creator.
      */
-    fun createEvent(userId: String, eventDTO: EventDTO): EventDTO {
-        val user = userDb.findByIdOrNull(userId) ?: throw EventNotFoundException()
+    fun createEvent(user: User, eventDTO: EventDTO): EventDTO {
+        val user = userDb.findByIdOrNull(user.id) ?: throw EventNotFoundException()
         val event = eventDTO.toEvent()
         event.creator = user.id
 
         val userEvent = UserEvent(user = user, event = event)
-        graphHopperService.updateUserEvent(userEvent.updateTravelMode(eventDTO, userId))
+        graphHopper.updateUserEvent(userEvent.updateTravelMode(eventDTO, user.id))
         event.userEvents.add(userEvent)
         return db.save(event).toDTO()
-    }
-
-    fun createEvent(user: User, eventDTO: EventDTO): EventDTO {
-        return createEvent(user.id, eventDTO)
     }
 
     /**
@@ -88,7 +92,7 @@ class EventService(
         // Update the travel mode of the current user
         item.userEvents.first { it.id.userId == firebaseUser.uid }.updateTravelMode(event, firebaseUser.uid)
 
-        return db.save(item).toDTO()
+        return db.save(item).sendDTO(firebaseUser.uid, EventStreamType.UPDATE)
     }
 
     /**
@@ -98,10 +102,12 @@ class EventService(
     fun updateEventTravelMode(firebaseUser: FirebaseUser, eventId: Long, travelMode: TravelMode?): EventDTO {
         val item: Event = db.findByIdOrNull(eventId) ?: throw EventNotFoundException()
 
-        val userEvent = item.userEvents.firstOrNull { it.id.userId == firebaseUser.uid } ?: throw UserNotFoundException()
-        graphHopperService.updateUserEvent(userEvent.updateTravelMode(travelMode))
+        val userEvent = item.userEvents.firstOrNull {
+            it.id.userId == firebaseUser.uid
+        } ?: throw UserNotFoundException()
+        graphHopper.updateUserEvent(userEvent.updateTravelMode(travelMode))
 
-        return db.save(item).toDTO()
+        return db.save(item).sendDTO(firebaseUser.uid, EventStreamType.UPDATE)
     }
 
     /**
@@ -112,16 +118,16 @@ class EventService(
         val link = eventLinkDb.findByIdOrNull(eventLinkId) ?: throw EventLinkNotFoundException()
         val threshold = utcNow().minusMinutes(30)
 
-        if (link.createdAt!!.isBefore(threshold)) throw EventLinkExpiredException()
+        if (link.createdAt.isBefore(threshold)) throw EventLinkExpiredException()
 
         val event = link.event!!
         if (user.id in event.userEvents.map { it.id.userId }) throw BadRequestException()
 
         val userEvent = UserEvent(user = user, event = event)
-        graphHopperService.updateUserEvent(userEvent.updateTravelMode(travelMode))
+        graphHopper.updateUserEvent(userEvent.updateTravelMode(travelMode))
         event.userEvents.add(userEvent)
 
-        return db.save(event).toDTO()
+        return db.save(event).sendDTO(user.id, EventStreamType.ADD)
     }
 
     fun getEventLink(firebaseUser: FirebaseUser, id: Long): EventLinkDTO {
@@ -147,9 +153,8 @@ class EventService(
             return true
         }
 
-        val joinRow = item.userEvents.firstOrNull { it.id.userId == firebaseUser.uid } ?: return false
-        item.userEvents.remove(joinRow)
-        db.save(item)
+        db.delete(item)
+        item.sendDTO(firebaseUser.uid, EventStreamType.DELETE)
         return true
     }
 
@@ -161,6 +166,7 @@ class EventService(
 
         event.userEvents.remove(userEvent)
         db.save(event)
+        event.sendDTO(firebaseUser.uid, EventStreamType.DELETE)
         return true
     }
 
@@ -173,7 +179,7 @@ class EventService(
         val userEvent = event.userEvents.firstOrNull { it.id.userId == firebaseUser.uid }
         userEvent ?: throw InternalServerErrorException()
 
-        return graphHopperService.getNotificationDto(userEvent)
+        return graphHopper.getNotification(userEvent)
     }
 
     /**
@@ -212,5 +218,17 @@ class EventService(
     ): UserEvent {
         this.travelMode = travelMode
         return this
+    }
+
+    private fun Event.sendDTO(sender: String, type: EventStreamType): EventDTO {
+        val event = this.toDTO()
+        sseHub.scope.launch {
+            event.users.forEach {
+                // Send it to everyone but the sender
+                if (it.id != sender) sseHub.send(it.id, event, type)
+            }
+        }
+
+        return event
     }
 }

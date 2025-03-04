@@ -9,10 +9,10 @@ import java.time.OffsetDateTime
 @MappedSuperclass
 abstract class Base(
     @Column(name = "created_at")
-    var createdAt: OffsetDateTime? = null,
+    var createdAt: OffsetDateTime = OffsetDateTime.now(),
 
     @Column(name = "updated_at")
-    var updatedAt: OffsetDateTime? = null,
+    var updatedAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
     @PrePersist
     fun onPrePersist() {

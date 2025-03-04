@@ -19,3 +19,9 @@ data class RouteInfoDTO(
     val timeEst: Long?,
     val travelMode: TravelMode?
 )
+
+val OutOfRangeRouteInfoDTO = RouteInfoDTO(
+    Double.MAX_VALUE,
+    Long.MAX_VALUE,
+    null
+)

@@ -15,12 +15,11 @@ class SecurityConfig {
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf {
-            it.disable() // Don't need cross site request forgery protection
+            it.disable() // Don't need to cross site request forgery protection
         }.authorizeHttpRequests { auth ->
-            auth.requestMatchers("/.well-known/**", "/", "/index.html")
-                .permitAll()
-                .anyRequest()
-                .authenticated()
+            auth.requestMatchers("/api/public/**").permitAll()
+            auth.requestMatchers("/api/**").authenticated()
+            auth.anyRequest().permitAll()
         }.addFilterBefore(
             FirebaseAuthFilter(),
             UsernamePasswordAuthenticationFilter::class.java
