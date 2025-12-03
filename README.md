@@ -1,21 +1,4 @@
-<div id="readme-top" align=center>
-    <img src="/assets/applogo.png" alt="Logo" width="110" height="110">
-    <h3>Timestamp</h3>
-    <p>On time in no time.</p>
-    <div>
-        <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Team-Contract">Team Contract</a>
-        &nbsp;&nbsp;
-        <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Project-Proposal">Project Proposal</a>
-        &nbsp;&nbsp;
-        <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/design-proposal">Design Proposal</a>
-        &nbsp;&nbsp;
-        <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/User-Documentation">User Documentation</a>
-        &nbsp;&nbsp;
-        <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Design-Diagrams">Design Diagrams</a>
-        &nbsp;&nbsp;
-        <a href="https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Team-Reflection">Team Reflection</a>
-    </div>
-</div>
+# Timestamp
 
 ## Description
 
@@ -35,7 +18,7 @@ There’s nothing worse than being late. It leaves a bad first impression, it ca
     <img src="/assets/readme/settings.png" alt="Settings" width="200" height="400">
 </div>
 
-## Team 102-4
+## Contributions
 
     Matthew Au-Yeung - mw2auyeu@uwaterloo.ca
 
@@ -45,11 +28,3 @@ There’s nothing worse than being late. It leaves a bad first impression, it ca
 
     BK Kang - hb3kang@uwaterloo.ca
 
-## Releases
-
-**⚠️ Note:** Release 1.1.0 -> 2.0.0 are **deprecated** and no longer compatible with the backend. Please use the latest release.
-
-[Release 1.1.0 - 10/11/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1-1-0-Release)  
-[Release 1.2.0 - 11/01/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1.2.0-Release-Notes)  
-[Release 1.3.0 - 11/15/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-1.3.0-Release-Notes)  
-[Release 2.0.0 - 12/03/24](https://git.uwaterloo.ca/mw2auyeu/team102-4/-/wikis/Version-2.0.0-Release-Notes)
