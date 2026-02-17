@@ -1,4 +1,4 @@
-FROM openjdk:21-jdk-slim AS build
+FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
 
 COPY gradle/ gradle/
@@ -14,7 +14,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew --no-daemon :backend:bootJar
 
 # Now create a minimal build with only the bootJar
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 RUN mkdir osm
 RUN mkdir graph-cache
