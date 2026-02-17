@@ -3,7 +3,7 @@ FROM openjdk:21-jdk-slim
 WORKDIR /app
 
 # Pull the latest jar file from github repo
-ARG VERSION=0.6.1
+ARG VERSION=1.0.0
 ENV PHOTON_VERSION=${VERSION}
 
 RUN apt-get update && apt-get install -y wget && apt-get clean
